@@ -1,0 +1,66 @@
+.\" manual page [] for redx
+.\" $Id: redx.8 24160 2012-12-19 00:05:17Z kredgate $
+.\" 
+.\"
+.TH REDX 8 "Feb 12 2012" "Redgate"
+.SH NAME
+redx \- System debugging shell based on TCL
+.SH SYNOPSIS
+.B redx
+[
+.I options
+]
+.SH INTRODUCTION
+.LP
+redx is a scripting tool that uses TCL as its base language.
+It includes numerous extensions that give it direct access to Linux system
+calls, Xen hypercalls, xenstore, NetLink, bridge control, and other subsystems.
+
+Command line options are available to the configuration file through
+the \fIargv\fR variable, but are not directly processed by redx
+at startup.
+
+.SH USAGE
+.PP
+\fBredx\fR runs interactively unless it has a filename argument.
+If it has a filename argument, that file will be evaluated as a script
+and then redx will exit.
+
+If you create a redx script in a file where the first line is:
+.nf
+
+   \fB#!/usr/sbin/redx\fR
+
+.fi
+then you can invoke the script file directly from your shell if
+you make the file executable.
+
+.SH COMMANDS
+
+.SH CONFIGURATION FILE
+.LP
+\fIredx\fR can be initialized with extension procedures using the
+/etc/redx/redx.conf file.
+  -- provide examples --
+
+.SH DIAGNOSTICS
+.LP
+Messages are sent to the syslog daemon using facility LOG_DAEMON.
+The messages file is already gathered as part of buggrab.
+The stdout log file should not be particularly useful for buggrab,
+since it should be completely empty.
+.SH FILES
+.TP
+.B /etc/redx/redx.conf
+Configuration file.
+.TP
+.B /var/log/redx.log
+Log for libraries that attempt to write to stdout.
+.SH SEE ALSO
+.TP
+.B tclsh.1
+.SH NOTES
+\fIredx\fR is based on the tclsh interpreter.
+
+.SH AUTHOR
+Karl N. Redgate
