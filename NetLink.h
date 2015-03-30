@@ -475,6 +475,4 @@ namespace NetLink {
 
 #endif
 
-/*
- * vim:autoindent:expandtab:
- */
+/* vim: set autoindent expandtab sw=4 : */

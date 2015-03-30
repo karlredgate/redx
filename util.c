@@ -398,7 +398,4 @@ recursive_remove( char *path ) {
     rmdir( path );
 }
 
-/*
- * vim:autoindent
- * vim:expandtab
- */
+/* vim: set autoindent expandtab sw=4 : */

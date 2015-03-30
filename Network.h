@@ -713,7 +713,4 @@ namespace Network {
 
 #endif
 
-/*
- * vim:autoindent
- * vim:expandtab
- */
+/* vim: set autoindent expandtab sw=4 : */

@@ -264,7 +264,4 @@ int main( int argc, char **argv ) {
     Tcl_Main( argc, argv, RedX_Init );
 }
 
-/*
- * vim:autoindent
- * vim:expandtab
- */
+/* vim: set autoindent expandtab sw=4 : */

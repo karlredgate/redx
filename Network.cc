@@ -872,7 +872,4 @@ bool Network::Initialize( Tcl_Interp *interp ) {
     return true;
 }
 
-/*
- * vim:autoindent
- * vim:expandtab
- */
+/* vim: set autoindent expandtab sw=4 : */

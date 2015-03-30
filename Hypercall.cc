@@ -440,7 +440,4 @@ Xen::DomainInfo* Xen::GetDomainInfo::operator() ( domid_t domain ) {
     return info;
 }
 
-/*
- * vim:autoindent
- * vim:expandtab
- */
+/* vim: set autoindent expandtab sw=4 : */
