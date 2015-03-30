@@ -45,7 +45,6 @@
 
 #include "UUID.h"
 #include "Kernel.h"
-#include "Channel.h"
 #include "BIOS.h"
 #include "NetLink.h"
 #include "Network.h"
@@ -244,26 +243,6 @@ int RedX_Init( Tcl_Interp *interp ) {
         return TCL_ERROR;
     }
     if ( interactive ) printf( "ICMPv6 initialized\n" );
-
-    if ( getuid() != 0 ) {
-        if ( interactive ) printf( "Channel not initialized, no access to /var/run\n" );
-    } else {
-        if ( Channel_Initialize(interp) == false ) {
-            Tcl_SetResult( interp, "Channel_Initialize failed", TCL_STATIC );
-            return TCL_ERROR;
-        }
-        if ( interactive ) printf( "Channel initialized\n" );
-
-        // Add some default channels
-        char *script =
-        "Channel decima\n"
-        "Channel netmgr\n"
-        "Channel stump\n"
-        "Channel domainmgr\n"
-        "\n";
-        int retcode = Tcl_EvalEx( interp, script, -1, TCL_EVAL_GLOBAL );
-        if ( retcode != TCL_OK )  return false;
-    }
 
     if ( Pulse_Initialize(interp) == false ) {
         Tcl_SetResult( interp, "Pulse_Initialize failed", TCL_STATIC );
