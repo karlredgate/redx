@@ -11,3 +11,10 @@ tests
 build
 -----
 * how to have build depend on xen headers present
+
+## TODO
+
+ * Add S3 commands
+ * Add Windows commands
+ * Build under mingw
+

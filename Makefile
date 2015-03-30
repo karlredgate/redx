@@ -1,4 +1,6 @@
 
+include $(shell uname).mk
+
 # changed to -O1 from -O2, since -O2 screws up valgrind.  This
 # should be good enough for shipping anyway.
 INCLUDE_DIRS = -I../xen/vendor/dist/install/usr/include -I../libservice -I../network
@@ -14,7 +16,8 @@ OBJS = redx.o
 
 CLEANS += redx $(OBJS)
 redx: $(OBJS) ../libservice/libservice.so ../network/libnetmgr.so
-	$(CXX) $(CXXFLAGS) -o $@ $^ -L../network -lnetmgr -L../network/netlib -lnetlib -L../network/netcfg -lnetcfg -L../libservice -lservice -lpthread -ltcl -lexpect5.44.1.15
+	# $(CXX) $(CXXFLAGS) -o $@ $^ -L../network -lnetmgr -L../network/netlib -lnetlib -L../network/netcfg -lnetcfg -L../libservice -lservice -lpthread -ltcl -lexpect5.44.1.15
+	$(CXX) $(CXXFLAGS) -o $@ $^ -lpthread -ltcl -lexpect5.44.1.15
 
 CLEANS += system-uuid
 system-uuid: system-uuid.o ../libservice/libservice.so

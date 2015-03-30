@@ -29,7 +29,6 @@
 #ifndef _NETLINK_H_
 #define _NETLINK_H_
 
-#include <asm/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
@@ -42,6 +41,7 @@
 #include <linux/netdevice.h>
 
 #include <unistd.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <tcl.h>
