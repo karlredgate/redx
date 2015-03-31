@@ -29,7 +29,7 @@
 #ifndef _ICMP_H_
 #define _ICMP_H_
 
-#include <asm/types.h>
+#include <stdint.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
