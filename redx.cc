@@ -254,12 +254,6 @@ int RedX_Init( Tcl_Interp *interp ) {
     }
     if ( interactive ) printf( "ICMPv6 initialized\n" );
 
-    if ( Pulse_Initialize(interp) == false ) {
-        Tcl_StaticSetResult( interp, "Pulse_Initialize failed" );
-        return TCL_ERROR;
-    }
-    if ( interactive ) printf( "Pulse initialized\n" );
-
     command = Tcl_CreateObjCommand(interp, "devno", devno_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
         return false;
