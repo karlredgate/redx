@@ -13,7 +13,7 @@ default: build install
 build: all
 all: redx system-uuid
 
-OBJS = redx.o UUID.o BIOS.o
+OBJS = redx.o UUID.o
 
 CLEANS += redx $(OBJS)
 redx: $(OBJS)

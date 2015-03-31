@@ -44,9 +44,9 @@
 #include <tcl.h>
 
 #include "UUID.h"
+#if 0
 #include "Kernel.h"
 #include "BIOS.h"
-#if 0
 #include "NetLink.h"
 #include "Network.h"
 #include "Hypercall.h"
@@ -206,6 +206,7 @@ int RedX_Init( Tcl_Interp *interp ) {
     }
     if ( interactive ) printf( "UUID initialized\n" );
 
+#if 0
     if ( getuid() != 0 ) {
         if ( interactive ) printf( "BIOS not initialized, no access to /dev/mem\n" );
     } else {
@@ -216,7 +217,6 @@ int RedX_Init( Tcl_Interp *interp ) {
         if ( interactive ) printf( "BIOS initialized\n" );
     }
 
-#if 0
     if ( access("/proc/xen/privcmd", R_OK) != 0 ) {
         if ( interactive ) printf( "Xen not initialized, no hypervisor present\n" );
     } else {
@@ -226,7 +226,6 @@ int RedX_Init( Tcl_Interp *interp ) {
         }
         if ( interactive ) printf( "Xen initialized\n" );
     }
-#endif
 
     if ( Kernel::Initialize(interp) == false ) {
         Tcl_StaticSetResult( interp, "Kernel::Initialize failed" );
@@ -234,7 +233,6 @@ int RedX_Init( Tcl_Interp *interp ) {
     }
     if ( interactive ) printf( "Kernel initialized\n" );
 
-#if 0
     if ( NetLink::Initialize(interp) == false ) {
         Tcl_StaticSetResult( interp, "NetLink::Initialize failed" );
         return TCL_ERROR;
