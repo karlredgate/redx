@@ -26,9 +26,13 @@
  *
  */
 
-#include <asm/types.h>
+#include <stdint.h>
 #include <sys/socket.h>
+#if 0
+### IS this really necessary for linux - use net/
 #include <linux/if_arp.h>  // for ARPHRD_*
+#endif
+#include <net/if_arp.h>  // for ARPHRD_*
 #include <unistd.h>
 #include <stdlib.h>
 #include <fcntl.h>
