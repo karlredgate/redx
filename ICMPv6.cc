@@ -159,11 +159,11 @@ bool ICMPv6::Socket::bind( struct in6_addr *address, uint32_t scope ) {
 
     char *address_name, buffer[80];
     if ( result < 0 ) {
-        char *err, e[128];
-        err = strerror_r( error, e, sizeof(e) );
+        char e[128];
+        int err = strerror_r( error, e, sizeof(e) );
         address_name = (char *)inet_ntop(AF_INET6, address, buffer, sizeof buffer);
         if ( (binds_attempted++ % 30) == 0 ) {
-            syslog( LOG_ERR, "ICMPv6::Socket::bind(\"%s\",%d): %s", address_name, scope, err );
+            syslog( LOG_ERR, "ICMPv6::Socket::bind(\"%s\",%d): %s", address_name, scope, e );
         }
         return false;
     }
@@ -189,10 +189,10 @@ bool ICMPv6::Socket::send( struct in6_addr *address, void *message, int length )
     recipient.sin6_scope_id = binding.sin6_scope_id;
     result = sendto( socket, message, length, 0, (struct sockaddr *)&recipient, sizeof(recipient) );
     if ( result < 0 ) {
-        char *err, e[128], s[80];
-        err = strerror_r( errno, e, sizeof(e) );
+        char e[128], s[80];
+        int err = strerror_r( errno, e, sizeof(e) );
         const char *addr = inet_ntop(AF_INET6, address, s, sizeof s);
-        syslog( LOG_ERR, "ICMPv6::Socket::send(\"%s\"): %s", addr, err );
+        syslog( LOG_ERR, "ICMPv6::Socket::send(\"%s\"): %s", addr, e );
         return false;
     }
     return true;
