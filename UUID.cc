@@ -30,6 +30,7 @@
 #include <tcl.h>
 #include "TCL_Fixup.h"
 #include "UUID.h"
+#include "AppInit.h"
 
 /**
  * An uninitialized UUID is all 0's.
@@ -326,5 +327,7 @@ bool UUID_Initialize( Tcl_Interp *interp ) {
     }
     return true;
 }
+
+app_init( UUID_Initialize );
 
 /* vim: set autoindent expandtab sw=4 : */
