@@ -46,8 +46,10 @@
 #include "UUID.h"
 #include "Kernel.h"
 #include "BIOS.h"
+#if 0
 #include "NetLink.h"
 #include "Network.h"
+#endif
 #include "ICMPv6.h"
 #include "Hypercall.h"
 #include "pulse.h"
@@ -226,6 +228,7 @@ int RedX_Init( Tcl_Interp *interp ) {
     }
     if ( interactive ) printf( "Kernel initialized\n" );
 
+#if 0
     if ( NetLink::Initialize(interp) == false ) {
         Tcl_SetResult( interp, "NetLink::Initialize failed", TCL_STATIC );
         return TCL_ERROR;
@@ -237,6 +240,7 @@ int RedX_Init( Tcl_Interp *interp ) {
         return TCL_ERROR;
     }
     if ( interactive ) printf( "Network initialized\n" );
+#endif
 
     if ( ICMPv6::Initialize(interp) == false ) {
         Tcl_SetResult( interp, "ICMPv6::Initialize failed", TCL_STATIC );
