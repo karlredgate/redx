@@ -29,8 +29,7 @@
 #ifndef _NETWORK_H_
 #define _NETWORK_H_
 
-#include <asm/types.h>
-#include <sys/types.h>
+#include <stdint.h>
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <linux/netlink.h>
