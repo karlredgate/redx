@@ -9,11 +9,13 @@ INCLUDE_DIRS = -Ixen -Ilibservice -Inetwork
 CXXFLAGS += -g -O1 $(INCLUDE_DIRS) -rdynamic
 CFLAGS += -g $(INCLUDE_DIRS) -Wall -rdynamic
 
-default: build install
+# default: build install
+default: build
 build: all
-all: redx system-uuid
+# all: redx system-uuid
+all: redx
 
-OBJS = redx.o UUID.o
+OBJS = redx.o UUID.o ICMPv6.o
 
 CLEANS += redx $(OBJS)
 redx: $(OBJS)
@@ -21,8 +23,9 @@ redx: $(OBJS)
 	$(CXX) $(CXXFLAGS) -o $@ $^ -lpthread -ltcl
 
 CLEANS += system-uuid
-system-uuid: system-uuid.o ../libservice/libservice.so
-	$(CXX) $(CXXFLAGS) -o $@ $^ -L../libservice -lservice -lpthread
+system-uuid: system-uuid.o
+	@: $(CXX) $(CXXFLAGS) -o $@ $^ -L../libservice -lservice -lpthread
+	$(CXX) $(CXXFLAGS) -o $@ $^ -lpthread
 
 install: rpm
 	$(INSTALL) --directory --mode 755 $(RPM_DIR)
