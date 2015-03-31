@@ -5,7 +5,8 @@ include $(shell uname).mk
 # should be good enough for shipping anyway.
 INCLUDE_DIRS = -I../xen/vendor/dist/install/usr/include -I../libservice -I../network
 INCLUDE_DIRS = -Ixen -Ilibservice -Inetwork
-CXXFLAGS += -g -O1 $(INCLUDE_DIRS) -Wall -rdynamic
+# CXXFLAGS += -g -O1 $(INCLUDE_DIRS) -Wall -rdynamic
+CXXFLAGS += -g -O1 $(INCLUDE_DIRS) -rdynamic
 CFLAGS += -g $(INCLUDE_DIRS) -Wall -rdynamic
 
 default: build install
