@@ -49,10 +49,9 @@
 #if 0
 #include "NetLink.h"
 #include "Network.h"
+#include "Hypercall.h"
 #endif
 #include "ICMPv6.h"
-#include "Hypercall.h"
-#include "pulse.h"
 
 /**
  * log level message
@@ -212,6 +211,7 @@ int RedX_Init( Tcl_Interp *interp ) {
         if ( interactive ) printf( "BIOS initialized\n" );
     }
 
+#if 0
     if ( access("/proc/xen/privcmd", R_OK) != 0 ) {
         if ( interactive ) printf( "Xen not initialized, no hypervisor present\n" );
     } else {
@@ -221,6 +221,7 @@ int RedX_Init( Tcl_Interp *interp ) {
         }
         if ( interactive ) printf( "Xen initialized\n" );
     }
+#endif
 
     if ( Kernel::Initialize(interp) == false ) {
         Tcl_SetResult( interp, "Kernel::Initialize failed", TCL_STATIC );
