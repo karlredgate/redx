@@ -13,12 +13,12 @@ default: build install
 build: all
 all: redx system-uuid
 
-OBJS = redx.o
+OBJS = redx.o UUID.o BIOS.o
 
 CLEANS += redx $(OBJS)
-redx: $(OBJS) ../libservice/libservice.so ../network/libnetmgr.so
-	# $(CXX) $(CXXFLAGS) -o $@ $^ -L../network -lnetmgr -L../network/netlib -lnetlib -L../network/netcfg -lnetcfg -L../libservice -lservice -lpthread -ltcl -lexpect5.44.1.15
-	$(CXX) $(CXXFLAGS) -o $@ $^ -lpthread -ltcl -lexpect5.44.1.15
+redx: $(OBJS)
+	@: $(CXX) $(CXXFLAGS) -o $@ $^ -L../network -lnetmgr -L../network/netlib -lnetlib -L../network/netcfg -lnetcfg -L../libservice -lservice -lpthread -ltcl -lexpect5.44.1.15
+	$(CXX) $(CXXFLAGS) -o $@ $^ -lpthread -ltcl
 
 CLEANS += system-uuid
 system-uuid: system-uuid.o ../libservice/libservice.so
