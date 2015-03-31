@@ -53,6 +53,11 @@
 #endif
 #include "ICMPv6.h"
 
+static void
+Tcl_StaticSetResult( Tcl_Interp *interp, const char *message ) {
+    Tcl_SetResult( interp, (char *)message, TCL_STATIC );
+}
+
 /**
  * log level message
  */
@@ -83,7 +88,7 @@ Syslog_obj( ClientData data, Tcl_Interp *interp,
     if ( Tcl_StringMatch(level_name, "info")      )  level = LOG_INFO;
     if ( Tcl_StringMatch(level_name, "debug")     )  level = LOG_DEBUG;
     if ( level == -1 ) {
-        Tcl_SetResult( interp, "invalid level", TCL_STATIC );
+        Tcl_StaticSetResult( interp, "invalid level" );
         return TCL_ERROR;
     }
     syslog( level, message );
@@ -131,7 +136,7 @@ Syslog_cmd( ClientData data, Tcl_Interp *interp,
     if ( Tcl_StringMatch(facility_name, "local7")   )  facility = LOG_LOCAL7;
     if ( Tcl_StringMatch(facility_name, "user")     )  facility = LOG_USER;
     if ( facility == -1 ) {
-        Tcl_SetResult( interp, "invalid facility", TCL_STATIC );
+        Tcl_StaticSetResult( interp, "invalid facility" );
         return TCL_ERROR;
     }
     openlog( strdup(application), 0, facility );
@@ -158,11 +163,11 @@ devno_cmd( ClientData data, Tcl_Interp *interp,
     struct stat s;
     if ( stat(filename, &s) < 0 ) {
         // would be better if these were errno messages
-        Tcl_SetResult( interp, "failed to stat file", TCL_STATIC );
+        Tcl_StaticSetResult( interp, "failed to stat file" );
         return TCL_ERROR;
     }
     if ( (S_ISCHR(s.st_mode) || S_ISBLK(s.st_mode)) == false ) {
-        Tcl_SetResult( interp, "file is not a device", TCL_STATIC );
+        Tcl_StaticSetResult( interp, "file is not a device" );
         return TCL_ERROR;
     }
 
@@ -196,7 +201,7 @@ int RedX_Init( Tcl_Interp *interp ) {
     Tcl_EvalEx( interp, "proc commands {} {namespace eval commands {info procs}}", -1, TCL_EVAL_GLOBAL );
 
     if ( UUID_Initialize(interp) == false ) {
-        Tcl_SetResult( interp, "UUID_Initialize failed", TCL_STATIC );
+        Tcl_StaticSetResult( interp, "UUID_Initialize failed" );
         return TCL_ERROR;
     }
     if ( interactive ) printf( "UUID initialized\n" );
@@ -205,7 +210,7 @@ int RedX_Init( Tcl_Interp *interp ) {
         if ( interactive ) printf( "BIOS not initialized, no access to /dev/mem\n" );
     } else {
         if ( BIOS::Initialize(interp) == false ) {
-            Tcl_SetResult( interp, "BIOS::Initialize failed", TCL_STATIC );
+            Tcl_StaticSetResult( interp, "BIOS::Initialize failed" );
             return TCL_ERROR;
         }
         if ( interactive ) printf( "BIOS initialized\n" );
@@ -216,7 +221,7 @@ int RedX_Init( Tcl_Interp *interp ) {
         if ( interactive ) printf( "Xen not initialized, no hypervisor present\n" );
     } else {
         if ( Xen::Initialize(interp) == false ) {
-            Tcl_SetResult( interp, "Xen::Initialize failed", TCL_STATIC );
+            Tcl_StaticSetResult( interp, "Xen::Initialize failed" );
             return TCL_ERROR;
         }
         if ( interactive ) printf( "Xen initialized\n" );
@@ -224,33 +229,33 @@ int RedX_Init( Tcl_Interp *interp ) {
 #endif
 
     if ( Kernel::Initialize(interp) == false ) {
-        Tcl_SetResult( interp, "Kernel::Initialize failed", TCL_STATIC );
+        Tcl_StaticSetResult( interp, "Kernel::Initialize failed" );
         return TCL_ERROR;
     }
     if ( interactive ) printf( "Kernel initialized\n" );
 
 #if 0
     if ( NetLink::Initialize(interp) == false ) {
-        Tcl_SetResult( interp, "NetLink::Initialize failed", TCL_STATIC );
+        Tcl_StaticSetResult( interp, "NetLink::Initialize failed" );
         return TCL_ERROR;
     }
     if ( interactive ) printf( "NetLink initialized\n" );
 
     if ( Network::Initialize(interp) == false ) {
-        Tcl_SetResult( interp, "Network::Initialize failed", TCL_STATIC );
+        Tcl_StaticSetResult( interp, "Network::Initialize failed" );
         return TCL_ERROR;
     }
     if ( interactive ) printf( "Network initialized\n" );
 #endif
 
     if ( ICMPv6::Initialize(interp) == false ) {
-        Tcl_SetResult( interp, "ICMPv6::Initialize failed", TCL_STATIC );
+        Tcl_StaticSetResult( interp, "ICMPv6::Initialize failed" );
         return TCL_ERROR;
     }
     if ( interactive ) printf( "ICMPv6 initialized\n" );
 
     if ( Pulse_Initialize(interp) == false ) {
-        Tcl_SetResult( interp, "Pulse_Initialize failed", TCL_STATIC );
+        Tcl_StaticSetResult( interp, "Pulse_Initialize failed" );
         return TCL_ERROR;
     }
     if ( interactive ) printf( "Pulse initialized\n" );
