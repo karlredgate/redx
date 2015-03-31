@@ -53,6 +53,8 @@
 #endif
 #include "ICMPv6.h"
 
+#include "AppInit.h"
+
 static void
 Tcl_StaticSetResult( Tcl_Interp *interp, const char *message ) {
     Tcl_SetResult( interp, (char *)message, TCL_STATIC );
@@ -255,6 +257,12 @@ int RedX_Init( Tcl_Interp *interp ) {
     command = Tcl_CreateObjCommand(interp, "devno", devno_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
         return false;
+    }
+
+    if ( Tcl_CallAppInitChain(interp) == false ) {
+        // this may want to be additive result
+        Tcl_StaticSetResult( interp, "AppInit failed" );
+        return TCL_ERROR;
     }
 
     return TCL_OK;
