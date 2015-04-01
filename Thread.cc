@@ -28,13 +28,12 @@
  * connects to a TCL library for debugging/configuration, etc.
  */
 
-#include <sys/prctl.h>
 #include <stdlib.h>
 #include <string.h>
 #include <pthread.h>
 #include <tcl.h>
 #include "TCL_Fixup.h"
-#include "Thread.h"
+#include "PlatformThread.h"
 
 namespace { Tcl_Interp *interpreter = NULL; }
 Tcl_Interp *Thread::global_interp() { return interpreter; }
@@ -81,11 +80,7 @@ void register_thread( Thread *thread ) {
 class MainThread : public Thread {
 public:
     MainThread() : Thread("main") {
-        char oldname[32];
-        char newname[48];
-        prctl( PR_GET_NAME, oldname );
-        sprintf( newname, "%s.main", oldname );
-        prctl( PR_SET_NAME, newname );
+        set_main_thread_name();
         id = pthread_self();
         pid = ::getpid();
     }
@@ -138,7 +133,7 @@ static void *boot( void *data ) {
     pthread_setcancelstate( PTHREAD_CANCEL_ENABLE, NULL );
     thread->setpid();
     thread->running();
-    prctl( PR_SET_NAME, thread->thread_name() );
+    set_thread_name( thread->thread_name() );
     thread->run();
     return NULL;
 }
