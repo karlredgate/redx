@@ -1,4 +1,10 @@
 
+# default: build install
+default: build
+build: all
+# all: redx system-uuid
+all: redx
+
 include $(shell uname).mk
 
 # changed to -O1 from -O2, since -O2 screws up valgrind.  This
@@ -8,12 +14,6 @@ INCLUDE_DIRS = -Ixen -Ilibservice -Inetwork
 # CXXFLAGS += -g -O1 $(INCLUDE_DIRS) -Wall -rdynamic
 CXXFLAGS += -g -O1 $(INCLUDE_DIRS) -rdynamic
 CFLAGS += -g $(INCLUDE_DIRS) -Wall -rdynamic
-
-# default: build install
-default: build
-build: all
-# all: redx system-uuid
-all: redx
 
 OBJS = redx.o 
 OBJS += AppInit.o
