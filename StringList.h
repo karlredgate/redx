@@ -28,10 +28,6 @@
 #ifndef _STRINGLIST_H_
 #define _STRINGLIST_H_
 
-#include <stdint.h>
-#include <unistd.h>
-#include <tcl.h>
-
 /**
  */
 class StringList {
