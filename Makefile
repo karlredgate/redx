@@ -23,6 +23,7 @@ OBJS += UUID.o
 OBJS += ICMPv6.o
 OBJS += xuid.o
 OBJS += linenoise.o
+OBJS += traps.o
 OBJS += $(PLATFORM_OBJS)
 
 CLEANS += redx $(OBJS)
