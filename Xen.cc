@@ -48,7 +48,7 @@
 #include <string.h>
 #include <syslog.h>
 #include <tcl.h>
-#include "TCL_Fixup.h"
+#include "tcl_util.h"
 
 #include "Hypercall.h"
 #include "XenStore.h"

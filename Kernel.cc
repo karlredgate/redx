@@ -39,7 +39,7 @@
 #include <time.h>
 
 #include <tcl.h>
-#include "TCL_Fixup.h"
+#include "tcl_util.h"
 
 #include "Kernel.h"
 

@@ -56,7 +56,7 @@
 #include <errno.h>
 
 #include <tcl.h>
-#include "TCL_Fixup.h"
+#include "tcl_util.h"
 
 #include "util.h"
 #include "host_table.h"
