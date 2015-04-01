@@ -172,13 +172,6 @@ format_uuid( char *string, uint8_t *data ) {
 
 /**
  */
-static uint8_t
-nybble32( uint32_t data, int n ) {
-    return ( data >> (n*4) ) & 0xF;
-}
-
-/**
- */
 int
 format_guid( char *string, guid_t *data ) {
     uint32_t data1 = data->data1;

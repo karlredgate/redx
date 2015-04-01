@@ -46,7 +46,10 @@ typedef struct {
     uint8_t  data4[8];
 } guid_t;
 
-int parse_uuid( char *, uuid_t );
+int parse_uuid( char *, uint8_t * );
+int parse_guid( char *, guid_t * );
+int format_uuid( char *, uint8_t * );
+int format_guid( char *, guid_t * );
 
 #endif
 
