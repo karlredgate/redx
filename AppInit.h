@@ -35,6 +35,7 @@
  */
 struct AppInit {
     struct AppInit *next;
+    const char *name;
     bool (*function)( Tcl_Interp * );
 };
 
@@ -43,7 +44,7 @@ bool Tcl_CallAppInitChain( Tcl_Interp * );
 
 #define app_init(callback) \
 static void __attribute__ ((constructor)) __init__##callback(void) { \
-    static struct AppInit init = { NULL, callback };                 \
+    static struct AppInit init = { NULL, #callback, callback };                 \
     add_app_init_callback( &init );                                  \
 }
 

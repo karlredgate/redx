@@ -44,6 +44,7 @@
 #include "TCL_Fixup.h"
 
 #include "ICMPv6.h"
+#include "AppInit.h"
 
 namespace {
     typedef ICMPv6::PDU *(*PDUFactory)( struct icmp6_hdr * );
@@ -807,7 +808,8 @@ Socket_cmd( ClientData data, Tcl_Interp *interp,
 
 /**
  */
-bool ICMPv6::Initialize( Tcl_Interp *interp ) {
+static bool
+ICMPv6_Initialize( Tcl_Interp *interp ) {
     Tcl_Command command;
 
     for ( int i = 0 ; i < MAX_FACTORY ; i++ ) {
@@ -863,7 +865,6 @@ bool ICMPv6::Initialize( Tcl_Interp *interp ) {
     return true;
 }
 
-/*
- * vim:autoindent
- * vim:expandtab
- */
+app_init( ICMPv6_Initialize );
+
+/* vim: set autoindent expandtab sw=4 : */

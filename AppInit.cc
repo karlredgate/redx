@@ -40,11 +40,22 @@ add_app_init_callback( struct AppInit *init ) {
 
 bool
 Tcl_CallAppInitChain( Tcl_Interp *interp ) {
+    int interactive = 1;
+    Tcl_Obj *interactive_obj;
+    interactive_obj = Tcl_GetVar2Ex( interp, "tcl_interactive", NULL, TCL_GLOBAL_ONLY );
+    if ( interactive_obj != NULL ) {
+        Tcl_GetIntFromObj( interp, interactive_obj, &interactive );
+    }
+
     bool result = true;
     struct AppInit *current = head;
 
     while ( current != NULL ) {
-        result &= current->function( interp );
+        bool r = current->function(interp);
+        result &= r;
+        if ( r == true ) {
+            if ( interactive ) printf( "%s initialized\n", current->name );
+        }
         current = current->next;
     }
 

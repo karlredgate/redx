@@ -160,10 +160,6 @@ namespace ICMPv6 {
         inline bool not_bound() const { return bind_completed == false; }
     };
 
-    /**
-     */
-    bool Initialize( Tcl_Interp * );
-
 }
 
 #endif

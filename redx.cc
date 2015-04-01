@@ -202,12 +202,6 @@ int RedX_Init( Tcl_Interp *interp ) {
     Tcl_EvalEx( interp, "proc clock {command} { namespace eval ::tcl::clock $command}", -1, TCL_EVAL_GLOBAL );
     Tcl_EvalEx( interp, "proc commands {} {namespace eval commands {info procs}}", -1, TCL_EVAL_GLOBAL );
 
-    if ( UUID_Initialize(interp) == false ) {
-        Tcl_StaticSetResult( interp, "UUID_Initialize failed" );
-        return TCL_ERROR;
-    }
-    if ( interactive ) printf( "UUID initialized\n" );
-
 #if 0
     if ( getuid() != 0 ) {
         if ( interactive ) printf( "BIOS not initialized, no access to /dev/mem\n" );
@@ -247,12 +241,6 @@ int RedX_Init( Tcl_Interp *interp ) {
     }
     if ( interactive ) printf( "Network initialized\n" );
 #endif
-
-    if ( ICMPv6::Initialize(interp) == false ) {
-        Tcl_StaticSetResult( interp, "ICMPv6::Initialize failed" );
-        return TCL_ERROR;
-    }
-    if ( interactive ) printf( "ICMPv6 initialized\n" );
 
     command = Tcl_CreateObjCommand(interp, "devno", devno_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
