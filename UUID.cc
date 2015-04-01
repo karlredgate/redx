@@ -28,7 +28,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <tcl.h>
-#include "TCL_Fixup.h"
+#include "tcl_util.h"
 #include "UUID.h"
 #include "AppInit.h"
 

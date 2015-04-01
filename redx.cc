@@ -51,12 +51,8 @@
 #include "Hypercall.h"
 #endif
 
+#include "tcl_util.h"
 #include "AppInit.h"
-
-static void
-Tcl_StaticSetResult( Tcl_Interp *interp, const char *message ) {
-    Tcl_SetResult( interp, (char *)message, TCL_STATIC );
-}
 
 /**
  * log level message

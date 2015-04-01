@@ -32,7 +32,7 @@
 #include <string.h>
 #include <pthread.h>
 #include <tcl.h>
-#include "TCL_Fixup.h"
+#include "tcl_util.h"
 #include "Thread.h"
 #include "PlatformThread.h"
 #include "AppInit.h"

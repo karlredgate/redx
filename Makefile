@@ -22,8 +22,9 @@ OBJS += StringList.o
 OBJS += UUID.o
 OBJS += ICMPv6.o
 OBJS += xuid.o
-OBJS += linenoise.o
 OBJS += string_util.o
+OBJS += tcl_util.o
+OBJS += traps.o
 OBJS += traps.o
 OBJS += $(PLATFORM_OBJS)
 

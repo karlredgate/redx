@@ -41,7 +41,7 @@
 #include <string.h>
 
 #include <tcl.h>
-#include "TCL_Fixup.h"
+#include "tcl_util.h"
 #include "string_util.h"
 
 #include "ICMPv6.h"
