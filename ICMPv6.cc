@@ -42,6 +42,7 @@
 
 #include <tcl.h>
 #include "TCL_Fixup.h"
+#include "string_util.h"
 
 #include "ICMPv6.h"
 #include "AppInit.h"
@@ -161,7 +162,7 @@ bool ICMPv6::Socket::bind( struct in6_addr *address, uint32_t scope ) {
     char *address_name, buffer[80];
     if ( result < 0 ) {
         char e[128];
-        int err = strerror_r( error, e, sizeof(e) );
+        int err = posix_strerror( error, e, sizeof(e) );
         address_name = (char *)inet_ntop(AF_INET6, address, buffer, sizeof buffer);
         if ( (binds_attempted++ % 30) == 0 ) {
             syslog( LOG_ERR, "ICMPv6::Socket::bind(\"%s\",%d): %s", address_name, scope, e );
@@ -191,7 +192,7 @@ bool ICMPv6::Socket::send( struct in6_addr *address, void *message, int length )
     result = sendto( socket, message, length, 0, (struct sockaddr *)&recipient, sizeof(recipient) );
     if ( result < 0 ) {
         char e[128], s[80];
-        int err = strerror_r( errno, e, sizeof(e) );
+        int err = posix_strerror( errno, e, sizeof(e) );
         const char *addr = inet_ntop(AF_INET6, address, s, sizeof s);
         syslog( LOG_ERR, "ICMPv6::Socket::send(\"%s\"): %s", addr, e );
         return false;

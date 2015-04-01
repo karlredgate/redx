@@ -26,6 +26,9 @@
  *
  */
 
+#undef _GNU_SOURCE
+#define _POSIX_C_SOURCE 200809L
+
 #include <sys/types.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -86,6 +89,11 @@ strlcat(char *dst, const char *src, size_t siz) {
     }
     *d = '\0';
     return(dlen + (s - src));        /* count does not include NUL */
+}
+
+int
+posix_strerror( int errnum, char *buf, size_t buflen ) {
+    return strerror_r( errnum, buf, buflen );
 }
 
 /* vim: set autoindent expandtab sw=4 : */
