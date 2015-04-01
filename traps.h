@@ -21,7 +21,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-/** \file util.h
+/** \file traps.h
  * \brief 
  *
  */
@@ -36,12 +36,7 @@
 extern "C" {
 #endif
 
-  size_t strlcpy( char *, const char *, size_t );
-  size_t strlcat( char *, const char *, size_t );
-  int mkfile( char *, size_t );
-  int parse_uuid( char *, uint8_t * );
-  int format_uuid( char *, uint8_t * );
-  void recursive_remove( char * );
+  void trap_error_signals();
 
 #ifdef __cplusplus
 }
