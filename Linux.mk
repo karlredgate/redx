@@ -1,2 +1,2 @@
 
-PLATFORM_SRCS := NetLink.o
+PLATFORM_OBJS := NetLink.o LinuxThread.o

@@ -1,2 +1,2 @@
 
-PLATFORM_SRCS := 
+PLATFORM_OBJS := DarwinThread.o
