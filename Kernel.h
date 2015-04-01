@@ -41,7 +41,7 @@ namespace Kernel {
 
     /**
      */
-    bool Initialize( Tcl_Interp * );
+    // bool Initialize( Tcl_Interp * );
 
 }
 

@@ -42,6 +42,7 @@
 #include "tcl_util.h"
 
 #include "Kernel.h"
+#include "AppInit.h"
 
 namespace {
     int debug = 0;
@@ -572,7 +573,7 @@ ipmitool_cmd( ClientData data, Tcl_Interp *interp,
 
 /**
  */
-bool Kernel::Initialize( Tcl_Interp *interp ) {
+bool Kernel_Module( Tcl_Interp *interp ) {
     Tcl_Command command;
 
     Tcl_Namespace *ns = Tcl_CreateNamespace(interp, "Kernel", (ClientData)0, NULL);
@@ -641,5 +642,7 @@ bool Kernel::Initialize( Tcl_Interp *interp ) {
 
     return true;
 }
+
+app_init( Kernel_Module );
 
 /* vim: set autoindent expandtab sw=4 : */
