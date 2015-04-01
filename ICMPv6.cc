@@ -809,7 +809,7 @@ Socket_cmd( ClientData data, Tcl_Interp *interp,
 /**
  */
 static bool
-ICMPv6_Initialize( Tcl_Interp *interp ) {
+ICMPv6_Module( Tcl_Interp *interp ) {
     Tcl_Command command;
 
     for ( int i = 0 ; i < MAX_FACTORY ; i++ ) {
@@ -865,6 +865,6 @@ ICMPv6_Initialize( Tcl_Interp *interp ) {
     return true;
 }
 
-app_init( ICMPv6_Initialize );
+app_init( ICMPv6_Module );
 
 /* vim: set autoindent expandtab sw=4 : */

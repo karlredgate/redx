@@ -58,8 +58,6 @@ public:
     bool operator != ( UUID& );
 };
 
-extern bool UUID_Initialize( Tcl_Interp * );
-
 #endif
 
 /* vim: set autoindent expandtab sw=4 : */

@@ -43,7 +43,6 @@
 #include <syslog.h>
 #include <tcl.h>
 
-#include "UUID.h"
 #if 0
 #include "Kernel.h"
 #include "BIOS.h"
@@ -51,7 +50,6 @@
 #include "Network.h"
 #include "Hypercall.h"
 #endif
-#include "ICMPv6.h"
 
 #include "AppInit.h"
 

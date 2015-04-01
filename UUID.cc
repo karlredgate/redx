@@ -319,7 +319,8 @@ UUID_cmd( ClientData data, Tcl_Interp *interp,
 
 /**
  */
-bool UUID_Initialize( Tcl_Interp *interp ) {
+static bool
+UUID_Module( Tcl_Interp *interp ) {
     Tcl_Command command;
     command = Tcl_CreateObjCommand(interp, "UUID", UUID_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
@@ -328,6 +329,6 @@ bool UUID_Initialize( Tcl_Interp *interp ) {
     return true;
 }
 
-app_init( UUID_Initialize );
+app_init( UUID_Module );
 
 /* vim: set autoindent expandtab sw=4 : */
