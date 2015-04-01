@@ -26,8 +26,8 @@
  *
  */
 
-#ifndef _NETWORK_H_
-#define _NETWORK_H_
+#ifndef _INTERFACE_H_
+#define _INTERFACE_H_
 
 #include <stdint.h>
 #include <sys/socket.h>

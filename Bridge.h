@@ -26,8 +26,8 @@
  *
  */
 
-#ifndef _NETWORK_H_
-#define _NETWORK_H_
+#ifndef _BRIDGE_H_
+#define _BRIDGE_H_
 
 namespace ICMPv6 { class Socket; }
 

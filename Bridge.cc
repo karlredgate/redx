@@ -28,6 +28,11 @@
  * since I needed linux/if.h for some other reason in Network.cc ??
  */
 
+#include <unistd.h>
+
+#include <netinet/in.h>
+#include <netinet/ip6.h>
+
 #include <sys/param.h>
 #include <sys/socket.h>
 // #include <net/if.h>
@@ -35,8 +40,6 @@
 #include <net/if_arp.h>
 #include <linux/if_bridge.h>
 #include <linux/sockios.h>
-
-#include <netinet/ip6.h>
 
 // Do I need these?
 #include <sys/time.h>
@@ -49,8 +52,10 @@
 #include <syslog.h>
 #include <glob.h>
 
-#include "Network.h"
+#include "Bridge.h"
+#include "Interface.h"
 #include "tcl_util.h"
+#include "AppInit.h"
 
 namespace { int debug = 0; }
 
@@ -481,7 +486,7 @@ Bridge_cmd( ClientData data, Tcl_Interp *interp,
 
 /**
  */
-bool Network::Bridge::Initialize( Tcl_Interp *interp ) {
+bool Bridge_Module( Tcl_Interp *interp ) {
 
     Tcl_Command command;
 
@@ -503,5 +508,7 @@ bool Network::Bridge::Initialize( Tcl_Interp *interp ) {
 
     return true;
 }
+
+app_init( Bridge_Module );
 
 /* vim: set autoindent expandtab sw=4 : */
