@@ -36,6 +36,8 @@
 #include <linux/if_bridge.h>
 #include <linux/sockios.h>
 
+#include <netinet/ip6.h>
+
 // Do I need these?
 #include <sys/time.h>
 #include <sys/ioctl.h>
@@ -359,7 +361,7 @@ Bridge_obj( ClientData data, Tcl_Interp *interp,
 
     char *command = Tcl_GetStringFromObj( objv[1], NULL );
     if ( Tcl_StringMatch(command, "type") ) {
-        Tcl_SetResult( interp, "Network::Bridge", TCL_STATIC );
+        Tcl_StaticSetResult( interp, "Network::Bridge" );
         return TCL_OK;
     }
 
@@ -369,7 +371,7 @@ Bridge_obj( ClientData data, Tcl_Interp *interp,
             Tcl_ResetResult( interp );
             return TCL_OK;
         }
-        Tcl_SetResult( interp, (char *)result, TCL_STATIC );
+        Tcl_StaticSetResult( interp, (char *)result );
         return TCL_ERROR;
     }
 
@@ -385,7 +387,7 @@ Bridge_obj( ClientData data, Tcl_Interp *interp,
             Tcl_ResetResult( interp );
             return TCL_OK;
         }
-        Tcl_SetResult( interp, (char *)result, TCL_STATIC );
+        Tcl_StaticSetResult( interp, (char *)result );
         return TCL_ERROR;
     }
 
@@ -406,7 +408,7 @@ Bridge_obj( ClientData data, Tcl_Interp *interp,
         void *p = (void *)&(interface); // avoid strict aliasing errors in the compiler
         if ( Tcl_GetLongFromObj(interp,objv[2],(long*)p) != TCL_OK ) {
             // we could do some additional err checks on the data -- ie -- numeric...
-            Tcl_SetResult( interp, "invalid interface object", TCL_STATIC );
+            Tcl_StaticSetResult( interp, "invalid interface object" );
             return TCL_ERROR;
         }
 
@@ -415,7 +417,7 @@ Bridge_obj( ClientData data, Tcl_Interp *interp,
             Tcl_ResetResult( interp );
             return TCL_OK;
         }
-        Tcl_SetResult( interp, (char *)result, TCL_STATIC );
+        Tcl_StaticSetResult( interp, (char *)result );
         return TCL_ERROR;
     }
 
@@ -431,7 +433,7 @@ Bridge_obj( ClientData data, Tcl_Interp *interp,
         void *p = (void *)&(interface); // avoid strict aliasing errors in the compiler
         if ( Tcl_GetLongFromObj(interp,objv[2],(long*)p) != TCL_OK ) {
             // we could do some additional err checks on the data -- ie -- numeric...
-            Tcl_SetResult( interp, "invalid interface object", TCL_STATIC );
+            Tcl_StaticSetResult( interp, "invalid interface object" );
             return TCL_ERROR;
         }
 
@@ -440,11 +442,11 @@ Bridge_obj( ClientData data, Tcl_Interp *interp,
             Tcl_ResetResult( interp );
             return TCL_OK;
         }
-        Tcl_SetResult( interp, (char *)result, TCL_STATIC );
+        Tcl_StaticSetResult( interp, (char *)result );
         return TCL_ERROR;
     }
 
-    Tcl_SetResult( interp, "Unknown command for Bridge object", TCL_STATIC );
+    Tcl_StaticSetResult( interp, "Unknown command for Bridge object" );
     return TCL_ERROR;
 }
 
