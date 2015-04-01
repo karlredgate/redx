@@ -21,8 +21,8 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-/** \file Network.h
- * \brief Network interface abstraction.
+/** \file Bridge.h
+ * \brief Bridge interface abstraction.
  *
  */
 
