@@ -21,13 +21,13 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-/** \file util.h
+/** \file string_util.h
  * \brief 
  *
  */
 
-#ifndef _UTIL_CC_H_
-#define _UTIL_CC_H_
+#ifndef _STRING_UTIL_H_
+#define _STRING_UTIL_H_
 
 #include <stdint.h>
 #include <unistd.h>
@@ -36,10 +36,8 @@
 extern "C" {
 #endif
 
-  int mkfile( char *, size_t );
-  int parse_uuid( char *, uint8_t * );
-  int format_uuid( char *, uint8_t * );
-  void recursive_remove( char * );
+  size_t strlcpy( char *, const char *, size_t );
+  size_t strlcat( char *, const char *, size_t );
 
 #ifdef __cplusplus
 }
