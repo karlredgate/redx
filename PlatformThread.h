@@ -26,7 +26,7 @@
  */
 
 extern void set_main_thread_name();
-extern void set_thread_name( char * );
+extern void set_thread_name( const char * );
 
 /*
  * vim:autoindent

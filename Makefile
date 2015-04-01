@@ -15,7 +15,7 @@ build: all
 # all: redx system-uuid
 all: redx
 
-OBJS = redx.o AppInit.o UUID.o ICMPv6.o xuid.o $(PLATFORM_OBJS)
+OBJS = redx.o AppInit.o Thread.o UUID.o ICMPv6.o xuid.o $(PLATFORM_OBJS)
 
 CLEANS += redx $(OBJS)
 redx: $(OBJS)

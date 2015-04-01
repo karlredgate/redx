@@ -36,7 +36,7 @@ set_main_thread_name() {
 /**
  */
 void
-set_thread_name( char *newname ) {
+set_thread_name( const char *newname ) {
 }
 
 /*

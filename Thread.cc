@@ -33,7 +33,9 @@
 #include <pthread.h>
 #include <tcl.h>
 #include "TCL_Fixup.h"
+#include "Thread.h"
 #include "PlatformThread.h"
+#include "AppInit.h"
 
 namespace { Tcl_Interp *interpreter = NULL; }
 Tcl_Interp *Thread::global_interp() { return interpreter; }
@@ -200,6 +202,13 @@ Thread::TclCommand( ClientData data, Tcl_Interp *interp,
     return TCL_ERROR;
     
 }
+
+static bool
+Thread_Module( Tcl_Interp *interp ) {
+    return true;
+}
+
+app_init( Thread_Module );
 
 /*
  * vim:autoindent
