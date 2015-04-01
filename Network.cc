@@ -65,6 +65,299 @@
 
 namespace { int debug = 0; }
 
+/**
+ */
+void
+Network::Node::uuid( UUID& that ) {
+    _uuid = that;
+    _ordinal = 255;
+    valid = true;
+    // syslog( LOG_NOTICE, "new node allocated with uuid %s", _uuid.to_s() );
+}
+
+/**
+ */
+void
+Network::Node::ordinal( uint8_t value ) {
+    _ordinal = value;
+    // syslog( LOG_NOTICE, "node%d %s", _ordinal, _uuid.to_s() );
+}
+
+/**
+ */
+bool
+Network::Node::operator == ( UUID& that ) {
+    return _uuid == that;
+}
+
+/**
+ */
+bool
+Network::Node::operator != ( UUID& that ) {
+    return _uuid != that;
+}
+
+/**
+ * Used to iterate through the node list and clear the partner
+ * bit in all entries.
+ */
+class ClearNodePartner : public Network::NodeIterator {
+public:
+    ClearNodePartner() {}
+    virtual ~ClearNodePartner() {}
+    virtual int operator() ( Network::Node& node ) {
+        if ( node.not_partner() ) return 0;
+        syslog( LOG_NOTICE, "clear partner [%s]", node.uuid().to_s() );
+        node.clear_partner();
+        return 1;
+    }
+};
+
+
+/**
+ */
+Network::Peer::~Peer() {
+    if ( _name != NULL ) free( _name );
+    _name = NULL;
+}
+
+/**
+ * This one should be deprecated
+ */
+Network::Peer::Peer( Network::Node *__node, struct in6_addr *address )
+: _node(__node), _ordinal(0), _name(NULL) {
+    memcpy( &lladdr, address, sizeof lladdr );
+    memset( &neighbor_updated, 0, sizeof neighbor_updated );
+}
+
+/**
+ */
+void
+Network::Peer::node( Node *that ) {
+    _node = that;
+
+    /*
+     * Here we have just discovered a new partner.  If this was the
+     * cached partner, then the _node would already be a partner.
+     * Since it was not and the neighbor is a partner - it must
+     * have been discovered on priv0, which either overrides the
+     * cached partner (node replace or the like) or this is the
+     * first time we have discovered the partner.  Either way
+     * we need to cache the newly discovered partner.
+     */
+    if ( is_partner() and _node->not_partner() ) {
+        _node->make_partner();
+        syslog( LOG_NOTICE, "node %s is partner", _node->uuid().to_s() );
+    }
+
+    /*
+     * Cases that are ignored:
+     * peer->not_partner() and _node->not_partner()
+     *   -- who cares about this neighbor
+     *
+     * peer->is_partner() and _node->is_partner()
+     *   -- we already have all necessary state
+     *
+     */
+
+    if ( debug < 2 ) return;
+    char buffer[80];
+    const char *address_string = inet_ntop(AF_INET6, &lladdr, buffer, sizeof buffer);
+    syslog( LOG_NOTICE, "%s at %s is node %s",
+                        (_node->is_partner() ? "partner" : "neighbor"),
+                        address_string, _node->uuid().to_s() );
+}
+
+/**
+ */
+Network::Node *
+Network::Peer::node() const {
+    return _node;
+}
+
+/**
+ * Since this is a sort of allocation method, maybe this should check if
+ * already valid and either disallow usage -- or at least report that the
+ * address is changing.
+ */
+void
+Network::Peer::address( struct in6_addr *addr ) {
+    memcpy( &lladdr, addr, sizeof lladdr );
+    valid = true;
+    if ( debug < 2 ) return;
+    char buffer[80];
+    const char *address_string = inet_ntop(AF_INET6, addr, buffer, sizeof buffer);
+    syslog( LOG_NOTICE, "new neighbor %s", address_string );
+}
+
+/**
+ */
+void
+Network::Peer::set_interface( bool set_private, uint8_t set_ordinal ) {
+    _is_private = set_private;
+    _ordinal = set_ordinal;
+}
+
+/**
+ */
+void
+Network::Peer::set_interface_name( char *name ) {
+    if ( name == NULL ) {			// If the new name is NULL...
+       if ( _name != NULL ) {			// ...and the Peer had a name...
+           free( _name );			//    ...free the old name...
+           _name = NULL;			//    ...and invalidate the name.
+       }
+       return;
+    } 
+
+    if ( _name != NULL ) {			// If the Peer already has a name...
+        if ( strcmp( name, _name ) ) {		// ...and it is *not* the same name...
+            free( _name );			//    ...free the old name...
+            _name = strdup( name );		//    ...and copy the new name.
+        }					// If it *is* the same name, don't do free()/strdup()
+    } else {					// If the Peer does not have a name...
+        _name = strdup( name );			// ...copy the new name.
+    }
+}
+
+/**
+ */
+void
+Network::Peer::copy_address( struct in6_addr *address ) const {
+    memcpy( address, &lladdr, sizeof lladdr );
+}
+
+/**
+ */
+void
+Network::Peer::touch_advertised() {
+    gettimeofday( &neighbor_advertised, 0 );
+}
+
+/**
+ */
+void
+Network::Peer::touch() {
+    gettimeofday( &neighbor_updated, 0 );
+}
+
+/**
+ */
+int
+Network::Peer::seconds_since_last_update() const {
+    struct timeval now;
+    gettimeofday( &now, 0 );
+    return now.tv_sec - neighbor_updated.tv_sec;
+}
+
+/**
+ */
+bool
+Network::Peer::operator == ( struct in6_addr& that ) {
+    if ( that.s6_addr32[0] != lladdr.s6_addr32[0] ) return false;
+    if ( that.s6_addr32[1] != lladdr.s6_addr32[1] ) return false;
+    if ( that.s6_addr32[2] != lladdr.s6_addr32[2] ) return false;
+    if ( that.s6_addr32[3] != lladdr.s6_addr32[3] ) return false;
+    return true;
+}
+
+/**
+ */
+bool
+Network::Peer::operator != ( struct in6_addr& that ) {
+    if ( that.s6_addr32[0] != lladdr.s6_addr32[0] ) return true;
+    if ( that.s6_addr32[1] != lladdr.s6_addr32[1] ) return true;
+    if ( that.s6_addr32[2] != lladdr.s6_addr32[2] ) return true;
+    if ( that.s6_addr32[3] != lladdr.s6_addr32[3] ) return true;
+    return false;
+}
+
+/**
+ */
+bool
+Network::Peer::has_address( struct in6_addr *address ) {
+    if ( address->s6_addr32[0] != lladdr.s6_addr32[0] ) return false;
+    if ( address->s6_addr32[1] != lladdr.s6_addr32[1] ) return false;
+    if ( address->s6_addr32[2] != lladdr.s6_addr32[2] ) return false;
+    if ( address->s6_addr32[3] != lladdr.s6_addr32[3] ) return false;
+    return true;
+}
+
+/**
+ * DEPRECATED
+ */
+bool
+Network::Peer::send_topology_event( Network::Interface *interface ) {
+    char node_ordinal = (node() == NULL) ? '?' : ('0' + node()->ordinal());
+    syslog( LOG_NOTICE, "sending event to spine for node%c:%s%d seen on %s",
+                        node_ordinal,
+                        is_private() ? "priv" : "biz", ordinal(),
+                        interface->name() );
+
+    char *event_name = const_cast<char*>("SuperNova::NetTopologyUpdate");
+    pid_t child = fork();
+
+    if ( child < 0 ) {
+        syslog( LOG_ERR, "failed to send %s event - couldn't fork", event_name );
+        return false;
+    }
+
+    _spine_notified = true;
+    if ( child > 0 ) {
+        int status;
+        waitpid( child, &status, 0);
+        return true;
+    }
+
+    char *argv[] = { const_cast<char*>("genevent"), event_name, 0 };
+    char *envp[] = { 0 };
+    if ( execve("/usr/lib/spine/bin/genevent", argv, envp) < 0 ) {
+        syslog( LOG_ERR, "failed to send %s event - couldn't execve", event_name );
+        _exit( 0 );
+    }
+
+    // NOT REACHED
+    return true;
+}
+
+/**
+ */
+static void
+construct_remote_interface_name( Network::Peer *neighbor, char *name, int size ) {
+
+    if ( neighbor->name() != NULL ) {
+        strncpy( name, neighbor->name(), size );
+    } else {
+        int ordinal = neighbor->ordinal();
+        if ( neighbor->is_private() ) {
+            if ( ordinal & 0x40 ) {
+                int slot = ( ordinal & 0x3c ) >> 2;
+                int port = ( ordinal & 0x03);
+                snprintf( name, size, "sync_pci%dp%d", slot, port );
+            } else {
+                snprintf( name, size, "priv%d", ordinal );
+            }
+        } else {
+            snprintf( name, size, "ibiz%d", ordinal );
+        }
+    }
+}
+
+/**
+ */
+void
+Network::Peer::topology_changed( Network::Monitor *monitor, Network::Interface *interface ) {
+    char node_ordinal = (node() == NULL) ? '?' : ('0' + node()->ordinal());
+    char remote_interface_name[32];
+    construct_remote_interface_name( this, remote_interface_name,
+                                     sizeof(remote_interface_name) );
+    syslog( LOG_NOTICE, "Topology change: node%c:%s seen on %s",
+                        node_ordinal, remote_interface_name, interface->name() );
+
+    _spine_notified = true;
+    monitor->topology_changed();
+}
+
 /** When a NewLink message is received, create/update interface object.
  *
  * 
@@ -80,8 +373,26 @@ void Network::Monitor::receive( NetLink::NewLink *message ) {
         }
         interface = new Network::Interface( interp, message );
         interfaces[ message->index() ] = interface;
+        if ( _manager != NULL ) {
+            _manager->add_interface( interface );
+        }
 
         interface->update( message );
+
+        if ( interface->is_physical() ) {
+//            if ( interface->not_private() ) {
+//                if ( interface->not_captured() )  capture( interface );
+//            }
+            if ( interface->has_link() ) {
+	      interface->linkUp( message );
+            } else {
+	      interface->linkDown( message );
+            }
+        }
+
+// This can happen on a bridge device if a shared network is deleted before we
+// receive the NewLink event announcing that it has been created.
+// Typically this happens if there was a buffer overflow on the Netlink socket.
 
         if ( !interface->exists() ) {
             syslog( LOG_NOTICE, "WARNING: interface %s(%d) does not appear to exist, skipping...",
@@ -91,6 +402,51 @@ void Network::Monitor::receive( NetLink::NewLink *message ) {
 
         bool is_bridge = interface->is_bridge();
         bool is_physical = interface->is_physical();
+
+        syslog( LOG_NOTICE, "checking to see if interface %s(%d) should be brought up: %s %s",
+                message->name(), message->index(), is_bridge ? "is BRIDGE" : "not BRIDGE",
+                is_physical ? "is PHYSICAL" : "not PHYSICAL" );
+
+// Temporary code to get around problem where NewLink message arrives
+// before /sysfs entries for the bridge are constructed.  Otherwise we
+// won't bring up the interface and the pulse code will not work.
+// Have to check for "net_<N>" names and "biz<N>" names as well due to upgrade.
+
+        const char *name = message->name();
+
+        if ( ( ( ( name[0] == 'n' ) &&
+                 ( name[1] == 'e' ) &&
+                 ( name[2] == 't' ) ) ||
+               ( ( name[0] == 'b' ) &&
+                 ( name[1] == 'i' ) &&
+                 ( name[2] == 'z' ) ) ) &&
+             ( !is_bridge ) ) {
+            syslog( LOG_NOTICE, "WARNING: interface %s(%d) does not appear to be a bridge, waiting up to 10 seconds",
+                    message->name(), message->index() );
+            for (int i = 0; i < 10; i++) {
+                sleep( 1 );
+                if ( interface->is_bridge() ) {
+                    is_bridge = true;
+                    break;
+                }
+            }
+            if ( interface->not_bridge() ) {
+                syslog( LOG_NOTICE, "WARNING: interface %s(%d) still does not appear to be a bridge, not bringing it up",
+                        message->name(), message->index() );
+            }
+        }
+
+        if ( is_bridge or is_physical ) {
+            bring_up( interface );
+            syslog( LOG_NOTICE, "brought up interface %s(%d)", message->name(), message->index() );
+        }
+
+        if ( interface->is_up() and interface->is_private() and
+             interface->not_sync() and interface->not_listening_to("udp6", 123) ) { // NTP
+            syslog( LOG_NOTICE, "%s is not listening to port 123 on its primary address, restart ntpd",
+                                interface->name() );
+            system( "/usr/bin/config_ntpd --restart" );
+        }
 
     } else { // if we do have it ... look for state changes
         interface->update( message );
@@ -140,6 +496,10 @@ void Network::Monitor::receive( NetLink::NewLink *message ) {
 	    promisc_message = interface->is_promiscuous() ? ", went promiscuous" : ", left promiscuous";
             report_required = true;
         }
+        if ( report_required or (debug > 0) ) {
+            syslog( LOG_NOTICE, "%s(%d): <NewLink>%s%s%s%s", interface->name(), interface->index(),
+                                link_message, up_message, running_message, promisc_message );
+        }
 
         if ( message->family() == AF_BRIDGE ) {
             const char *bridge_name = "UNKNOWN";
@@ -153,6 +513,13 @@ void Network::Monitor::receive( NetLink::NewLink *message ) {
         }
     }
 
+    if ( link_requires_repair ) {
+        if ( interface->has_fault_injected() ) {
+            syslog( LOG_NOTICE, "%s(%d) fault injected, not repairing link", interface->name(), interface->index() );
+        } else {
+            interface->repair_link();
+        }
+    }
 }
 
 /**
@@ -203,6 +570,10 @@ void Network::Monitor::receive( NetLink::DelLink *message ) {
     if ( interface->promiscuity_changed() ) {
 	promisc_message = interface->is_promiscuous() ? ", went promiscuous" : ", left promiscuous";
         report_required = true;
+    }
+    if ( report_required or (debug > 0) ) {
+        syslog( LOG_NOTICE, "%s(%d): <DelLink>%s%s%s%s", interface->name(), interface->index(),
+                            link_message, up_message, running_message, promisc_message );
     }
 
     if ( message->family() == AF_BRIDGE ) {
@@ -380,6 +751,29 @@ int Network::Monitor::sendto( void *message, size_t length, int flags, const str
     return 0;
 }
 
+/** Send ICMPv6 neighbor advertisements for each interface.
+ * 
+ * Iterate through each known priv/biz network and send neighbor
+ * advertisements out of this interface.  This will keep the peer's
+ * neighbor table up to date for this host.
+ *
+ * When looking at the peer's * neighbor table (ip -6 neighbor ls) you
+ * should see "REACHABLE" for this hosts addresses if this node is up and
+ * running netmgr.
+ *
+ * See the Interface.cc advertise code for how this is done.
+ */
+int Network::Monitor::advertise() {
+    std::map<int, Interface *>::const_iterator iter = interfaces.begin();
+    while ( iter != interfaces.end() ) {
+        Network::Interface *interface = iter->second;
+        if ( interface != NULL )  interface->advertise();
+        iter++;
+    }
+
+    return 0;
+}
+
 /** Iterate and call a callback for each Interface.
  */
 int Network::Monitor::each_interface( InterfaceIterator& callback ) {
@@ -394,6 +788,509 @@ int Network::Monitor::each_interface( InterfaceIterator& callback ) {
 
     return result;
 }
+
+/** Iterate and call a callback for each Node.
+ */
+int Network::Monitor::each_node( NodeIterator& callback ) {
+    int result = 0;
+
+    pthread_mutex_lock( &node_table_lock );
+    for ( int i = 0 ; i < NODE_TABLE_SIZE ; ++i ) {
+        Network::Node& node = node_table[i];
+        if ( node.is_invalid() ) continue;
+        result += callback( node );
+    }
+    pthread_mutex_unlock( &node_table_lock );
+
+    return result;
+}
+
+/** Return the Bridge Interface for a physical Interface that
+ *  has been captured in a Bridge.
+ */
+
+Network::Interface *
+Network::Monitor::find_bridge_interface( Interface *interface ) {
+    if ( interface->not_physical() ) return NULL;
+    if ( interface->not_captured() ) return NULL;
+
+    std::map<int, Interface *>::const_iterator iter = interfaces.begin();
+    while ( iter != interfaces.end() ) {
+        Network::Interface *interface2 = iter->second;
+        if ( ( interface2 != NULL ) && interface2->is_bridge() ) {
+
+            char path[1024];
+            sprintf( path, "/sys/class/net/%s/brif/*", interface2->name() );
+
+            glob_t paths;
+            memset(&paths, 0, sizeof(paths));
+
+            glob( path, GLOB_NOSORT, NULL, &paths );
+            for ( size_t i = 0 ; i < paths.gl_pathc ; i++ ) {
+                if ( strcmp( interface->name(), basename( paths.gl_pathv[i]) ) == 0 ) {
+                    globfree( &paths );
+                    return interface2;
+                }
+            }
+
+            globfree( &paths );
+        }
+        iter++;
+    }
+
+    syslog( LOG_NOTICE, "Unable to find bridge interface for %s", interface->name() );
+    return NULL;
+}
+
+/** Return the physical Interface for a Bridge Interface.
+ */
+
+Network::Interface *
+Network::Monitor::find_physical_interface( Interface *interface ) {
+    if ( interface->not_bridge() ) return NULL;
+
+    char path[1024];
+    sprintf( path, "/sys/class/net/%s/brif/*", interface->name() );
+
+    glob_t paths;
+    memset(&paths, 0, sizeof(paths));
+
+    glob( path, GLOB_NOSORT, NULL, &paths );
+    for ( size_t i = 0 ; i < paths.gl_pathc ; i++ ) {
+        std::map<int, Interface *>::const_iterator iter = interfaces.begin();
+        while ( iter != interfaces.end() ) {
+            Network::Interface *interface2 = iter->second;
+            if ( ( interface2 != NULL ) && interface2->is_physical() ) {
+                if ( strcmp( interface2->name(), basename( paths.gl_pathv[i]) ) == 0 ) {
+                    globfree( &paths );
+                    return interface2;
+                }
+            }
+            iter++;
+        }
+    }
+
+    globfree( &paths );
+
+// Note:  This happens when the interface has been temporarily removed from the
+// bridge by the tunnel code when the tunnel is set up to use the peer's interface.
+
+    if ( debug > 0 ) syslog( LOG_NOTICE, "Unable to find physical interface for %s", interface->name() );
+    return NULL;
+}
+
+/**
+ */
+static bool
+send_topology_event( const char *who ) {
+    syslog( LOG_NOTICE, "%s sending NetTopologyUpdate event to spine", who );
+
+    char *event_name = const_cast<char*>("SuperNova::NetTopologyUpdate");
+    pid_t child = fork();
+
+    if ( child < 0 ) {
+        syslog( LOG_ERR, "failed to send %s event - couldn't fork", event_name );
+        return false;
+    }
+
+    if ( child > 0 ) {
+        int status;
+        waitpid( child, &status, 0);
+        return true;
+    }
+
+    char *argv[] = { const_cast<char*>("genevent"), event_name, 0 };
+    char *envp[] = { 0 };
+    if ( execve("/usr/lib/spine/bin/genevent", argv, envp) < 0 ) {
+        syslog( LOG_ERR, "failed to send %s event - couldn't execve", event_name );
+        _exit( 0 );
+    }
+
+    // NOT REACHED
+    return true;
+}
+
+/**
+ */
+void Network::Monitor::topology_changed() {
+
+// If no Manager, send the event ourselves.
+
+    if ( _manager != NULL ) {
+        _manager->topology_changed();
+    } else {
+        send_topology_event("Monitor");
+    }
+}
+
+/** Persist the current interface config.
+ */
+void Network::Monitor::persist_interface_configuration() {
+    syslog( LOG_NOTICE, "persisting the change in interface configuration" );
+    FILE *f = fopen( "/etc/udev/rules.d/.tmp", "w" );
+    std::map<int, Interface *>::const_iterator iter = interfaces.begin();
+    for ( ; iter != interfaces.end() ; iter++ ) {
+        Network::Interface *interface = iter->second;
+        if ( interface == NULL ) continue;
+        if ( interface->not_physical() ) continue;
+        // save this interface??
+        // KERNEL=="eth*", SYSFS{address}=="<mac>", NAME="<newname>"
+        const unsigned char *mac = interface->mac();
+        fprintf( f, "KERNEL==\"eth*\", SYSFS{address}==\"%02x:%02x:%02x:%02x:%02x:%02x\", NAME=\"%s\", OPTIONS=\"last_rule\"\n",
+                    mac[0], mac[1], mac[2], mac[3], mac[4], mac[5], interface->name() );
+    }
+    int fd = fileno(f);
+    if ( fdatasync(fd) < 0 ) {
+        syslog( LOG_ERR, "IO error saving persistent device names" );
+    }
+    fclose( f );
+    rename( "/etc/udev/rules.d/.tmp", "/etc/udev/rules.d/58-net-rename.rules" );
+}
+
+/** Capture the interface in a bridge
+ *
+ * Bridges are numbered based on the backing ibizN number.
+ * The number is simply cloned from the backing interface to
+ * the bridge name.
+ */
+void Network::Monitor::capture( Interface *interface ) {
+    if ( interface->has_fault_injected() ) {
+        syslog( LOG_NOTICE, "%s(%d) fault injected, not capturing in bridge", interface->name(), interface->index() );
+        return;
+    }
+
+    syslog( LOG_NOTICE, "need to capture '%s'", interface->name() );
+    int id = 0xdead;
+    sscanf( interface->name(), "ibiz%d", &id );
+    if ( id == 0xdead ) {
+        syslog( LOG_ERR, "ERROR : invalid interface name for bridge" );
+        return;
+    }
+    char buffer[40];
+    sprintf( buffer, "biz%d", id );
+
+    Bridge *bridge = new Bridge( buffer );
+    const char *error = bridge->create();
+    if ( error != NULL ) {
+        syslog( LOG_ERR, "ERROR : Failed to create bridge: %s", error );
+        // \todo when bridge create fails -- what do we do?
+        return;
+    }
+
+    bridge->set_mac_address( interface->mac() );
+
+    if ( bridge->is_tunnelled() ) {
+        syslog( LOG_WARNING, "WARNING '%s' is tunnelled, not capturing '%s'", bridge->name(), interface->name() );
+    } else {
+        bridge->capture( interface );
+    }
+
+    // Don't need this after creation
+    delete bridge;
+
+    interface->bring_link_up();
+}
+
+/** Bring up link and addresses for this interface
+ *
+ */
+void Network::Monitor::bring_up( Interface *interface ) {
+    if ( debug > 0 ) syslog( LOG_NOTICE, "bring up '%s'", interface->name() );
+
+    if ( interface->has_fault_injected() ) {
+        syslog( LOG_NOTICE, "%s(%d) fault injected, not bringing link up", interface->name(), interface->index() );
+    } else {
+        interface->bring_link_up();
+        interface->configure_addresses();
+    }
+
+    interface->create_sockets();
+    Network::ListenerInterface *listener = factory( interp, this, interface );
+    listener->thread()->start();
+}
+
+/**
+ *
+ */
+Network::Node*
+Network::Monitor::intern_node( UUID& uuid ) {
+    int in_use_count = 0;
+    Network::Node *result = NULL;
+    Network::Node *available = NULL;
+
+    pthread_mutex_lock( &node_table_lock );
+    int i = 0;
+    for ( ; i < NODE_TABLE_SIZE ; ++i ) {
+        Network::Node& node = node_table[i];
+        if ( node.is_invalid() ) {
+            available = &node;
+            continue;
+        }
+        in_use_count += 1;
+        if ( node != uuid ) continue;
+        result = &node;
+        break;
+    }
+    if ( in_use_count > 256 ) {
+        if ( table_warning_reported == false ) {
+            syslog( LOG_WARNING, "WARNING: node table exceeds 256 entries" );
+            table_warning_reported = true;
+        }
+    }
+    if ( result == NULL ) {
+        if ( available == NULL ) {	// EDM ??? wasn't this set above ???
+            for ( ; i < NODE_TABLE_SIZE ; ++i ) {
+                Network::Node& node = node_table[i];
+                if ( node.is_valid() ) continue;
+                available = &node;
+                break;
+            }
+        }
+
+        if ( available != NULL ) {
+            available->uuid( uuid );
+            result = available;
+        } else {
+	    if ( table_error_reported == false ) {
+                syslog( LOG_ERR, "ERROR: node table is full" );
+                table_error_reported = true;
+            }
+        }
+    }
+    pthread_mutex_unlock( &node_table_lock );
+
+    return result;
+}
+
+/**
+ *
+ */
+bool
+Network::Monitor::remove_node( UUID *uuid ) {
+    pthread_mutex_lock( &node_table_lock );
+    for ( int i = 0 ; i < NODE_TABLE_SIZE ; ++i ) {
+        Network::Node& node = node_table[i];
+        if ( node.is_invalid() ) continue;
+        if ( node != *uuid ) continue;
+        node.invalidate();
+    }
+    pthread_mutex_unlock( &node_table_lock );
+
+    return true;
+}
+
+/**
+ *
+ */
+Network::Node*
+Network::Monitor::find_node( UUID *uuid ) {
+    using namespace Network;
+    Node *result = NULL;
+
+    pthread_mutex_lock( &node_table_lock );
+    for ( int i = 0 ; i < NODE_TABLE_SIZE ; ++i ) {
+        Network::Node& node = node_table[i];
+        if ( node.is_invalid() ) continue;
+        if ( node != *uuid ) continue;
+        result = &node;
+    }
+    pthread_mutex_unlock( &node_table_lock );
+
+    return result;
+}
+
+/**
+ * Save the partner node id for later usage as a cache - in case
+ * priv0 is down and we cannot discover the node id dynamically.
+ */
+void
+Network::Monitor::save_cache() {
+    FILE *f = fopen( "partner-cache", "w" );
+    if ( f == NULL ) {
+        syslog( LOG_NOTICE, "could not save partner cache" );
+        return;
+    }
+
+    int partner_count = 0;
+
+    pthread_mutex_lock( &node_table_lock );
+    for ( int i = 0 ; i < NODE_TABLE_SIZE ; ++i ) {
+        Network::Node& node = node_table[i];
+        if ( node.is_invalid() ) continue;
+        if ( node.not_partner() ) continue;
+        if ( debug ) syslog( LOG_NOTICE, "save partner [%s]", node.uuid().to_s() );
+        if ( partner_count == 0 ) {
+            fprintf( f, "%s\n", node.uuid().to_s() );
+        }
+        partner_count++;
+    }
+    pthread_mutex_unlock( &node_table_lock );
+
+    fclose( f );
+
+    if ( partner_count > 1 ) {
+        syslog( LOG_ERR, "%%BUG multiple partner entries in node table" );
+    }
+}
+
+/**
+ */
+void
+Network::Monitor::clear_partners() {
+    ClearNodePartner callback;
+    int partner_count = each_node( callback );
+    if ( partner_count > 0 ) {
+        syslog( LOG_NOTICE, "cleared %d partners", partner_count );
+    }
+}
+
+/**
+ * This is called when netmgr starts.  It simply loads the previous saved
+ * value of the partner node id and creates an entry in the node table
+ * marked as a partner.  This value was written the last time netmgr
+ * discovered a partner node on priv0.
+ */
+void
+Network::Monitor::load_cache() {
+    char buffer[80];
+    FILE *f = fopen( "partner-cache", "r" );
+
+    if ( f == NULL ) {
+        syslog( LOG_NOTICE, "partner cache not present" );
+        return;
+    }
+
+    fscanf( f, "%s\n", buffer );
+    fclose( f );
+
+    syslog( LOG_NOTICE, "loaded partner as [%s]", buffer );
+
+    /*
+     * This should not be necessary - when netmgr starts it should
+     * not have any partner node table entries.
+     */
+    ClearNodePartner callback;
+    int partner_count = each_node( callback );
+    if ( partner_count > 0 ) {
+        syslog( LOG_NOTICE, "cleared %d partners", partner_count );
+    }
+
+    UUID uuid(buffer);
+    Network::Node *node = intern_node( uuid );
+    node->make_partner();
+}
+
+/**
+ */
+class WriteHostsForNeighbors : public Network::NeighborIterator {
+    int fd;
+public:
+    WriteHostsForNeighbors( int fd ) : fd(fd) {}
+    virtual ~WriteHostsForNeighbors() {}
+    virtual int operator() ( Network::Peer& neighbor ) {
+        struct host_entry entry;
+        memset( &entry, 0, sizeof(entry) );
+
+        Network::Node *node = neighbor.node();
+        if ( node == NULL ) {
+            return 0;
+        }
+        if ( node->not_partner() ) {
+            return 0;
+        }
+
+        entry.flags.valid = 1;
+        entry.flags.partner = neighbor.is_partner();
+        entry.node.ordinal = node->ordinal();
+        entry.interface.ordinal = neighbor.ordinal();
+        entry.flags.is_private = neighbor.is_private();
+        neighbor.copy_address( &(entry.primary_address) );
+
+        if ( debug > 1 ) syslog( LOG_NOTICE, "write host entry for peer" );
+        // populate entry for the interface itself
+        ssize_t bytes = write( fd, &entry, sizeof(entry) );
+        if ( (size_t)bytes < sizeof(entry) ) {
+            syslog( LOG_ERR, "write failed creating hosts entry peer" );
+        }
+
+        return 0;
+    }
+};
+/**
+ */
+class WriteHostsForInterface : public Network::InterfaceIterator {
+    int fd;
+public:
+    WriteHostsForInterface( int fd ) : fd(fd) {}
+    virtual ~WriteHostsForInterface() {}
+    virtual int operator() ( Network::Interface& interface ) {
+        struct host_entry entry;
+        memset( &entry, 0, sizeof(entry) );
+
+        entry.flags.valid = 1;
+        entry.flags.partner = 0;
+        entry.node.ordinal = gethostid();
+        entry.flags.is_private = interface.is_private();
+        entry.interface.ordinal = interface.ordinal();
+        interface.lladdr( &entry.primary_address );
+
+        unsigned char *mac = interface.mac();
+        entry.mac[0] = mac[0];
+        entry.mac[1] = mac[1];
+        entry.mac[2] = mac[2];
+        entry.mac[3] = mac[3];
+        entry.mac[4] = mac[4];
+        entry.mac[5] = mac[5];
+
+        if ( interface.not_bridge() and interface.not_private() ) {
+            return 0;
+        }
+        if ( debug > 1 ) syslog( LOG_NOTICE, "write host entry for %s", interface.name() );
+        // populate entry for the interface itself
+        ssize_t bytes = write( fd, &entry, sizeof(entry) );
+        if ( (size_t)bytes < sizeof(entry) ) {
+            syslog( LOG_ERR, "write failed creating hosts entry" );
+        }
+
+        // call iterator for each neighbor
+        WriteHostsForNeighbors callback(fd);
+        interface.each_neighbor( callback );
+
+        return 0;
+    }
+};
+
+/** Update hosts file with partner addresses
+ *
+ * For each interface, check each neighbor, if it is a partner
+ * then add a host file entry for that name/uuid and interface
+ *
+ * node0.ip6.ibiz0    fe80::XXXX
+ */
+void
+Network::Monitor::update_hosts() {
+    if ( mkfile(const_cast<char*>("hosts.tmp"), HOST_TABLE_SIZE) == 0 ) {
+        syslog( LOG_ERR, "could not create the tmp hosts table" );
+        return;
+    }
+
+    int fd = open("hosts.tmp", O_RDWR);
+    if ( fd < 0 ) {
+        if ( debug > 0 ) syslog( LOG_ERR, "could not open the hosts table for writing" );
+        return;
+    }
+
+    WriteHostsForInterface callback(fd);
+    each_interface( callback );
+
+    fsync( fd );
+    close( fd );
+
+    unlink( "hosts.1" );
+    link( "hosts", "hosts.1" );
+    rename( "hosts.tmp", "hosts" );
+}
+
 
 /**
  * This thread connects a netlink socket and listens for broadcast
@@ -423,9 +1320,21 @@ int Network::Monitor::each_interface( InterfaceIterator& callback ) {
  * ZeroConf specific interfaces
  */
 void Network::Monitor::run() {
-    uint32_t groups = RTMGRP_LINK | RTMGRP_NOTIFY | RTNLGRP_NEIGH |
-                      RTMGRP_IPV4_IFADDR | RTMGRP_IPV4_ROUTE |
-                      RTMGRP_IPV6_IFADDR | RTMGRP_IPV6_ROUTE |
+
+// Disable neighbor and route messages from being reported
+// because we do not process them and we can get 100's of them
+// every second.  This causes -ENOBUFS and we can miss Link events.
+//
+//    uint32_t groups = RTMGRP_LINK | RTMGRP_NOTIFY | RTNLGRP_NEIGH |
+//                      RTMGRP_IPV4_IFADDR | RTMGRP_IPV4_ROUTE |
+//                      RTMGRP_IPV6_IFADDR | RTMGRP_IPV6_ROUTE |
+//                      RTMGRP_IPV6_IFINFO | RTMGRP_IPV6_PREFIX ;
+
+    load_cache();
+
+    uint32_t groups = RTMGRP_LINK | RTMGRP_NOTIFY |
+                      RTMGRP_IPV4_IFADDR |
+                      RTMGRP_IPV6_IFADDR |
                       RTMGRP_IPV6_IFINFO | RTMGRP_IPV6_PREFIX ;
 
     route_socket = new NetLink::RouteSocket(groups);
@@ -473,7 +1382,7 @@ Network::Monitor::Monitor( Tcl_Interp *interp, Network::ListenerInterfaceFactory
     for ( int i = 0 ; i < NODE_TABLE_SIZE ; i++ ) {
         node_table[i].invalidate();
     }
-    if ( debug > 0 ) syslog( LOG_ERR, "node table is at %p (%d)", node_table, size );
+    if ( debug > 0 ) syslog( LOG_ERR, "node table is at %p (%zu)", node_table, size );
 }
 
 /**
@@ -589,7 +1498,7 @@ Probe_cmd( ClientData data, Tcl_Interp *interp,
     int fd;
     fd = socket( AF_NETLINK, SOCK_RAW, NETLINK_ROUTE );
     if ( socket < 0 ) {
-        perror( "failed to open netlink rt socket" );
+	syslog( LOG_ERR, "Probe socket() failed, %s", strerror(errno) );
         exit( 1 );
     }
     // setup sndbuf and rcvbuf
@@ -600,7 +1509,7 @@ Probe_cmd( ClientData data, Tcl_Interp *interp,
     address.nl_family = AF_NETLINK;
     address.nl_groups = 0;
     if ( bind(fd, (struct sockaddr *)&address, sizeof(address)) < 0 ) {
-        perror( "cannot bind netlink socket" );
+	syslog( LOG_ERR, "Probe bind() failed, %s", strerror(errno) );
         exit( 1 );
     }
 
@@ -619,7 +1528,7 @@ Probe_cmd( ClientData data, Tcl_Interp *interp,
 
     result = sendto( fd, (void*)&nlreq, sizeof(nlreq), 0, (struct sockaddr *)&address, sizeof(address) );
     if ( result < 0 ) {
-        perror("sendto");
+	syslog( LOG_ERR, "Probe sendto() failed, %s", strerror(errno) );
         exit( 1 );
     }
 
@@ -650,7 +1559,7 @@ Probe_cmd( ClientData data, Tcl_Interp *interp,
                 // normally just continue here
                 printf( "interupted recvmsg\n" );
             } else {
-                perror("recvmsg");
+	        syslog( LOG_ERR, "Probe recvmsg() failed, %s", strerror(errno) );
             }
             continue;
         }
