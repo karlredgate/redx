@@ -124,3 +124,5 @@ public:
     }
 };
 #endif
+
+/* vim: set autoindent expandtab sw=4 : */

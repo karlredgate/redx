@@ -39,7 +39,4 @@ void
 set_thread_name( const char *newname ) {
 }
 
-/*
- * vim:autoindent
- * vim:expandtab
- */
+/* vim: set autoindent expandtab sw=4 : */

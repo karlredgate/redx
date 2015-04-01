@@ -28,7 +28,4 @@
 extern void set_main_thread_name();
 extern void set_thread_name( const char * );
 
-/*
- * vim:autoindent
- * vim:expandtab
- */
+/* vim: set autoindent expandtab sw=4 : */

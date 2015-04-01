@@ -164,6 +164,4 @@ namespace ICMPv6 {
 
 #endif
 
-/*
- * vim:autoindent:expandtab:
- */
+/* vim: set autoindent expandtab sw=4 : */

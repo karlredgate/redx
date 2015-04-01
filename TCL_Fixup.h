@@ -48,7 +48,4 @@ Svc_SetResult( Tcl_Interp *interp, const char *message, Tcl_FreeProc *proc ) {
 
 #endif
 
-/*
- * vim:autoindent
- * vim:expandtab
- */
+/* vim: set autoindent expandtab sw=4 : */

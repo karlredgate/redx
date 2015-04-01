@@ -210,7 +210,4 @@ Thread_Module( Tcl_Interp *interp ) {
 
 app_init( Thread_Module );
 
-/*
- * vim:autoindent
- * vim:expandtab
- */
+/* vim: set autoindent expandtab sw=4 : */

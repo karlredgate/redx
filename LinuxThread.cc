@@ -46,7 +46,4 @@ set_thread_name( const char *newname ) {
     prctl( PR_SET_NAME, newname );
 }
 
-/*
- * vim:autoindent
- * vim:expandtab
- */
+/* vim: set autoindent expandtab sw=4 : */
