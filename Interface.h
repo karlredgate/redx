@@ -53,6 +53,8 @@ namespace ICMPv6 { class Socket; }
 namespace Network {
 
     class Bridge;
+    class Peer;
+    class NeighborIterator;
 
     /**
      * \todo add ethtool requests
@@ -80,7 +82,7 @@ namespace Network {
         bool unknown_carrier;
         bool current_carrier;
         bool previous_carrier;
-        struct net_device_stats stats;
+        // struct net_device_stats stats;
         unsigned char MAC[6];
         struct in6_addr primary_address;
         int outbound;
