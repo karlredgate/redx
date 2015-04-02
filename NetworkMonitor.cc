@@ -64,7 +64,7 @@ public:
     virtual ~ClearNodePartner() {}
     virtual int operator() ( Network::Node& node ) {
         if ( node.not_partner() ) return 0;
-        syslog( LOG_NOTICE, "clear partner [%s]", node.uuid().to_s() );
+        log_notice( "clear partner [%s]", node.uuid().to_s() );
         node.clear_partner();
         return 1;
     }
@@ -81,7 +81,7 @@ void Network::Monitor::receive( NetLink::NewLink *message ) {
     if ( interface == NULL ) {
 
         if ( debug > 0 ) {
-            syslog( LOG_NOTICE, "adding %s(%d) to interface list", message->name(), message->index() );
+            log_notice( "adding %s(%d) to interface list", message->name(), message->index() );
         }
         interface = new Network::Interface( interp, message );
         interfaces[ message->index() ] = interface;
@@ -107,7 +107,7 @@ void Network::Monitor::receive( NetLink::NewLink *message ) {
 // Typically this happens if there was a buffer overflow on the Netlink socket.
 
         if ( !interface->exists() ) {
-            syslog( LOG_NOTICE, "WARNING: interface %s(%d) does not appear to exist, skipping...",
+            log_notice( "WARNING: interface %s(%d) does not appear to exist, skipping...",
                     message->name(), message->index() );
             return;
         }
@@ -115,7 +115,7 @@ void Network::Monitor::receive( NetLink::NewLink *message ) {
         bool is_bridge = interface->is_bridge();
         bool is_physical = interface->is_physical();
 
-        syslog( LOG_NOTICE, "checking to see if interface %s(%d) should be brought up: %s %s",
+        log_notice( "checking to see if interface %s(%d) should be brought up: %s %s",
                 message->name(), message->index(), is_bridge ? "is BRIDGE" : "not BRIDGE",
                 is_physical ? "is PHYSICAL" : "not PHYSICAL" );
 
@@ -133,7 +133,7 @@ void Network::Monitor::receive( NetLink::NewLink *message ) {
                  ( name[1] == 'i' ) &&
                  ( name[2] == 'z' ) ) ) &&
              ( !is_bridge ) ) {
-            syslog( LOG_NOTICE, "WARNING: interface %s(%d) does not appear to be a bridge, waiting up to 10 seconds",
+            log_notice( "WARNING: interface %s(%d) does not appear to be a bridge, waiting up to 10 seconds",
                     message->name(), message->index() );
             for (int i = 0; i < 10; i++) {
                 sleep( 1 );
@@ -143,19 +143,19 @@ void Network::Monitor::receive( NetLink::NewLink *message ) {
                 }
             }
             if ( interface->not_bridge() ) {
-                syslog( LOG_NOTICE, "WARNING: interface %s(%d) still does not appear to be a bridge, not bringing it up",
+                log_notice( "WARNING: interface %s(%d) still does not appear to be a bridge, not bringing it up",
                         message->name(), message->index() );
             }
         }
 
         if ( is_bridge or is_physical ) {
             bring_up( interface );
-            syslog( LOG_NOTICE, "brought up interface %s(%d)", message->name(), message->index() );
+            log_notice( "brought up interface %s(%d)", message->name(), message->index() );
         }
 
         if ( interface->is_up() and interface->is_private() and
              interface->not_sync() and interface->not_listening_to("udp6", 123) ) { // NTP
-            syslog( LOG_NOTICE, "%s is not listening to port 123 on its primary address, restart ntpd",
+            log_notice( "%s is not listening to port 123 on its primary address, restart ntpd",
                                 interface->name() );
             system( "/usr/bin/config_ntpd --restart" );
         }
@@ -176,7 +176,7 @@ void Network::Monitor::receive( NetLink::NewLink *message ) {
 
                 if ( interface->is_up() and interface->is_private() and
                      interface->not_sync() and interface->not_listening_to("udp6", 123) ) { // NTP
-                    syslog( LOG_NOTICE, "%s is not listening to port 123 on its primary address, restart ntpd",
+                    log_notice( "%s is not listening to port 123 on its primary address, restart ntpd",
                                         interface->name() );
                     system( "/usr/bin/config_ntpd --restart" );
                 }
@@ -209,7 +209,7 @@ void Network::Monitor::receive( NetLink::NewLink *message ) {
             report_required = true;
         }
         if ( report_required or (debug > 0) ) {
-            syslog( LOG_NOTICE, "%s(%d): <NewLink>%s%s%s%s", interface->name(), interface->index(),
+            log_notice( "%s(%d): <NewLink>%s%s%s%s", interface->name(), interface->index(),
                                 link_message, up_message, running_message, promisc_message );
         }
 
@@ -220,14 +220,14 @@ void Network::Monitor::receive( NetLink::NewLink *message ) {
                 Interface *bridge = interfaces[ bridge_index ];
                 if ( bridge != NULL )  bridge_name = bridge->name();
             }
-            syslog( LOG_NOTICE, "%s(%d): added to bridge '%s'",
+            log_notice( "%s(%d): added to bridge '%s'",
                                 interface->name(), interface->index(), bridge_name );
         }
     }
 
     if ( link_requires_repair ) {
         if ( interface->has_fault_injected() ) {
-            syslog( LOG_NOTICE, "%s(%d) fault injected, not repairing link", interface->name(), interface->index() );
+            log_notice( "%s(%d) fault injected, not repairing link", interface->name(), interface->index() );
         } else {
             interface->repair_link();
         }
@@ -239,7 +239,7 @@ void Network::Monitor::receive( NetLink::NewLink *message ) {
 void Network::Monitor::receive( NetLink::DelLink *message ) {
 
     if ( message->index() == 0 ) {
-        syslog( LOG_WARNING, "received a DelLink message for inteface index 0 (INVALID)" );
+        log_warn( "received a DelLink message for inteface index 0 (INVALID)" );
         return;
     }
 
@@ -248,7 +248,7 @@ void Network::Monitor::receive( NetLink::DelLink *message ) {
     if ( interface == NULL ) {
         const char *name = message->name();
         if ( name == NULL ) name = "Unknown";
-        syslog( LOG_WARNING, "unknown interface removed: %s(%d)", name, message->index() );
+        log_warn( "unknown interface removed: %s(%d)", name, message->index() );
         return;
     }
 
@@ -284,7 +284,7 @@ void Network::Monitor::receive( NetLink::DelLink *message ) {
         report_required = true;
     }
     if ( report_required or (debug > 0) ) {
-        syslog( LOG_NOTICE, "%s(%d): <DelLink>%s%s%s%s", interface->name(), interface->index(),
+        log_notice( "%s(%d): <DelLink>%s%s%s%s", interface->name(), interface->index(),
                             link_message, up_message, running_message, promisc_message );
     }
 
@@ -296,17 +296,17 @@ void Network::Monitor::receive( NetLink::DelLink *message ) {
             if ( bridge != NULL )  bridge_name = bridge->name();
         }
         if ( interface->is_captured() ) {
-            syslog( LOG_NOTICE, "%s(%d): removed from bridge '%s'",
+            log_notice( "%s(%d): removed from bridge '%s'",
                                 interface->name(), interface->index(), bridge_name );
         } else {
-            syslog( LOG_NOTICE, "%s(%d): DelLink message from bridge '%s' -- but not removed",
+            log_notice( "%s(%d): DelLink message from bridge '%s' -- but not removed",
                                 interface->name(), interface->index(), bridge_name );
         }
         return;
     }
 
     if ( message->change() == 0xFFFFFFFF ) {
-        syslog( LOG_WARNING, "%s(%d): removed from system", interface->name(), interface->index() );
+        log_warn( "%s(%d): removed from system", interface->name(), interface->index() );
         // stop listener thread
         //   need Interface to have a handle on its listener thread
         interface->remove();
@@ -351,24 +351,24 @@ void Network::Monitor::receive( NetLink::NewAddress *message ) {
     case AF_INET6: // skip below and attempt to reconfigure
         break;
     case AF_INET:
-        syslog( LOG_NOTICE, "IPv4 address added to '%s'", interface->name() );
+        log_notice( "IPv4 address added to '%s'", interface->name() );
         return;
     default:
-        syslog( LOG_NOTICE, "Unknown address family added to '%s'", interface->name() );
+        log_notice( "Unknown address family added to '%s'", interface->name() );
         return;
     }
 
     if (  interface->is_primary( message->in6_addr() )  ) {
-        syslog( LOG_NOTICE, "primary ipv6 address added to '%s'", interface->name() );
+        log_notice( "primary ipv6 address added to '%s'", interface->name() );
         if ( interface->is_private() and interface->not_sync() and
              interface->not_listening_to("udp6", 123) ) { // NTP
-            syslog( LOG_NOTICE, "%s is not listening to port 123 on its primary address, restart ntpd",
+            log_notice( "%s is not listening to port 123 on its primary address, restart ntpd",
                                 interface->name() );
             system( "/usr/bin/config_ntpd --restart" );
         }
     } else {
         if ( debug > 0 ) {
-            syslog( LOG_NOTICE, "secondary ipv6 address added to '%s', ignoring", interface->name() );
+            log_notice( "secondary ipv6 address added to '%s', ignoring", interface->name() );
         }
     }
 
@@ -389,21 +389,21 @@ void Network::Monitor::receive( NetLink::DelAddress *message ) {
     case AF_INET6: // skip below and attempt to reconfigure
         break;
     case AF_INET:
-        syslog( LOG_NOTICE, "IPv4 address removed from '%s', ignoring", interface->name() );
+        log_notice( "IPv4 address removed from '%s', ignoring", interface->name() );
         return;
     default:
-        syslog( LOG_NOTICE, "Unknown address family removed from '%s', ignoring", interface->name() );
+        log_notice( "Unknown address family removed from '%s', ignoring", interface->name() );
         return;
     }
 
     if (  interface->is_primary( message->in6_addr() )  ) {
         if ( debug > 0 ) {
-            syslog( LOG_NOTICE, "primary ipv6 address removed from '%s', repairing", interface->name() );
+            log_notice( "primary ipv6 address removed from '%s', repairing", interface->name() );
         }
         interface->configure_addresses();
     } else {
         if ( debug > 0 ) {
-            syslog( LOG_NOTICE, "secondary ipv6 address removed from '%s', ignoring", interface->name() );
+            log_notice( "secondary ipv6 address removed from '%s', ignoring", interface->name() );
         }
     }
 }
@@ -550,7 +550,7 @@ Network::Monitor::find_bridge_interface( Interface *interface ) {
         iter++;
     }
 
-    syslog( LOG_NOTICE, "Unable to find bridge interface for %s", interface->name() );
+    log_notice( "Unable to find bridge interface for %s", interface->name() );
     return NULL;
 }
 
@@ -587,7 +587,7 @@ Network::Monitor::find_physical_interface( Interface *interface ) {
 // Note:  This happens when the interface has been temporarily removed from the
 // bridge by the tunnel code when the tunnel is set up to use the peer's interface.
 
-    if ( debug > 0 ) syslog( LOG_NOTICE, "Unable to find physical interface for %s", interface->name() );
+    if ( debug > 0 ) log_notice( "Unable to find physical interface for %s", interface->name() );
     return NULL;
 }
 
@@ -595,13 +595,13 @@ Network::Monitor::find_physical_interface( Interface *interface ) {
  */
 static bool
 send_topology_event( const char *who ) {
-    syslog( LOG_NOTICE, "%s sending NetTopologyUpdate event to spine", who );
+    log_notice( "%s sending NetTopologyUpdate event to spine", who );
 
     char *event_name = const_cast<char*>("SuperNova::NetTopologyUpdate");
     pid_t child = fork();
 
     if ( child < 0 ) {
-        syslog( LOG_ERR, "failed to send %s event - couldn't fork", event_name );
+        log_err( "failed to send %s event - couldn't fork", event_name );
         return false;
     }
 
@@ -614,7 +614,7 @@ send_topology_event( const char *who ) {
     char *argv[] = { const_cast<char*>("genevent"), event_name, 0 };
     char *envp[] = { 0 };
     if ( execve("/usr/lib/spine/bin/genevent", argv, envp) < 0 ) {
-        syslog( LOG_ERR, "failed to send %s event - couldn't execve", event_name );
+        log_err( "failed to send %s event - couldn't execve", event_name );
         _exit( 0 );
     }
 
@@ -638,7 +638,7 @@ void Network::Monitor::topology_changed() {
 /** Persist the current interface config.
  */
 void Network::Monitor::persist_interface_configuration() {
-    syslog( LOG_NOTICE, "persisting the change in interface configuration" );
+    log_notice( "persisting the change in interface configuration" );
     FILE *f = fopen( "/etc/udev/rules.d/.tmp", "w" );
     std::map<int, Interface *>::const_iterator iter = interfaces.begin();
     for ( ; iter != interfaces.end() ; iter++ ) {
@@ -653,7 +653,7 @@ void Network::Monitor::persist_interface_configuration() {
     }
     int fd = fileno(f);
     if ( fdatasync(fd) < 0 ) {
-        syslog( LOG_ERR, "IO error saving persistent device names" );
+        log_err( "IO error saving persistent device names" );
     }
     fclose( f );
     rename( "/etc/udev/rules.d/.tmp", "/etc/udev/rules.d/58-net-rename.rules" );
@@ -667,15 +667,15 @@ void Network::Monitor::persist_interface_configuration() {
  */
 void Network::Monitor::capture( Interface *interface ) {
     if ( interface->has_fault_injected() ) {
-        syslog( LOG_NOTICE, "%s(%d) fault injected, not capturing in bridge", interface->name(), interface->index() );
+        log_notice( "%s(%d) fault injected, not capturing in bridge", interface->name(), interface->index() );
         return;
     }
 
-    syslog( LOG_NOTICE, "need to capture '%s'", interface->name() );
+    log_notice( "need to capture '%s'", interface->name() );
     int id = 0xdead;
     sscanf( interface->name(), "ibiz%d", &id );
     if ( id == 0xdead ) {
-        syslog( LOG_ERR, "ERROR : invalid interface name for bridge" );
+        log_err( "ERROR : invalid interface name for bridge" );
         return;
     }
     char buffer[40];
@@ -684,7 +684,7 @@ void Network::Monitor::capture( Interface *interface ) {
     Bridge *bridge = new Bridge( buffer );
     const char *error = bridge->create();
     if ( error != NULL ) {
-        syslog( LOG_ERR, "ERROR : Failed to create bridge: %s", error );
+        log_err( "ERROR : Failed to create bridge: %s", error );
         // \todo when bridge create fails -- what do we do?
         return;
     }
@@ -692,7 +692,7 @@ void Network::Monitor::capture( Interface *interface ) {
     bridge->set_mac_address( interface->mac() );
 
     if ( bridge->is_tunnelled() ) {
-        syslog( LOG_WARNING, "WARNING '%s' is tunnelled, not capturing '%s'", bridge->name(), interface->name() );
+        log_warn( "WARNING '%s' is tunnelled, not capturing '%s'", bridge->name(), interface->name() );
     } else {
         bridge->capture( interface );
     }
@@ -707,10 +707,10 @@ void Network::Monitor::capture( Interface *interface ) {
  *
  */
 void Network::Monitor::bring_up( Interface *interface ) {
-    if ( debug > 0 ) syslog( LOG_NOTICE, "bring up '%s'", interface->name() );
+    if ( debug > 0 ) log_notice( "bring up '%s'", interface->name() );
 
     if ( interface->has_fault_injected() ) {
-        syslog( LOG_NOTICE, "%s(%d) fault injected, not bringing link up", interface->name(), interface->index() );
+        log_notice( "%s(%d) fault injected, not bringing link up", interface->name(), interface->index() );
     } else {
         interface->bring_link_up();
         interface->configure_addresses();
@@ -745,7 +745,7 @@ Network::Monitor::intern_node( UUID& uuid ) {
     }
     if ( in_use_count > 256 ) {
         if ( table_warning_reported == false ) {
-            syslog( LOG_WARNING, "WARNING: node table exceeds 256 entries" );
+            log_warn( "WARNING: node table exceeds 256 entries" );
             table_warning_reported = true;
         }
     }
@@ -764,7 +764,7 @@ Network::Monitor::intern_node( UUID& uuid ) {
             result = available;
         } else {
 	    if ( table_error_reported == false ) {
-                syslog( LOG_ERR, "ERROR: node table is full" );
+                log_err( "ERROR: node table is full" );
                 table_error_reported = true;
             }
         }
@@ -819,7 +819,7 @@ void
 Network::Monitor::save_cache() {
     FILE *f = fopen( "partner-cache", "w" );
     if ( f == NULL ) {
-        syslog( LOG_NOTICE, "could not save partner cache" );
+        log_notice( "could not save partner cache" );
         return;
     }
 
@@ -830,7 +830,7 @@ Network::Monitor::save_cache() {
         Network::Node& node = node_table[i];
         if ( node.is_invalid() ) continue;
         if ( node.not_partner() ) continue;
-        if ( debug ) syslog( LOG_NOTICE, "save partner [%s]", node.uuid().to_s() );
+        if ( debug ) log_notice( "save partner [%s]", node.uuid().to_s() );
         if ( partner_count == 0 ) {
             fprintf( f, "%s\n", node.uuid().to_s() );
         }
@@ -841,7 +841,7 @@ Network::Monitor::save_cache() {
     fclose( f );
 
     if ( partner_count > 1 ) {
-        syslog( LOG_ERR, "%%BUG multiple partner entries in node table" );
+        log_err( "%%BUG multiple partner entries in node table" );
     }
 }
 
@@ -852,7 +852,7 @@ Network::Monitor::clear_partners() {
     ClearNodePartner callback;
     int partner_count = each_node( callback );
     if ( partner_count > 0 ) {
-        syslog( LOG_NOTICE, "cleared %d partners", partner_count );
+        log_notice( "cleared %d partners", partner_count );
     }
 }
 
@@ -868,14 +868,14 @@ Network::Monitor::load_cache() {
     FILE *f = fopen( "partner-cache", "r" );
 
     if ( f == NULL ) {
-        syslog( LOG_NOTICE, "partner cache not present" );
+        log_notice( "partner cache not present" );
         return;
     }
 
     fscanf( f, "%s\n", buffer );
     fclose( f );
 
-    syslog( LOG_NOTICE, "loaded partner as [%s]", buffer );
+    log_notice( "loaded partner as [%s]", buffer );
 
     /*
      * This should not be necessary - when netmgr starts it should
@@ -884,7 +884,7 @@ Network::Monitor::load_cache() {
     ClearNodePartner callback;
     int partner_count = each_node( callback );
     if ( partner_count > 0 ) {
-        syslog( LOG_NOTICE, "cleared %d partners", partner_count );
+        log_notice( "cleared %d partners", partner_count );
     }
 
     UUID uuid(buffer);
@@ -918,11 +918,11 @@ public:
         entry.flags.is_private = neighbor.is_private();
         neighbor.copy_address( &(entry.primary_address) );
 
-        if ( debug > 1 ) syslog( LOG_NOTICE, "write host entry for peer" );
+        if ( debug > 1 ) log_notice( "write host entry for peer" );
         // populate entry for the interface itself
         ssize_t bytes = write( fd, &entry, sizeof(entry) );
         if ( (size_t)bytes < sizeof(entry) ) {
-            syslog( LOG_ERR, "write failed creating hosts entry peer" );
+            log_err( "write failed creating hosts entry peer" );
         }
 
         return 0;
@@ -957,11 +957,11 @@ public:
         if ( interface.not_bridge() and interface.not_private() ) {
             return 0;
         }
-        if ( debug > 1 ) syslog( LOG_NOTICE, "write host entry for %s", interface.name() );
+        if ( debug > 1 ) log_notice( "write host entry for %s", interface.name() );
         // populate entry for the interface itself
         ssize_t bytes = write( fd, &entry, sizeof(entry) );
         if ( (size_t)bytes < sizeof(entry) ) {
-            syslog( LOG_ERR, "write failed creating hosts entry" );
+            log_err( "write failed creating hosts entry" );
         }
 
         // call iterator for each neighbor
@@ -982,13 +982,13 @@ public:
 void
 Network::Monitor::update_hosts() {
     if ( mkfile(const_cast<char*>("hosts.tmp"), HOST_TABLE_SIZE) == 0 ) {
-        syslog( LOG_ERR, "could not create the tmp hosts table" );
+        log_err( "could not create the tmp hosts table" );
         return;
     }
 
     int fd = open("hosts.tmp", O_RDWR);
     if ( fd < 0 ) {
-        if ( debug > 0 ) syslog( LOG_ERR, "could not open the hosts table for writing" );
+        if ( debug > 0 ) log_err( "could not open the hosts table for writing" );
         return;
     }
 
@@ -1053,7 +1053,7 @@ void Network::Monitor::run() {
     NetLink::RouteSocket &rs = *route_socket;
 
     probe();
-    if ( debug > 0 ) syslog( LOG_NOTICE, "network monitor started" );
+    if ( debug > 0 ) log_notice( "network monitor started" );
     for (;;) {
         rs.receive( this );
         sleep( 1 );
@@ -1062,7 +1062,7 @@ void Network::Monitor::run() {
 
 void Network::Monitor::probe() {
     if ( route_socket == NULL ) return;
-    if ( debug > 0 ) syslog( LOG_NOTICE, "Monitor: sending probe" );
+    if ( debug > 0 ) log_notice( "Monitor: sending probe" );
     NetLink::RouteSocket &rs = *route_socket;
     NetLink::GetLink getlink;
     getlink.send( rs );
@@ -1088,13 +1088,13 @@ Network::Monitor::Monitor( Tcl_Interp *interp, Network::ListenerInterfaceFactory
     size_t size = sizeof(Node) * NODE_TABLE_SIZE;
     node_table = (Node *)mmap( 0, size, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, 0, 0 );
     if ( node_table == MAP_FAILED ) {
-        syslog( LOG_ERR, "node table alloc failed" );
+        log_err( "node table alloc failed" );
         exit( errno );
     }
     for ( int i = 0 ; i < NODE_TABLE_SIZE ; i++ ) {
         node_table[i].invalidate();
     }
-    if ( debug > 0 ) syslog( LOG_ERR, "node table is at %p (%zu)", node_table, size );
+    if ( debug > 0 ) log_err( "node table is at %p (%zu)", node_table, size );
 }
 
 /**
@@ -1210,7 +1210,7 @@ Probe_cmd( ClientData data, Tcl_Interp *interp,
     int fd;
     fd = socket( AF_NETLINK, SOCK_RAW, NETLINK_ROUTE );
     if ( socket < 0 ) {
-	syslog( LOG_ERR, "Probe socket() failed, %s", strerror(errno) );
+	log_err( "Probe socket() failed, %s", strerror(errno) );
         exit( 1 );
     }
     // setup sndbuf and rcvbuf
@@ -1221,7 +1221,7 @@ Probe_cmd( ClientData data, Tcl_Interp *interp,
     address.nl_family = AF_NETLINK;
     address.nl_groups = 0;
     if ( bind(fd, (struct sockaddr *)&address, sizeof(address)) < 0 ) {
-	syslog( LOG_ERR, "Probe bind() failed, %s", strerror(errno) );
+	log_err( "Probe bind() failed, %s", strerror(errno) );
         exit( 1 );
     }
 
@@ -1240,7 +1240,7 @@ Probe_cmd( ClientData data, Tcl_Interp *interp,
 
     result = sendto( fd, (void*)&nlreq, sizeof(nlreq), 0, (struct sockaddr *)&address, sizeof(address) );
     if ( result < 0 ) {
-	syslog( LOG_ERR, "Probe sendto() failed, %s", strerror(errno) );
+	log_err( "Probe sendto() failed, %s", strerror(errno) );
         exit( 1 );
     }
 
@@ -1271,7 +1271,7 @@ Probe_cmd( ClientData data, Tcl_Interp *interp,
                 // normally just continue here
                 printf( "interupted recvmsg\n" );
             } else {
-	        syslog( LOG_ERR, "Probe recvmsg() failed, %s", strerror(errno) );
+	        log_err( "Probe recvmsg() failed, %s", strerror(errno) );
             }
             continue;
         }
@@ -1448,7 +1448,7 @@ bool NetworkMonitor_Module( Tcl_Interp *interp ) {
     }
 
     if ( Tcl_LinkVar(interp, "Network::debug", (char *)&debug, TCL_LINK_INT) != TCL_OK ) {
-        syslog( LOG_ERR, "failed to link Network::debug" );
+        log_err( "failed to link Network::debug" );
         exit( 1 );
     }
 

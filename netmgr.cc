@@ -36,11 +36,12 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <pthread.h>
-#include <syslog.h>
 #include <errno.h>
 #include <tcl.h>
 
 #include <valgrind/memcheck.h>
+
+#include "logger.h"
 
 #include "util.h"
 #include "UUID.h"
@@ -88,10 +89,10 @@ void LoadPlatformFile( Tcl_Interp *interp, SMBIOS::System& system, SMBIOS::BaseB
               base_board_product_name, base_board_version );
 
     if ( access(filename, R_OK) == 0 ) {
-        syslog( LOG_NOTICE, "evaluting platform board revision file '%s'", filename );
+        log_notice( "evaluting platform board revision file '%s'", filename );
         if ( Tcl_EvalFile(interp, filename) != TCL_OK ) {
             // add TCL interp error string
-            syslog( LOG_WARNING, "error reading platform file" );
+            log_warn( "error reading platform file" );
         }
         goto done;
     }
@@ -102,15 +103,15 @@ void LoadPlatformFile( Tcl_Interp *interp, SMBIOS::System& system, SMBIOS::BaseB
     }
 
     if ( access(filename, R_OK) == 0 ) {
-        syslog( LOG_NOTICE, "evaluating platform file '%s'", filename );
+        log_notice( "evaluating platform file '%s'", filename );
         if ( Tcl_EvalFile(interp, filename) != TCL_OK ) {
             // add TCL interp error string
-            syslog( LOG_WARNING, "error reading platform file" );
+            log_warn( "error reading platform file" );
         }
         goto done;
     }
 
-    syslog( LOG_ERR, "There is no platform config for system '%s', baseboard '%s-%s'",
+    log_err( "There is no platform config for system '%s', baseboard '%s-%s'",
                      system_product_name, base_board_product_name, base_board_version );
 
 done:
@@ -125,10 +126,10 @@ void LoadLocalConfig( Tcl_Interp *interp ) {
     static char *filename = "/etc/netmgr/platform/local";
 
     if ( access(filename, R_OK) == 0 ) {
-        syslog( LOG_NOTICE, "evaluating local config file '%s'", filename );
+        log_notice( "evaluating local config file '%s'", filename );
         if ( Tcl_EvalFile(interp, filename) != TCL_OK ) {
             // add TCL interp error string
-            syslog( LOG_WARNING, "error reading local config file" );
+            log_warn( "error reading local config file" );
         }
     }
 }
@@ -150,18 +151,18 @@ void LoadUUID( Tcl_Interp *interp ) {
         if ( count == 1 ) goto done;
     }
 
-    syslog( LOG_NOTICE, "UUID not configured yet, assigning UUID to netmgr" );
+    log_notice( "UUID not configured yet, assigning UUID to netmgr" );
     f = fopen( "/proc/sys/kernel/random/uuid", "r" );
     count = fscanf(f, "%s", buffer);
     fclose( f );
     if ( count != 1 ) {
-        syslog( LOG_ERR, "ERROR: failed to assign new UUID" );
+        log_err( "ERROR: failed to assign new UUID" );
         exit( 1 );
     }
 
     f = fopen(config, "w");
     if ( f == NULL ) {
-        syslog( LOG_WARNING, "WARNING: Could not save netmgr UUID config" );
+        log_warn( "WARNING: Could not save netmgr UUID config" );
     } else {
         fprintf( f, "%s\n", buffer );
         fclose( f );
@@ -169,7 +170,7 @@ void LoadUUID( Tcl_Interp *interp ) {
 
 done:
     uuid.set( buffer );
-    syslog( LOG_NOTICE, "UUID set to '%s'", uuid.to_s() );
+    log_notice( "UUID set to '%s'", uuid.to_s() );
     // could use LinKVar and make this readonly
     Tcl_SetVar(interp, "UUID", uuid.to_s(), TCL_GLOBAL_ONLY);
 }
@@ -184,7 +185,7 @@ void determine_cluster_name() {
     int count;
     if ( getdomainname(buffer, sizeof buffer) == 0 ) {
         if ( (strlen(buffer) > 0) and (strcmp(buffer,"(none)") != 0) ) {
-            syslog( LOG_NOTICE, "cluster name is %s", buffer );
+            log_notice( "cluster name is %s", buffer );
             cluster_name_unknown = false;
             return;
         }
@@ -193,7 +194,7 @@ void determine_cluster_name() {
     FILE *cluster = fopen( "/etc/sysconfig/cluster_name", "r" );
     if ( cluster == NULL ) {
         if ( (clustername_err_rate++ & 0xF) == 0 ) {
-            syslog( LOG_WARNING, "WARNING: no cluster name present" );
+            log_warn( "WARNING: no cluster name present" );
         }
         return;
     }
@@ -201,14 +202,14 @@ void determine_cluster_name() {
     fclose( cluster );
 
     if ( count != 1 ) {
-        syslog( LOG_WARNING, "WARNING: failed to parse cluster name file" );
+        log_warn( "WARNING: failed to parse cluster name file" );
         return;
     }
 
     if ( setdomainname(buffer, strlen(buffer)) == 0 ) {
-        syslog( LOG_NOTICE, "set cluster name to %s", buffer );
+        log_notice( "set cluster name to %s", buffer );
     } else {
-        syslog( LOG_WARNING, "WARNING: failed to set cluster name to %s", buffer );
+        log_warn( "WARNING: failed to set cluster name to %s", buffer );
     }
 
     cluster_name_unknown = false;
@@ -227,7 +228,7 @@ static int
 ping_cmd( ClientData data, Tcl_Interp *interp,
              int objc, Tcl_Obj * CONST *objv )
 {
-    syslog( LOG_NOTICE, "ping_cmd" );
+    log_notice( "ping_cmd" );
 
     Network::Manager *manager = (Network::Manager *)data;
     if ( objc != 1 ) {
@@ -261,7 +262,7 @@ static int
 error_cmd( ClientData data, Tcl_Interp *interp,
              int objc, Tcl_Obj * CONST *objv )
 {
-    syslog( LOG_NOTICE, "error_cmd" );
+    log_notice( "error_cmd" );
 
     Network::Manager *manager = (Network::Manager *)data;
     if ( objc != 1 ) {
@@ -290,7 +291,7 @@ static int
 dump_cmd( ClientData data, Tcl_Interp *interp,
              int objc, Tcl_Obj * CONST *objv )
 {
-    syslog( LOG_NOTICE, "dump_cmd" );
+    log_notice( "dump_cmd" );
 
     Network::Manager *manager = (Network::Manager *)data;
     if ( objc != 1 ) {
@@ -340,7 +341,7 @@ public:
     // called for each node
     virtual int operator() ( Network::Node& node ) {
 
-        syslog( LOG_NOTICE, "Node %s ordinal %d %s", node.uuid().to_s(),
+        log_notice( "Node %s ordinal %d %s", node.uuid().to_s(),
                 node.ordinal(), node.is_partner() ? "[partner]" : "" );
         return 1;
     }
@@ -356,7 +357,7 @@ public:
 
         unsigned char *mac = interface.mac();
 
-        syslog( LOG_NOTICE, "Interface %s MAC %02x:%02x:%02x:%02x:%02x:%02x%s%s%s%s%s%s",
+        log_notice( "Interface %s MAC %02x:%02x:%02x:%02x:%02x:%02x%s%s%s%s%s%s",
                 interface.name(), mac[0], mac[1], mac[2], mac[3], mac[4], mac[5],
                 interface.is_physical() ? " [physical]" : "",
                 interface.is_bridge() ? " [bridge]" : "",
@@ -389,7 +390,7 @@ public:
 
         int seconds = neighbor.seconds_since_last_update();
 
-        syslog( LOG_NOTICE, "  Neighbor %s(%s)%s - node %s - %d second%s since last update",
+        log_notice( "  Neighbor %s(%s)%s - node %s - %d second%s since last update",
                 remote_interface_name, addr, neighbor.is_partner() ? " [partner]" : "",
                 (neighbor.node() != NULL) ? neighbor.node()->uuid().to_s() : "not set",
                 seconds, ( seconds == 1 ) ? "" : "s" );
@@ -405,7 +406,7 @@ public:
     // called for each interface known to netmgr
     virtual int operator() ( Network::Interface& interface ) {
 
-        syslog( LOG_NOTICE, "Interface %s neighbors:", interface.name() );
+        log_notice( "Interface %s neighbors:", interface.name() );
         DumpNeighbor callback( &interface );
 
         int dumped_neighbors = interface.each_neighbor( callback );
@@ -425,7 +426,7 @@ static int
 neighbors_cmd( ClientData data, Tcl_Interp *interp,
              int objc, Tcl_Obj * CONST *objv )
 {
-    syslog( LOG_NOTICE, "neighbors_cmd" );
+    log_notice( "neighbors_cmd" );
 
     Network::Monitor *monitor = (Network::Monitor *)data;
     if ( objc != 1 ) {
@@ -440,7 +441,7 @@ neighbors_cmd( ClientData data, Tcl_Interp *interp,
 
     DumpInterfaceNeighbors callback;
     int dumped_neighbors = monitor->each_interface( callback );
-    syslog( LOG_NOTICE, "dumped %d neighbors", dumped_neighbors );
+    log_notice( "dumped %d neighbors", dumped_neighbors );
 
     Tcl_ResetResult( interp );
     return TCL_OK;
@@ -458,7 +459,7 @@ static int
 nodes_cmd( ClientData data, Tcl_Interp *interp,
            int objc, Tcl_Obj * CONST *objv )
 {
-    syslog( LOG_NOTICE, "nodes_cmd" );
+    log_notice( "nodes_cmd" );
 
     Network::Monitor *monitor = (Network::Monitor *)data;
     if ( objc != 1 ) {
@@ -473,7 +474,7 @@ nodes_cmd( ClientData data, Tcl_Interp *interp,
 
     DumpNode callback;
     int dumped_nodes = monitor->each_node( callback );
-    syslog( LOG_NOTICE, "dumped %d nodes", dumped_nodes );
+    log_notice( "dumped %d nodes", dumped_nodes );
 
     Tcl_ResetResult( interp );
     return TCL_OK;
@@ -491,7 +492,7 @@ static int
 interfaces_cmd( ClientData data, Tcl_Interp *interp,
                 int objc, Tcl_Obj * CONST *objv )
 {
-    syslog( LOG_NOTICE, "interfaces_cmd" );
+    log_notice( "interfaces_cmd" );
 
     Network::Monitor *monitor = (Network::Monitor *)data;
     if ( objc != 1 ) {
@@ -506,7 +507,7 @@ interfaces_cmd( ClientData data, Tcl_Interp *interp,
 
     DumpInterface callback;
     int dumped_interfaces = monitor->each_interface( callback );
-    syslog( LOG_NOTICE, "dumped %d interfaces", dumped_interfaces );
+    log_notice( "dumped %d interfaces", dumped_interfaces );
 
     Tcl_ResetResult( interp );
     return TCL_OK;
@@ -524,7 +525,7 @@ static int
 insert_node_cmd( ClientData data, Tcl_Interp *interp,
                  int objc, Tcl_Obj * CONST *objv )
 {
-    syslog( LOG_NOTICE, "insert_node_cmd" );
+    log_notice( "insert_node_cmd" );
 
     Network::Monitor *monitor = (Network::Monitor *)data;
     if ( objc != 3 ) {
@@ -575,7 +576,7 @@ static int
 create_cmd( ClientData data, Tcl_Interp *interp,
              int objc, Tcl_Obj * CONST *objv )
 {
-    syslog( LOG_NOTICE, "create_cmd" );
+    log_notice( "create_cmd" );
 
     Network::Manager *manager = (Network::Manager *)data;
     if ( (objc != 3) and ( objc != 4) and ( objc != 5 ) ) {
@@ -644,7 +645,7 @@ static int
 modify_cmd( ClientData data, Tcl_Interp *interp,
              int objc, Tcl_Obj * CONST *objv )
 {
-    syslog( LOG_NOTICE, "modify_cmd" );
+    log_notice( "modify_cmd" );
 
     Network::Manager *manager = (Network::Manager *)data;
     if ( (objc != 2) and ( objc != 3) and ( objc != 4 ) ) {
@@ -704,7 +705,7 @@ static int
 destroy_cmd( ClientData data, Tcl_Interp *interp,
              int objc, Tcl_Obj * CONST *objv )
 {
-    syslog( LOG_NOTICE, "destroy_cmd" );
+    log_notice( "destroy_cmd" );
 
     Network::Manager *manager = (Network::Manager *)data;
     if ( objc != 2 ) {
@@ -744,7 +745,7 @@ static int
 fault_cmd( ClientData data, Tcl_Interp *interp,
              int objc, Tcl_Obj * CONST *objv )
 {
-    syslog( LOG_NOTICE, "fault_cmd" );
+    log_notice( "fault_cmd" );
 
     Network::Manager *manager = (Network::Manager *)data;
     if ( objc != 2 ) {
@@ -784,7 +785,7 @@ static int
 attach_vtund_client_cmd( ClientData data, Tcl_Interp *interp,
              int objc, Tcl_Obj * CONST *objv )
 {
-    syslog( LOG_NOTICE, "attach_vtund_client_cmd" );
+    log_notice( "attach_vtund_client_cmd" );
 
     Network::Manager *manager = (Network::Manager *)data;
     if ( objc != 2 ) {
@@ -823,7 +824,7 @@ static int
 detach_vtund_client_cmd( ClientData data, Tcl_Interp *interp,
              int objc, Tcl_Obj * CONST *objv )
 {
-    syslog( LOG_NOTICE, "detach_vtund_client_cmd" );
+    log_notice( "detach_vtund_client_cmd" );
 
     Network::Manager *manager = (Network::Manager *)data;
     if ( objc != 2 ) {
@@ -861,7 +862,7 @@ static int
 set_access_cmd( ClientData data, Tcl_Interp *interp,
              int objc, Tcl_Obj * CONST *objv )
 {
-    syslog( LOG_NOTICE, "set_access_cmd" );
+    log_notice( "set_access_cmd" );
 
     Network::Manager *manager = (Network::Manager *)data;
     if ( objc != 3 ) {
@@ -900,7 +901,7 @@ static int
 AppInit( Tcl_Interp *interp ) {
     recursive_remove( "topology" );
     if ( ( mkdir( "topology", 0755 ) < 0 ) && ( errno != EEXIST ) ) {
-        syslog( LOG_ERR, "%%BUG:  Cannot create directory 'topology':  %s", strerror( errno ) );
+        log_err( "%%BUG:  Cannot create directory 'topology':  %s", strerror( errno ) );
     }
 
     if ( UUID_Initialize(interp) == false ) {
@@ -934,14 +935,14 @@ AppInit( Tcl_Interp *interp ) {
     }
 
     if ( Tcl_LinkVar(interp, "advertise_interval", (char *)&advertise_interval, TCL_LINK_INT) != TCL_OK ) {
-        syslog( LOG_ERR, "failed to link advertise_interval" );
+        log_err( "failed to link advertise_interval" );
         exit( 1 );
     }
 
     SMBIOS::Header smbios;
     smbios.probe( SMBIOS::Header::locate() );
     UUID *smbios_uuid = smbios.system().uuid();
-    syslog( LOG_NOTICE, "System UUID is '%s'\n", smbios_uuid->to_s() );
+    log_notice( "System UUID is '%s'\n", smbios_uuid->to_s() );
     delete smbios_uuid;
 
     LoadUUID( interp );
@@ -960,9 +961,9 @@ int main( int argc, char **argv ) {
     gethostname( buffer, sizeof buffer );
     if ( sscanf(buffer, "node%d", &node_ordinal) == 1 ) {
         sethostid( node_ordinal );
-        syslog( LOG_NOTICE, "hostid set to node ordinal %d", node_ordinal );
+        log_notice( "hostid set to node ordinal %d", node_ordinal );
     } else {
-        syslog( LOG_NOTICE, "could not determine node ordinal" );
+        log_notice( "could not determine node ordinal" );
     }
 
     Service service( "netmgr" );
@@ -993,7 +994,7 @@ int main( int argc, char **argv ) {
     }
 
     if ( !manager.ready() ) {
-        syslog( LOG_NOTICE, "WARNING:  Manager was not ready after 30 seconds, starting service anyway" );
+        log_notice( "WARNING:  Manager was not ready after 30 seconds, starting service anyway" );
     }
 
     service.add_command( "neighbors", neighbors_cmd, (ClientData)&monitor );

@@ -35,11 +35,12 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <signal.h>
-#include <syslog.h>
 #include <string.h>
 #include <errno.h>
 #include <execinfo.h>
 #include <glob.h>
+
+#include "logger.h"
 
 /**
  */
@@ -50,15 +51,15 @@ segv( int sig, siginfo_t *info, void *data ) {
     void *pointers[256];
 
     switch ( info->si_code ) {
-    case SEGV_MAPERR: syslog( LOG_ERR, "SEGV: address not mapped to object (%p)", info->si_addr ); break;
-    case SEGV_ACCERR: syslog( LOG_ERR, "SEGV: invalid permissions for mapped object (%p)", info->si_addr ); break;
-    default: syslog( LOG_ERR, "segmentation violation at address %p\n", info->si_addr );
+    case SEGV_MAPERR: log_err( "SEGV: address not mapped to object (%p)", info->si_addr ); break;
+    case SEGV_ACCERR: log_err( "SEGV: invalid permissions for mapped object (%p)", info->si_addr ); break;
+    default: log_err( "segmentation violation at address %p\n", info->si_addr );
     }
 
     frame_count = backtrace( pointers, sizeof(pointers) );
     char **frames = backtrace_symbols( pointers, frame_count );
     for ( i = 0 ; i < frame_count ; ++i ) {
-        syslog( LOG_ERR, "frame(%03d): %s", i, frames[i] );
+        log_err( "frame(%03d): %s", i, frames[i] );
     }
     abort();
 }
@@ -72,16 +73,16 @@ bus( int sig, siginfo_t *info, void *data ) {
     void *pointers[256];
 
     switch ( info->si_code ) {
-    case BUS_ADRALN: syslog( LOG_ERR, "BUS: invalid address alignment (%p)", info->si_addr ); break;
-    case BUS_ADRERR: syslog( LOG_ERR, "BUS: non-existent physical address (%p)", info->si_addr ); break;
-    case BUS_OBJERR: syslog( LOG_ERR, "BUS: object specific hardware error (%p)", info->si_addr ); break;
-    default: syslog( LOG_ERR, "bus error at address %p\n", info->si_addr );
+    case BUS_ADRALN: log_err( "BUS: invalid address alignment (%p)", info->si_addr ); break;
+    case BUS_ADRERR: log_err( "BUS: non-existent physical address (%p)", info->si_addr ); break;
+    case BUS_OBJERR: log_err( "BUS: object specific hardware error (%p)", info->si_addr ); break;
+    default: log_err( "bus error at address %p\n", info->si_addr );
     }
 
     frame_count = backtrace( pointers, sizeof(pointers) );
     char **frames = backtrace_symbols( pointers, frame_count );
     for ( i = 0 ; i < frame_count ; ++i ) {
-        syslog( LOG_ERR, "frame(%03d): %s", i, frames[i] );
+        log_err( "frame(%03d): %s", i, frames[i] );
     }
     abort();
 }
@@ -95,21 +96,21 @@ fpe( int sig, siginfo_t *info, void *data ) {
     void *pointers[256];
 
     switch ( info->si_code ) {
-    case FPE_INTDIV: syslog( LOG_ERR, "FPE: integer divide by zero" ); break;
-    case FPE_INTOVF: syslog( LOG_ERR, "FPE: integer overflow" ); break;
-    case FPE_FLTDIV: syslog( LOG_ERR, "FPE: floating point divide by zero" ); break;
-    case FPE_FLTOVF: syslog( LOG_ERR, "FPE: floating point overflow" ); break;
-    case FPE_FLTUND: syslog( LOG_ERR, "FPE: floating point underflow" ); break;
-    case FPE_FLTRES: syslog( LOG_ERR, "FPE: floating point inexact result" ); break;
-    case FPE_FLTINV: syslog( LOG_ERR, "FPE: floating point invalid operation" ); break;
-    case FPE_FLTSUB: syslog( LOG_ERR, "FPE: floating point subscript out of range" ); break;
-    default: syslog( LOG_ERR, "FPE at address %p\n", info->si_addr ); break;
+    case FPE_INTDIV: log_err( "FPE: integer divide by zero" ); break;
+    case FPE_INTOVF: log_err( "FPE: integer overflow" ); break;
+    case FPE_FLTDIV: log_err( "FPE: floating point divide by zero" ); break;
+    case FPE_FLTOVF: log_err( "FPE: floating point overflow" ); break;
+    case FPE_FLTUND: log_err( "FPE: floating point underflow" ); break;
+    case FPE_FLTRES: log_err( "FPE: floating point inexact result" ); break;
+    case FPE_FLTINV: log_err( "FPE: floating point invalid operation" ); break;
+    case FPE_FLTSUB: log_err( "FPE: floating point subscript out of range" ); break;
+    default: log_err( "FPE at address %p\n", info->si_addr ); break;
     }
 
     frame_count = backtrace( pointers, sizeof(pointers) );
     char **frames = backtrace_symbols( pointers, frame_count );
     for ( i = 0 ; i < frame_count ; ++i ) {
-        syslog( LOG_ERR, "frame(%03d): %s", i, frames[i] );
+        log_err( "frame(%03d): %s", i, frames[i] );
     }
     abort();
 }
@@ -123,21 +124,21 @@ ill( int sig, siginfo_t *info, void *data ) {
     void *pointers[256];
 
     switch ( info->si_code ) {
-    case ILL_ILLOPC: syslog( LOG_ERR, "ILL: illegal opcode (%p)", info->si_addr ); break;
-    case ILL_ILLOPN: syslog( LOG_ERR, "ILL: illegal operand (%p)", info->si_addr ); break;
-    case ILL_ILLADR: syslog( LOG_ERR, "ILL: illegal addressing mode (%p)", info->si_addr ); break;
-    case ILL_ILLTRP: syslog( LOG_ERR, "ILL: illegal trap (%p)", info->si_addr ); break;
-    case ILL_PRVOPC: syslog( LOG_ERR, "ILL: privileged opcode (%p)", info->si_addr ); break;
-    case ILL_PRVREG: syslog( LOG_ERR, "ILL: privilieged register (%p)", info->si_addr ); break;
-    case ILL_COPROC: syslog( LOG_ERR, "ILL: coprocessor error (%p)", info->si_addr ); break;
-    case ILL_BADSTK: syslog( LOG_ERR, "ILL: internal stack error (%p)", info->si_addr ); break;
-    default: syslog( LOG_ERR, "illegal instruction at address %p\n", info->si_addr );
+    case ILL_ILLOPC: log_err( "ILL: illegal opcode (%p)", info->si_addr ); break;
+    case ILL_ILLOPN: log_err( "ILL: illegal operand (%p)", info->si_addr ); break;
+    case ILL_ILLADR: log_err( "ILL: illegal addressing mode (%p)", info->si_addr ); break;
+    case ILL_ILLTRP: log_err( "ILL: illegal trap (%p)", info->si_addr ); break;
+    case ILL_PRVOPC: log_err( "ILL: privileged opcode (%p)", info->si_addr ); break;
+    case ILL_PRVREG: log_err( "ILL: privilieged register (%p)", info->si_addr ); break;
+    case ILL_COPROC: log_err( "ILL: coprocessor error (%p)", info->si_addr ); break;
+    case ILL_BADSTK: log_err( "ILL: internal stack error (%p)", info->si_addr ); break;
+    default: log_err( "illegal instruction at address %p\n", info->si_addr );
     }
 
     frame_count = backtrace( pointers, sizeof(pointers) );
     char **frames = backtrace_symbols( pointers, frame_count );
     for ( i = 0 ; i < frame_count ; ++i ) {
-        syslog( LOG_ERR, "frame(%03d): %s", i, frames[i] );
+        log_err( "frame(%03d): %s", i, frames[i] );
     }
     abort();
 }
