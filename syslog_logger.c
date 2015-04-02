@@ -30,6 +30,13 @@
 #include <stdarg.h>
 
 void
+log_info( char *format, ... ) {
+    va_list ap;
+    vsyslog( LOG_INFO, format, ap );
+    va_end( ap );
+}
+
+void
 log_notice( char *format, ... ) {
     va_list ap;
     vsyslog( LOG_NOTICE, format, ap );

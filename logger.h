@@ -33,6 +33,7 @@
 extern "C" {
 #endif
 
+void log_info( char *format, ... );
 void log_notice( char *format, ... );
 void log_warn( char *format, ... );
 void log_err( char *format, ... );
