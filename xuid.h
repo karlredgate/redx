@@ -25,10 +25,14 @@
  * UUID and GUID support structs
  */
 
-#ifndef _UUID_H_
-#define _UUID_H_
+#ifndef _XUID_H_
+#define _XUID_H_
 
 #include <stdint.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef uint8_t uuid_t[16];
 
@@ -50,6 +54,10 @@ int parse_uuid( char *, uint8_t * );
 int parse_guid( char *, guid_t * );
 int format_uuid( char *, uint8_t * );
 int format_guid( char *, guid_t * );
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 
