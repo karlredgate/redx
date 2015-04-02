@@ -39,7 +39,6 @@
 #include <signal.h>
 #include <fcntl.h>
 #include <time.h>
-#include <syslog.h>
 #include <string.h>
 #include <glob.h>
 #include <errno.h>
@@ -47,6 +46,7 @@
 #include <tcl.h>
 #include "tcl_util.h"
 
+#include "logger.h"
 #include "util.h"
 #include "host_table.h"
 #include "NetLink.h"
@@ -318,7 +318,7 @@ void Network::Monitor::receive( NetLink::DelLink *message ) {
  */
 void Network::Monitor::receive( NetLink::NewRoute *message ) {
     if ( debug > 1 ) {
-        syslog( LOG_INFO, "Network::Monitor => process NewRoute -->  scope %d, family %d\n",
+        log_info( "Network::Monitor => process NewRoute -->  scope %d, family %d\n",
                 message->scope(),
                 message->family()
         );
@@ -329,7 +329,7 @@ void Network::Monitor::receive( NetLink::NewRoute *message ) {
  */
 void Network::Monitor::receive( NetLink::DelRoute *message ) {
     if ( debug > 1 ) {
-        syslog( LOG_INFO, "Network::Monitor => process DelRoute -->  scope %d, family %d\n",
+        log_info( "Network::Monitor => process DelRoute -->  scope %d, family %d\n",
                 message->scope(),
                 message->family()
         );
@@ -412,7 +412,7 @@ void Network::Monitor::receive( NetLink::DelAddress *message ) {
  */
 void Network::Monitor::receive( NetLink::NewNeighbor *message ) {
     if ( debug > 1 ) {
-        syslog( LOG_INFO, "Network::Monitor => process NewNeighbor \n" );
+        log_info( "Network::Monitor => process NewNeighbor \n" );
     }
 }
 
@@ -420,7 +420,7 @@ void Network::Monitor::receive( NetLink::NewNeighbor *message ) {
  */
 void Network::Monitor::receive( NetLink::DelNeighbor *message ) {
     if ( debug > 1 ) {
-        syslog( LOG_INFO, "Network::Monitor => process DelNeighbor\n");
+        log_info( "Network::Monitor => process DelNeighbor\n");
     }
 }
 
@@ -428,7 +428,7 @@ void Network::Monitor::receive( NetLink::DelNeighbor *message ) {
  */
 void Network::Monitor::receive( NetLink::RouteMessage *message ) {
     if ( debug > 1 ) {
-        syslog( LOG_INFO, "Network::Monitor unknown RouteMessage (%d) -- skipping\n", message->type_code() );
+        log_info( "Network::Monitor unknown RouteMessage (%d) -- skipping\n", message->type_code() );
     }
 }
 
@@ -438,7 +438,7 @@ void Network::Monitor::receive( NetLink::RouteMessage *message ) {
  */
 void Network::Monitor::receive( NetLink::RouteError *message ) {
     if ( debug > 1 ) {
-        syslog( LOG_INFO, "Network::Monitor RouteError %d\n", message->error() );
+        log_info( "Network::Monitor RouteError %d\n", message->error() );
     }
 }
 
@@ -1454,19 +1454,19 @@ bool NetworkMonitor_Module( Tcl_Interp *interp ) {
 
     command = Tcl_CreateObjCommand(interp, "Network::Monitor", Monitor_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
-        // syslog ?? want to report TCL Error
+        // logger ?? want to report TCL Error
         return false;
     }
 
     command = Tcl_CreateObjCommand(interp, "Network::Probe", Probe_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
-        // syslog ?? want to report TCL Error
+        // logger ?? want to report TCL Error
         return false;
     }
 
     command = Tcl_CreateObjCommand(interp, "Network::Manager", Manager_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
-        // syslog ?? want to report TCL Error
+        // logger ?? want to report TCL Error
         return false;
     }
 

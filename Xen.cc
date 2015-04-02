@@ -46,10 +46,10 @@
 
 #include <errno.h>
 #include <string.h>
-#include <syslog.h>
 #include <tcl.h>
 #include "tcl_util.h"
 
+#include "logger.h"
 #include "Hypercall.h"
 #include "XenStore.h"
 
@@ -622,31 +622,31 @@ bool Xen::Initialize( Tcl_Interp *interp ) {
 
     command = Tcl_CreateObjCommand(interp, "Xen::physinfo", physinfo_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
-        // syslog ?? want to report TCL Error
+        // logger ?? want to report TCL Error
         return false;
     }
 
     command = Tcl_CreateObjCommand(interp, "Xen::PauseDomain", PauseDomain_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
-        // syslog ?? want to report TCL Error
+        // logger ?? want to report TCL Error
         return false;
     }
 
     command = Tcl_CreateObjCommand(interp, "Xen::UnpauseDomain", UnpauseDomain_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
-        // syslog ?? want to report TCL Error
+        // logger ?? want to report TCL Error
         return false;
     }
 
     command = Tcl_CreateObjCommand(interp, "Xen::DestroyDomain", DestroyDomain_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
-        // syslog ?? want to report TCL Error
+        // logger ?? want to report TCL Error
         return false;
     }
 
     command = Tcl_CreateObjCommand(interp, "Xen::GetDomainInfoList", GetDomainInfoList_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
-        // syslog ?? want to report TCL Error
+        // logger ?? want to report TCL Error
         return false;
     }
 
@@ -657,31 +657,31 @@ bool Xen::Initialize( Tcl_Interp *interp ) {
 
     command = Tcl_CreateObjCommand(interp, "Xen::Store::read", XenStoreRead_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
-        // syslog ?? want to report TCL Error
+        // logger ?? want to report TCL Error
         return false;
     }
 
     command = Tcl_CreateObjCommand(interp, "Xen::Store::write", XenStoreWrite_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
-        // syslog ?? want to report TCL Error
+        // logger ?? want to report TCL Error
         return false;
     }
 
     command = Tcl_CreateObjCommand(interp, "Xen::Store::mkdir", XenStoreMkdir_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
-        // syslog ?? want to report TCL Error
+        // logger ?? want to report TCL Error
         return false;
     }
 
     command = Tcl_CreateObjCommand(interp, "Xen::Store::remove", XenStoreRemove_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
-        // syslog ?? want to report TCL Error
+        // logger ?? want to report TCL Error
         return false;
     }
 
     command = Tcl_CreateObjCommand(interp, "Xen::Store::list", XenStoreList_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
-        // syslog ?? want to report TCL Error
+        // logger ?? want to report TCL Error
         return false;
     }
 

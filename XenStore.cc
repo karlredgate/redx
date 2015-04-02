@@ -36,8 +36,8 @@
 
 #include <errno.h>
 #include <string.h>
-#include <syslog.h>
 
+#include "logger.h"
 #include "util.h"
 #include "XenStore.h"
 
@@ -71,7 +71,7 @@ Xen::StorePath* Xen::Store::readdir( char *key ) {
 
     int fd = open(BUS, O_RDWR);
     if ( fd == -1 ) {
-        syslog( LOG_ERR, "failed to open xenbus" );
+        log_err( "failed to open xenbus" );
         exit( 1 );
     }
     message.type = XS_DIRECTORY;
@@ -113,7 +113,7 @@ char* Xen::Store::read( char *key ) {
 
     int fd = open(BUS, O_RDWR);
     if ( fd == -1 ) {
-        syslog( LOG_ERR, "failed to open xenbus" );
+        log_err( "failed to open xenbus" );
         exit( 1 );
     }
     message.type = XS_READ;
@@ -160,7 +160,7 @@ bool Xen::Store::write( char *key, char *value ) {
 
     int fd = open(BUS, O_RDWR);
     if ( fd == -1 ) {
-        syslog( LOG_ERR, "failed to open xenbus" );
+        log_err( "failed to open xenbus" );
         exit( 1 );
     }
 
@@ -212,7 +212,7 @@ fail:
 bool Xen::Store::mkdir( char *path ) {
     int fd = open(BUS, O_RDWR);
     if ( fd == -1 ) {
-        syslog( LOG_ERR, "failed to open xenbus" );
+        log_err( "failed to open xenbus" );
         return false;
     }
 
@@ -262,7 +262,7 @@ fail:
 bool Xen::Store::remove( char *path ) {
     int fd = open(BUS, O_RDWR);
     if ( fd == -1 ) {
-        syslog( LOG_ERR, "failed to open xenbus" );
+        log_err( "failed to open xenbus" );
         return false;
     }
 
