@@ -1,4 +1,4 @@
 
-PLATFORM_OBJS := DarwinThread.o
+PLATFORM_OBJS := DarwinThread.o syslog_logger.o
 
 DarwinThread.o :: PlatformThread.h

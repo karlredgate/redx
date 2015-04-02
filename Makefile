@@ -25,7 +25,6 @@ OBJS += xuid.o
 OBJS += string_util.o
 OBJS += tcl_util.o
 OBJS += traps.o
-OBJS += traps.o
 OBJS += $(PLATFORM_OBJS)
 
 CLEANS += redx $(OBJS)
