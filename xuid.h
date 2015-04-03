@@ -54,6 +54,7 @@ int parse_uuid( char *, uint8_t * );
 int parse_guid( char *, guid_t * );
 int format_uuid( char *, uint8_t * );
 int format_guid( char *, guid_t * );
+int compare_guid( guid_t *, guid_t * );
 
 #ifdef __cplusplus
 }

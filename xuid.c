@@ -219,4 +219,21 @@ format_guid( char *string, guid_t *data ) {
     return 1;
 }
 
+/**
+ */
+int
+compare_guid( guid_t *left, guid_t *right ) {
+    long d = left->data1 - right->data1;
+    if ( d != 0 )  return d;
+    d = left->data2 - right->data2;
+    if ( d != 0 )  return d;
+    d = left->data3 - right->data3;
+    if ( d != 0 )  return d;
+    for ( int i = 0 ; i < 8 ; i++ ) {
+        d = left->data4[i] - right->data4[i];
+        if ( d != 0 )  return d;
+    }
+    return 0;
+}
+
 /* vim: set autoindent expandtab sw=4 syntax=c : */
