@@ -257,8 +257,14 @@ UUID_Module( Tcl_Interp *interp ) {
         exit( 1 );
     }
 
-    command = Tcl_CreateObjCommand(interp, "UUID", UUID_cmd, (ClientData)0, NULL);
+    command = Tcl_CreateObjCommand(interp, "UUID::UUID", UUID_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
+        return false;
+    }
+
+    command = Tcl_CreateObjCommand(interp, "UUID::guid", guid_cmd, (ClientData)0, NULL);
+    if ( command == NULL ) {
+        // logger ?? want to report TCL Error
         return false;
     }
 
