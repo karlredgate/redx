@@ -142,7 +142,7 @@ guid_obj( ClientData data, Tcl_Interp *interp,
              int objc, Tcl_Obj * CONST *objv )
 {
     guid_t *guid = (guid_t *)data;
-    char buffer[36];
+    char buffer[37]; // 36 + NULL : NULL not always used
 
     if ( objc == 1 ) {
         Tcl_SetObjResult( interp, Tcl_NewLongObj((long)(guid)) );
@@ -184,16 +184,16 @@ guid_obj( ClientData data, Tcl_Interp *interp,
         return TCL_OK;
     }
 
-#if 0
-    uint8_t *x = uuid->raw();
+    uint8_t *x = (uint8_t *)guid;
     if ( Tcl_StringMatch(command, "dump") ) {
-        printf( "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x\n",
-                x[0], x[1],  x[2],  x[3],  x[4],  x[5],  x[6],  x[7],
-                x[8], x[9], x[10], x[11], x[12], x[13], x[14], x[15] );
-        Tcl_ResetResult( interp );
+        snprintf( buffer, sizeof(buffer),
+                  "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+                  x[0], x[1],  x[2],  x[3],  x[4],  x[5],  x[6],  x[7],
+                  x[8], x[9], x[10], x[11], x[12], x[13], x[14], x[15] );
+        Tcl_Obj *obj = Tcl_NewStringObj( buffer, 36 );
+        Tcl_SetObjResult( interp, obj );
         return TCL_OK;
     }
-#endif
 
     Svc_SetResult( interp, "Unknown command for UUID object", TCL_STATIC );
     return TCL_ERROR;
