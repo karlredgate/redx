@@ -1,0 +1,9 @@
+#!/usr/bin/env redx
+
+UUID::guid foo
+foo set deadbeef-0011-2233-4455-deafcafebabe
+if [string equal [foo dump] efbeadde-1100-3322-4455-deafcafebabe] {
+    puts "Passed"
+} else {
+    puts "Failed"
+}
