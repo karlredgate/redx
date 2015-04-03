@@ -184,6 +184,26 @@ guid_obj( ClientData data, Tcl_Interp *interp,
         return TCL_OK;
     }
 
+    if ( Tcl_StringMatch(command, "compare") ) {
+        if ( objc < 3 ) {
+            Tcl_ResetResult( interp );
+            Tcl_WrongNumArgs( interp, 1, objv, "compare <guid>" );
+            return TCL_ERROR;
+        }
+
+        guid_t *lhs = guid;
+        guid_t *rhs;
+        void *p = (void *)&(rhs); // avoid strict aliasing errors in the compiler
+        if ( Tcl_GetLongFromObj(interp,objv[2],(long*)p) != TCL_OK ) {
+            Tcl_StaticSetResult( interp, "invalid guid" );
+            return TCL_ERROR;
+        }
+
+        int result = compare_guid( lhs, rhs );
+        Tcl_SetObjResult( interp, Tcl_NewIntObj(result) );
+        return TCL_OK;
+    }
+
     uint8_t *x = (uint8_t *)guid;
     if ( Tcl_StringMatch(command, "dump") ) {
         snprintf( buffer, sizeof(buffer),
