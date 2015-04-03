@@ -87,7 +87,7 @@ Syslog_obj( ClientData data, Tcl_Interp *interp,
         Tcl_StaticSetResult( interp, "invalid level" );
         return TCL_ERROR;
     }
-    syslog( level, message );
+    syslog( level, "%s", message );
 
     Tcl_ResetResult( interp );
     return TCL_OK;

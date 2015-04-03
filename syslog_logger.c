@@ -30,28 +30,28 @@
 #include <stdarg.h>
 
 void
-log_info( char *format, ... ) {
+log_info( const char *format, ... ) {
     va_list ap;
     vsyslog( LOG_INFO, format, ap );
     va_end( ap );
 }
 
 void
-log_notice( char *format, ... ) {
+log_notice( const char *format, ... ) {
     va_list ap;
     vsyslog( LOG_NOTICE, format, ap );
     va_end( ap );
 }
 
 void
-log_warn( char *format, ... ) {
+log_warn( const char *format, ... ) {
     va_list ap;
     vsyslog( LOG_WARNING, format, ap );
     va_end( ap );
 }
 
 void
-log_err( char *format, ... ) {
+log_err( const char *format, ... ) {
     va_list ap;
     vsyslog( LOG_ERR, format, ap );
     va_end( ap );

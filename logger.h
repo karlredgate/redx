@@ -33,10 +33,10 @@
 extern "C" {
 #endif
 
-void log_info( char *format, ... );
-void log_notice( char *format, ... );
-void log_warn( char *format, ... );
-void log_err( char *format, ... );
+void log_info( const char *format, ... );
+void log_notice( const char *format, ... );
+void log_warn( const char *format, ... );
+void log_err( const char *format, ... );
 
 #ifdef __cplusplus
 }
