@@ -36,12 +36,13 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <fcntl.h>
-#include <syslog.h>
 #include <errno.h>
 #include <string.h>
 
 #include <tcl.h>
 #include "tcl_util.h"
+
+#include "logger.h"
 #include "string_util.h"
 
 #include "ICMPv6.h"
@@ -72,7 +73,7 @@ ICMPv6::Socket::Socket() : bind_completed(false), binds_attempted(0) {
 
     socket = ::socket( AF_INET6, SOCK_RAW, IPPROTO_ICMPV6 );
     if ( socket == -1 ) {
-	syslog( LOG_ERR, "ICMPv6 socket() failed, %s", strerror(errno) );
+	log_err( "ICMPv6 socket() failed, %s", strerror(errno) );
         // This should change to it having an error state method/member that
         // can be queried, OR have it raise an exception
         ::exit( 1 );
@@ -84,11 +85,11 @@ ICMPv6::Socket::Socket() : bind_completed(false), binds_attempted(0) {
     unsigned int flag = 0;
     int result = setsockopt(socket, IPPROTO_IPV6, IPV6_MULTICAST_LOOP, &flag, sizeof(flag));
     if ( result < 0 ) {
-        syslog( LOG_ERR, "ICMPv6::Socket: failed to turn off loopback" );
+        log_err( "ICMPv6::Socket: failed to turn off loopback" );
     }
 
     if ( fcntl(socket, F_SETFD, FD_CLOEXEC) < 0 ) {
-        syslog( LOG_ERR, "ICMPv6::Socket: could not set close on exec" );
+        log_err( "ICMPv6::Socket: could not set close on exec" );
     }
 
     struct timeval tv;
@@ -96,10 +97,10 @@ ICMPv6::Socket::Socket() : bind_completed(false), binds_attempted(0) {
     tv.tv_usec = 0;
     result = setsockopt(socket, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
     if ( result < 0 ) {
-        syslog( LOG_ERR, "ICMPv6::Socket: could not set receive timeout" );
+        log_err( "ICMPv6::Socket: could not set receive timeout" );
     }
 
-    if ( debug > 1 ) syslog( LOG_NOTICE, "ICMPv6 socket (%d)", socket );
+    if ( debug > 1 ) log_notice( "ICMPv6 socket (%d)", socket );
 }
 
 /**
@@ -122,7 +123,7 @@ bool ICMPv6::Socket::bind( uint32_t scope ) {
     binding.sin6_scope_id = scope;
 
     if ( ::bind(socket, (struct sockaddr *)&binding, sizeof binding) == -1 ) {
-	syslog( LOG_ERR, "ICMPv6 bind() failed, %s", strerror(errno) );
+	log_err( "ICMPv6 bind() failed, %s", strerror(errno) );
         return false;
     }
 
@@ -130,7 +131,7 @@ bool ICMPv6::Socket::bind( uint32_t scope ) {
         printf( "cannot set if\n" );
         exit( 1 );
     }
-    syslog( LOG_NOTICE, "ICMP socket (%d) bound to ANY for intf %d\n", socket, scope );
+    log_notice( "ICMP socket (%d) bound to ANY for intf %d\n", socket, scope );
     bind_completed = true;
 
     return true;
@@ -165,13 +166,13 @@ bool ICMPv6::Socket::bind( struct in6_addr *address, uint32_t scope ) {
         int err = posix_strerror( error, e, sizeof(e) );
         address_name = (char *)inet_ntop(AF_INET6, address, buffer, sizeof buffer);
         if ( (binds_attempted++ % 30) == 0 ) {
-            syslog( LOG_ERR, "ICMPv6::Socket::bind(\"%s\",%d): %s", address_name, scope, e );
+            log_err( "ICMPv6::Socket::bind(\"%s\",%d): %s", address_name, scope, e );
         }
         return false;
     }
     address_name = (char *)inet_ntop(AF_INET6, address, buffer, sizeof buffer);
     if ( debug > 1 ) {
-        syslog( LOG_NOTICE, "ICMPv6 socket %d bound to %s (scope:%d)", socket, address_name, scope );
+        log_notice( "ICMPv6 socket %d bound to %s (scope:%d)", socket, address_name, scope );
     }
     binds_attempted = 0;
 
@@ -194,7 +195,7 @@ bool ICMPv6::Socket::send( struct in6_addr *address, void *message, int length )
         char e[128], s[80];
         int err = posix_strerror( errno, e, sizeof(e) );
         const char *addr = inet_ntop(AF_INET6, address, s, sizeof s);
-        syslog( LOG_ERR, "ICMPv6::Socket::send(\"%s\"): %s", addr, e );
+        log_err( "ICMPv6::Socket::send(\"%s\"): %s", addr, e );
         return false;
     }
     return true;
@@ -205,7 +206,7 @@ bool ICMPv6::Socket::send( struct in6_addr *address, void *message, int length )
  */
 bool ICMPv6::Socket::send( void *message, int length ) {
     int result;
-    if ( debug > 2 ) syslog( LOG_INFO, "ICMPv6::Socket::send()" );
+    if ( debug > 2 ) log_info( "ICMPv6::Socket::send()" );
     result = sendto( socket, message, length, 0, (struct sockaddr *)&binding, sizeof(binding) );
     if ( result < 0 ) {
         return false;
@@ -229,7 +230,7 @@ void ICMPv6::Socket::receive( ICMPv6::ReceiveCallbackInterface *callback ) {
         sender_size = sizeof sender;
         int n = recvfrom(socket, buffer, sizeof buffer, 0, (struct sockaddr *)&sender, &sender_size);
         if ( n < 0 ) {
-	  if ( errno != ETIMEDOUT) syslog( LOG_ERR, "ICMPv6 recvfrom() failed, %s", strerror(errno) );
+	  if ( errno != ETIMEDOUT) log_err( "ICMPv6 recvfrom() failed, %s", strerror(errno) );
             return; // recv error start over
         }
         if ( n == 0 ) continue;
@@ -240,7 +241,7 @@ void ICMPv6::Socket::receive( ICMPv6::ReceiveCallbackInterface *callback ) {
         using namespace ICMPv6;
         PDUFactory factory = factories[ header->icmp6_type ];
         if ( factory == NULL ) {
-            syslog( LOG_ERR, "ICMPv6::Socket: No FACTORY for ICMPv6 message" );
+            log_err( "ICMPv6::Socket: No FACTORY for ICMPv6 message" );
             continue;
         }
         PDU *pdu = factory( header );
@@ -829,37 +830,37 @@ ICMPv6_Module( Tcl_Interp *interp ) {
     }
 
     if ( Tcl_LinkVar(interp, "ICMPv6::debug", (char *)&debug, TCL_LINK_INT) != TCL_OK ) {
-        syslog( LOG_ERR, "failed to link ICMPv6::debug" );
+        log_err( "failed to link ICMPv6::debug" );
         exit( 1 );
     }
 
     command = Tcl_CreateObjCommand(interp, "ICMPv6::EchoRequest", EchoRequest_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
-        // syslog ?? want to report TCL Error
+        // logger ?? want to report TCL Error
         return false;
     }
 
     command = Tcl_CreateObjCommand(interp, "ICMPv6::EchoReply", EchoReply_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
-        // syslog ?? want to report TCL Error
+        // logger ?? want to report TCL Error
         return false;
     }
 
     command = Tcl_CreateObjCommand(interp, "ICMPv6::NeighborSolicitation", NeighborSolicitation_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
-        // syslog ?? want to report TCL Error
+        // logger ?? want to report TCL Error
         return false;
     }
 
     command = Tcl_CreateObjCommand(interp, "ICMPv6::NeighborAdvertisement", NeighborAdvertisement_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
-        // syslog ?? want to report TCL Error
+        // logger ?? want to report TCL Error
         return false;
     }
 
     command = Tcl_CreateObjCommand(interp, "ICMPv6::Socket", Socket_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
-        // syslog ?? want to report TCL Error
+        // logger ?? want to report TCL Error
         return false;
     }
 

@@ -42,11 +42,11 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
-#include <syslog.h>
 
 #include <tcl.h>
 #include "tcl_util.h"
 
+#include "logger.h"
 #include "NetLink.h"
 
 /**
@@ -105,16 +105,16 @@ NetLink::Socket::Socket( int protocol ) {
     int bufsize;
     socklen_t bufsize_len = sizeof(bufsize);
     if ( getsockopt(socket, SOL_SOCKET, SO_RCVBUF, &bufsize, &bufsize_len) < 0 ) {
-        syslog( LOG_ERR, "failed to determine the netlink socket rcvbuf size" );
+        log_err( "failed to determine the netlink socket rcvbuf size" );
         return;
     }
-    syslog( LOG_NOTICE, "netlink socket rcvbuf size is %d", bufsize );
+    log_notice( "netlink socket rcvbuf size is %d", bufsize );
     bufsize *= 4;
     if ( setsockopt(socket, SOL_SOCKET, SO_RCVBUF, &bufsize, sizeof(bufsize)) < 0 ) {
-        syslog( LOG_ERR, "failed to increase the netlink socket rcvbuf size" );
+        log_err( "failed to increase the netlink socket rcvbuf size" );
         return;
     }
-    syslog( LOG_NOTICE, "netlink socket rcvbuf size set to %d", bufsize );
+    log_notice( "netlink socket rcvbuf size set to %d", bufsize );
 }
 
 /**
@@ -227,7 +227,7 @@ void NetLink::RouteSocket::receive( NetLink::RouteReceiveCallbackInterface *call
                 // normally just continue here
                 printf( "interupted recvmsg\n" );
             } else if ( errno == ENOBUFS ) {
-                syslog( LOG_ERR, "%%BUG recvmsg returned ENOBUFS" );
+                log_err( "%%BUG recvmsg returned ENOBUFS" );
             } else {
                 perror("NetLink::recvmsg");
             }
@@ -1087,7 +1087,7 @@ NetLink::NewAddress::NewAddress( struct nlmsghdr *hdr )
      */
 
     if ( debug > 1 ) {
-        syslog( LOG_NOTICE, "%s(%d) NewAddress: %s/%d\n", link_name, request.ifa.ifa_index,
+        log_notice( "%s(%d) NewAddress: %s/%d\n", link_name, request.ifa.ifa_index,
                                                  address_string, request.ifa.ifa_prefixlen );
     }
 }
@@ -2116,85 +2116,85 @@ bool NetLink::Initialize( Tcl_Interp *interp ) {
         return false;
     }
     if ( Tcl_LinkVar(interp, "NetLink::debug", (char *)&debug, TCL_LINK_INT) != TCL_OK ) {
-        syslog( LOG_ERR, "failed to link NetLink::debug" );
+        log_err( "failed to link NetLink::debug" );
         exit( 1 );
     }
 
     command = Tcl_CreateObjCommand(interp, "NetLink::GetLink", GetLink_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
-        // syslog ?? want to report TCL Error
+        // logger ?? want to report TCL Error
         return false;
     }
 
     command = Tcl_CreateObjCommand(interp, "NetLink::NewLink", NewLink_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
-        // syslog ?? want to report TCL Error
+        // logger ?? want to report TCL Error
         return false;
     }
 
     command = Tcl_CreateObjCommand(interp, "NetLink::DelLink", DelLink_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
-        // syslog ?? want to report TCL Error
+        // logger ?? want to report TCL Error
         return false;
     }
 
     command = Tcl_CreateObjCommand(interp, "NetLink::GetAddress", GetAddress_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
-        // syslog ?? want to report TCL Error
+        // logger ?? want to report TCL Error
         return false;
     }
 
     command = Tcl_CreateObjCommand(interp, "NetLink::NewAddress", NewAddress_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
-        // syslog ?? want to report TCL Error
+        // logger ?? want to report TCL Error
         return false;
     }
 
     command = Tcl_CreateObjCommand(interp, "NetLink::DelAddress", DelAddress_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
-        // syslog ?? want to report TCL Error
+        // logger ?? want to report TCL Error
         return false;
     }
 
     command = Tcl_CreateObjCommand(interp, "NetLink::GetRoute", GetRoute_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
-        // syslog ?? want to report TCL Error
+        // logger ?? want to report TCL Error
         return false;
     }
 
     command = Tcl_CreateObjCommand(interp, "NetLink::NewRoute", NewRoute_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
-        // syslog ?? want to report TCL Error
+        // logger ?? want to report TCL Error
         return false;
     }
 
     command = Tcl_CreateObjCommand(interp, "NetLink::DelRoute", DelRoute_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
-        // syslog ?? want to report TCL Error
+        // logger ?? want to report TCL Error
         return false;
     }
 
     command = Tcl_CreateObjCommand(interp, "NetLink::GetNeighbor", GetNeighbor_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
-        // syslog ?? want to report TCL Error
+        // logger ?? want to report TCL Error
         return false;
     }
 
     command = Tcl_CreateObjCommand(interp, "NetLink::NewNeighbor", NewNeighbor_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
-        // syslog ?? want to report TCL Error
+        // logger ?? want to report TCL Error
         return false;
     }
 
     command = Tcl_CreateObjCommand(interp, "NetLink::DelNeighbor", DelNeighbor_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
-        // syslog ?? want to report TCL Error
+        // logger ?? want to report TCL Error
         return false;
     }
 
     command = Tcl_CreateObjCommand(interp, "NetLink::RouteSocket", RouteSocket_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
-        // syslog ?? want to report TCL Error
+        // logger ?? want to report TCL Error
         return false;
     }
 

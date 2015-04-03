@@ -37,10 +37,10 @@
 #include <stdio.h>
 
 #include <string.h>
-#include <syslog.h>
 #include <tcl.h>
 #include "tcl_util.h"
 
+#include "logger.h"
 #include "BIOS.h"
 
 namespace {
@@ -377,7 +377,7 @@ SMBIOS::Table::Table( uint8_t *base, uint16_t length, uint16_t count )
     }
 
     if ( baseboard == NULL ) {
-        syslog( LOG_WARNING, "BaseBoard information missing from SMBIOS tables" );
+        log_warn( "BaseBoard information missing from SMBIOS tables" );
         baseboard = new SMBIOS::BaseBoard( system );
     }
 }
@@ -414,7 +414,7 @@ void SMBIOS::Header::probe( uint8_t *data ) {
     }
     major_version = data[0x6];
     minor_version = data[0x7];
-    syslog( LOG_NOTICE, "SMBIOS version %u.%u", major_version, minor_version );
+    log_notice( "SMBIOS version %u.%u", major_version, minor_version );
     if ( debug ) printf( "SMBIOS version %u.%u\n", major_version, minor_version );
 
     dmi_address = (uint8_t *) *( (uint32_t*)(data + 0x18) );
@@ -513,14 +513,14 @@ bool BIOS::Initialize( Tcl_Interp *interp ) {
     }
 
     if ( Tcl_LinkVar(interp, "SMBIOS::debug", (char *)&debug, TCL_LINK_INT) != TCL_OK ) {
-        syslog( LOG_ERR, "failed to link SMBIOS::debug" );
+        log_err( "failed to link SMBIOS::debug" );
         exit( 1 );
     }
 
     // create TCL commands for creating BIOS/SMBIOS structures
     command = Tcl_CreateObjCommand(interp, "SMBIOS::Probe", Probe_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
-        // syslog ?? want to report TCL Error
+        // logger ?? want to report TCL Error
         return false;
     }
 

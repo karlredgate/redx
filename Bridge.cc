@@ -49,9 +49,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <syslog.h>
 #include <glob.h>
 
+#include "logger.h"
 #include "Bridge.h"
 #include "Interface.h"
 #include "tcl_util.h"
@@ -80,12 +80,12 @@ Network::Bridge::~Bridge() {
  */
 const char *
 Network::Bridge::create() {
-    syslog( LOG_NOTICE, "create new bridge '%s'", _name );
+    log_notice( "create new bridge '%s'", _name );
 
     int sock = socket(AF_INET, SOCK_STREAM, 0);
     if ( sock < 0 ) {
         // how to report error?
-        // syslog means it doesn't get to TCL
+        // logger means it doesn't get to TCL
         return "failed to create bridge socket";
     }
 
@@ -95,7 +95,7 @@ Network::Bridge::create() {
     close( sock );
     if ( result < 0 ) {
         if ( error == EEXIST ) goto bring_up;
-        syslog( LOG_ERR, "Bridge: create '%s'", strerror(error) );
+        log_err( "Bridge: create '%s'", strerror(error) );
         return "failed to create bridge";
     }
 
@@ -104,7 +104,7 @@ bring_up:
     char buffer[128];
     sprintf( buffer, "/sbin/ip link set %s up", _name );
     if ( system(buffer) < 0 ) {
-        syslog( LOG_NOTICE, "%s: bridge refused to bring up link", _name );
+        log_notice( "%s: bridge refused to bring up link", _name );
     }
 
     return NULL;
@@ -118,7 +118,7 @@ Network::Bridge::destroy() {
     int sock = socket(AF_INET, SOCK_STREAM, 0);
     if ( sock < 0 ) {
         // how to report error?
-        // syslog means it doesn't get to TCL
+        // logger means it doesn't get to TCL
         return "failed to create bridge socket";
     }
     // call the ioctl
@@ -136,7 +136,7 @@ Network::Bridge::destroy() {
  */
 const char *
 Network::Bridge::set_mac_address( unsigned char *mac ) {
-    syslog( LOG_NOTICE, "set MAC address of bridge '%s' to %02x:%02x:%02x:%02x:%02x:%02x",
+    log_notice( "set MAC address of bridge '%s' to %02x:%02x:%02x:%02x:%02x:%02x",
                         _name, mac[0], mac[1], mac[2], mac[3], mac[4], mac[5] );
 
     // call ioctl with interface index [that->index()]
@@ -177,7 +177,7 @@ Network::Bridge::set_mac_address( unsigned char *mac ) {
     }
 
     if ( result < 0 ) {
-        syslog( LOG_NOTICE, "failed to set MAC address for bridge '%s': %s", _name, error );
+        log_notice( "failed to set MAC address for bridge '%s': %s", _name, error );
         return "failed to set MAC address";
     }
     return NULL;
@@ -196,7 +196,7 @@ Network::Bridge::lock_address() {
     if ( locked == 0 ) {
         rewind( f );
         fprintf( f, "%d", 1 );
-        syslog( LOG_NOTICE, "locking %s address", _name );
+        log_notice( "locking %s address", _name );
     }
     fclose( f );
     return true;
@@ -215,7 +215,7 @@ Network::Bridge::unlock_address() {
     if ( locked == 1 ) {
         rewind( f );
         fprintf( f, "%d", 0 );
-        syslog( LOG_NOTICE, "unlocking %s address", _name );
+        log_notice( "unlocking %s address", _name );
     }
     fclose( f );
     return true;
@@ -225,7 +225,7 @@ Network::Bridge::unlock_address() {
  */
 const char *
 Network::Bridge::add( Interface *that ) {
-    syslog( LOG_NOTICE, "capturing interface '%s' in bridge '%s'", that->name(), _name );
+    log_notice( "capturing interface '%s' in bridge '%s'", that->name(), _name );
 
     // call ioctl with interface index [that->index()]
     int sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -243,7 +243,7 @@ Network::Bridge::add( Interface *that ) {
     close( sock );
 
     if ( result < 0 ) {
-        syslog( LOG_NOTICE, "failed to capture interface '%s' in bridge '%s': %s",
+        log_notice( "failed to capture interface '%s' in bridge '%s': %s",
                             that->name(), _name, error );
         return "failed to add interface to bridge";
     }
@@ -260,7 +260,7 @@ Network::Bridge::capture( Interface *that ) { return add(that); }
  */
 const char *
 Network::Bridge::remove( Interface *that ) {
-    syslog( LOG_NOTICE, "removing interface '%s' from bridge '%s'", that->name(), _name );
+    log_notice( "removing interface '%s' from bridge '%s'", that->name(), _name );
 
     // call ioctl with interface index [that->index()]
     int sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -278,7 +278,7 @@ Network::Bridge::remove( Interface *that ) {
     close( sock );
 
     if ( result < 0 ) {
-        syslog( LOG_NOTICE, "failed to remove interface '%s' from bridge '%s': %s",
+        log_notice( "failed to remove interface '%s' from bridge '%s': %s",
                             that->name(), _name, error );
         return "failed to remove interface from bridge";
     }
@@ -321,13 +321,13 @@ Network::Bridge::forward_delay( unsigned long value ) {
 bool Network::Bridge::is_tunnelled() const {
     bool result = false;
 
-    // syslog( LOG_NOTICE, "check if '%s' is tunnelled", name() );
+    // log_notice( "check if '%s' is tunnelled", name() );
 
     char port_path[1024];
     char bridge_path[1024];
     sprintf( bridge_path, "../../../../class/net/%s", name() );
 
-    // syslog( LOG_NOTICE, "check if '%s' is tunnelled", bridge_path );
+    // log_notice( "check if '%s' is tunnelled", bridge_path );
 
     glob_t paths;
     memset(&paths, 0, sizeof(paths));
@@ -337,10 +337,10 @@ bool Network::Bridge::is_tunnelled() const {
         int count = readlink( paths.gl_pathv[i], port_path, sizeof(port_path) );
         if ( count == -1 ) continue;
         port_path[count] = '\0';
-        syslog( LOG_NOTICE, "check if '%s' is tunnelled through '%s'", bridge_path, port_path );
+        log_notice( "check if '%s' is tunnelled through '%s'", bridge_path, port_path );
 
         if ( strcmp(port_path, bridge_path) == 0 ) {
-            syslog( LOG_NOTICE, "I (%s) am tunnelled through '%s'", bridge_path, paths.gl_pathv[i] );
+            log_notice( "I (%s) am tunnelled through '%s'", bridge_path, paths.gl_pathv[i] );
             result = true;
             break;
         }
@@ -496,13 +496,13 @@ bool Bridge_Module( Tcl_Interp *interp ) {
     }
 
     if ( Tcl_LinkVar(interp, "Network::Bridge::debug", (char *)&debug, TCL_LINK_INT) != TCL_OK ) {
-        syslog( LOG_ERR, "failed to link Network::Bridge::debug" );
+        log_err( "failed to link Network::Bridge::debug" );
         return false;
     }
 
     command = Tcl_CreateObjCommand(interp, "Network::Bridge::new", Bridge_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
-        // syslog ?? want to report TCL Error
+        // logger ?? want to report TCL Error
         return false;
     }
 

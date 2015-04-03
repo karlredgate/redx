@@ -51,10 +51,10 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <errno.h>
-#include <syslog.h>
 #include <string.h>
 #include <glob.h>
 
+#include "logger.h"
 #include "util.h"
 #include "NetLink.h"
 #include "Network.h"
@@ -87,7 +87,7 @@ bool
 get_mac( char *interface_name, struct ifreq *request ) {
     int sock = socket( AF_INET, SOCK_STREAM, 0 );
     if ( sock < 0 ) {
-        syslog( LOG_WARNING, "could not open socket to get intf mac addr" );
+        log_warn( "could not open socket to get intf mac addr" );
         return false;
     }
     memset( request, 0, sizeof(*request) );
@@ -97,7 +97,7 @@ get_mac( char *interface_name, struct ifreq *request ) {
     const char *error = strerror(errno);
     close( sock );
     if ( result < 0 ) {
-        syslog( LOG_WARNING, "failed to get MAC address for '%s': %s",
+        log_warn( "failed to get MAC address for '%s': %s",
                             interface_name, error );
         return false;
     }
@@ -200,11 +200,11 @@ Network::Interface::Interface( Tcl_Interp *interp, NetLink::NewLink *message )
     } else if ( sscanf(_name, "ibiz%d", &_ordinal) == 1 ) {
         _no_ordinal = false;
     } else {
-        syslog( LOG_NOTICE, "could not parse interface name '%s'", _name );
+        log_notice( "could not parse interface name '%s'", _name );
     }
 
     if ( !_no_ordinal ) {
-        syslog( LOG_NOTICE, "Interface %s ordinal is %d", _name, _ordinal );
+        log_notice( "Interface %s ordinal is %d", _name, _ordinal );
     }
 
     unsigned char *address = message->MAC();
@@ -243,14 +243,14 @@ Network::Interface::Interface( Tcl_Interp *interp, NetLink::NewLink *message )
 
     if ( is_phys ) {
         get_settings();
-        syslog( LOG_NOTICE, "%s: %02x:%02x:%02x:%02x:%02x:%02x [%s] %d Mb/s, %s duplex",
+        log_notice( "%s: %02x:%02x:%02x:%02x:%02x:%02x [%s] %d Mb/s, %s duplex",
                             _name,
                             address[0], address[1], address[2],
                             address[3], address[4], address[5],
                             llname,
                             _speed, (is_full_duplex() ? "full" : "half") );
     } else {
-        syslog( LOG_NOTICE, "%s: %02x:%02x:%02x:%02x:%02x:%02x [%s]",
+        log_notice( "%s: %02x:%02x:%02x:%02x:%02x:%02x [%s]",
                             _name,
                             address[0], address[1], address[2],
                             address[3], address[4], address[5],
@@ -314,7 +314,7 @@ void Network::Interface::update( NetLink::LinkMessage *message ) {
     }
 
     if ( (changed & ignore_mask) != 0 ) {
-      syslog( LOG_NOTICE, "%s(%d) <%s> Flags: last/genevent=0x%08x/0x%08x => new=0x%08x (changed=0x%08x)",
+      log_notice( "%s(%d) <%s> Flags: last/genevent=0x%08x/0x%08x => new=0x%08x (changed=0x%08x)",
 	      message->name(), message->index(), family,
 	      last_flags, last_processed_flags, netlink_flags, changed );
     }
@@ -346,21 +346,21 @@ void Network::Interface::configure_addresses() {
     switch ( handler.error() ) {
     case       0:
         if ( debug > 0 ) {
-            syslog( LOG_NOTICE, "configured address for '%s'", name() );
+            log_notice( "configured address for '%s'", name() );
         }
         break;
     case -EEXIST:
         if ( debug > 0 ) {
-            syslog( LOG_NOTICE, "'%s' already configured with address", name() );
+            log_notice( "'%s' already configured with address", name() );
         }
         break;
-    case -EINVAL: syslog( LOG_ERR,    "invalid arguments to addr config request"    ); break;
+    case -EINVAL: log_err(    "invalid arguments to addr config request"    ); break;
     case -ENETDOWN:
-        syslog( LOG_ERR, "network is down" );
+        log_err( "network is down" );
         // Now what??
         break;
     default:
-        syslog( LOG_ERR, "unknown error (%d) from addr config request (%s)", handler.error(), name() );
+        log_err( "unknown error (%d) from addr config request (%s)", handler.error(), name() );
         break;
     }
 }
@@ -372,7 +372,7 @@ void Network::Interface::create_sockets() {
     outbound = ::socket( AF_INET6, SOCK_DGRAM, 0 );
     if ( outbound == -1 ) {
         // how to handle this error
-        syslog( LOG_ERR, "Network::Interface: failed to create socket" );
+        log_err( "Network::Interface: failed to create socket" );
         _exit( 1 );
     }
 
@@ -384,7 +384,7 @@ void Network::Interface::create_sockets() {
     unsigned int flag = 0;
     int result = setsockopt(outbound, IPPROTO_IPV6, IPV6_MULTICAST_LOOP, &flag, sizeof(flag));
     if ( result < 0 ) {
-        syslog( LOG_WARNING, "failed to turn off loopback for '%s'", name() );
+        log_warn( "failed to turn off loopback for '%s'", name() );
     }
 
     // do not bind -- setsocketopt
@@ -394,7 +394,7 @@ void Network::Interface::create_sockets() {
     }
 
     if ( ::fcntl(outbound, F_SETFD, FD_CLOEXEC) < 0 ) {
-        syslog( LOG_ERR, "could not set close on exec for outbound multicast socket '%s'", name() );
+        log_err( "could not set close on exec for outbound multicast socket '%s'", name() );
     }
 
     if ( debug > 0 )  printf( "created outbound socket for %s\n", _name );
@@ -402,10 +402,10 @@ void Network::Interface::create_sockets() {
     _icmp_socket = new ICMPv6::Socket();
 #if 0
     if ( _icmp_socket->bind(&primary_address, _index) == false ) {
-        syslog( LOG_NOTICE, "initial bind of ICMPv6 socket failed for '%s'", _name );
+        log_notice( "initial bind of ICMPv6 socket failed for '%s'", _name );
     }
 #endif
-    syslog( LOG_NOTICE, "created outbound socket %d for '%s'", outbound, name() );
+    log_notice( "created outbound socket %d for '%s'", outbound, name() );
 }
 
 /** return a bound ICMP socket
@@ -425,12 +425,12 @@ Network::Interface::icmp_socket() {
     if ( _removed ) return NULL;
 
     while ( _icmp_socket->bind(&primary_address, _index) == false ) {
-        syslog( LOG_WARNING, "%s(%d): could not bind ICMP socket", name(), index() );
+        log_warn( "%s(%d): could not bind ICMP socket", name(), index() );
 
         // If this were a biz/bridge -- we could reset the phys interface
         // if we reset the bridge interface -- we may lose the cluster IP?
         if ( is_private() ) {
-            syslog( LOG_WARNING, "%s(%d): reset private interface", name(), index() );
+            log_warn( "%s(%d): reset private interface", name(), index() );
             bounce_link();
         }
 
@@ -438,7 +438,7 @@ Network::Interface::icmp_socket() {
 
         nanosleep( &delay, NULL );
 /* EDM XXX should probably put an upper bound on this, but we don't want to
-   increase the frequency of the syslog message above... */
+   increase the frequency of the logger message above... */
         delay.tv_sec += 5;
     }
 
@@ -461,7 +461,7 @@ Network::Interface::get_settings() {
     int error = ::ioctl( ethtool, SIOCETHTOOL, &request );
 
     if ( error < 0 ) {
-        syslog( LOG_ERR, "failed to get ethtool settings for '%s'", name() );
+        log_err( "failed to get ethtool settings for '%s'", name() );
     }
     close( ethtool );
 
@@ -555,7 +555,7 @@ set_offload( char *name, int command, int value ) {
     if (result != 0) {
         char *err, e[128];
         err = strerror_r( errno, e, sizeof(e) );
-        syslog( LOG_ERR, "failed to set ethtool offload settings for '%s': %s", name, err );
+        log_err( "failed to set ethtool offload settings for '%s': %s", name, err );
     }
 }
 
@@ -630,16 +630,16 @@ bool
 Network::Interface::negotiate() {
     long delta = ::time(0) - last_negotiation;
     if ( delta < 60 ) {
-        syslog( LOG_NOTICE, "negotiated link for '%s' too recently, skipping renegotiate", name() );
+        log_notice( "negotiated link for '%s' too recently, skipping renegotiate", name() );
         return false;
     }
 
     if ( is_quiesced() ) {
-        syslog( LOG_NOTICE, "%s(%d): is quiesced, not negotiating", name(), index() );
+        log_notice( "%s(%d): is quiesced, not negotiating", name(), index() );
         return false;
     }
 
-    syslog( LOG_NOTICE, "%s(%d): negotiate link", name(), index() );
+    log_notice( "%s(%d): negotiate link", name(), index() );
 
     struct ifreq request;
     struct ethtool_value data;
@@ -654,7 +654,7 @@ Network::Interface::negotiate() {
 
     bool result = true;
     if ( error < 0 ) {
-        syslog( LOG_ERR, "%s(%d): failed to negotiate link", name(), index() );
+        log_err( "%s(%d): failed to negotiate link", name(), index() );
         result = false;
     }
     close( ethtool );
@@ -670,7 +670,7 @@ Network::Interface::repair_link_speed() {
 // Commented out due to IPS discussion on 5/29/08
 #if BUG_5277
     if ( not_full_duplex() or speed() < 1000 ) {
-        syslog( LOG_NOTICE, "ERROR : link for %s(%d) came up at %d Mb/s %s duplex (bug 5277)",
+        log_notice( "ERROR : link for %s(%d) came up at %d Mb/s %s duplex (bug 5277)",
                             interface->name(), interface->index(), interface->speed(),
                             (interface->is_full_duplex() ? "full" : "half") );
         interface->negotiate();
@@ -682,7 +682,7 @@ Network::Interface::repair_link_speed() {
  * These need to change to NewLink commands
  */
 void Network::Interface::bring_link_down() {
-    if ( debug > 0 )  syslog( LOG_NOTICE, "bring link down for '%s'", name() );
+    if ( debug > 0 )  log_notice( "bring link down for '%s'", name() );
     char buffer[128];
     sprintf( buffer, "/sbin/ip link set %s down", name() );
     system( buffer );
@@ -691,7 +691,7 @@ void Network::Interface::bring_link_down() {
 /**
  */
 void Network::Interface::bring_link_up() {
-    if ( debug > 0 )  syslog( LOG_NOTICE, "bring link up for '%s'", name() );
+    if ( debug > 0 )  log_notice( "bring link up for '%s'", name() );
     char buffer[128];
     sprintf( buffer, "/sbin/ip link set %s up", name() );
     system( buffer );
@@ -701,7 +701,7 @@ void Network::Interface::bring_link_up() {
  */
 void Network::Interface::bounce_link() {
     if ( is_quiesced() ) {
-        syslog( LOG_NOTICE, "%s(%d): is quiesced, not bouncing", name(), index() );
+        log_notice( "%s(%d): is quiesced, not bouncing", name(), index() );
         return;
     }
     bring_link_down();
@@ -715,7 +715,7 @@ void Network::Interface::bounce_link() {
 /**
  */
 void Network::Interface::repair_link() {
-    if ( debug > 0 ) syslog( LOG_NOTICE, "%s(%d): attempt to repair link", name(), index() );
+    if ( debug > 0 ) log_notice( "%s(%d): attempt to repair link", name(), index() );
     bounce_link();
 }
 
@@ -763,11 +763,11 @@ void Network::Interface::save_sysconfig() {
  */
 int Network::Interface::sendto( void *message, size_t length, int flags, const struct sockaddr_in6 *address) {
     if ( debug > 5 ) {
-        syslog( LOG_NOTICE, "%s(%d) sendto message length %d", _name, _index, length );
+        log_notice( "%s(%d) sendto message length %d", _name, _index, length );
     }
     if ( outbound == 0 ) {
         if ( debug > 1 ) {
-            syslog( LOG_NOTICE, "%s(%d) sendto has no outbound socket", _name, _index );
+            log_notice( "%s(%d) sendto has no outbound socket", _name, _index );
         }
         return 0;
     }
@@ -775,7 +775,7 @@ int Network::Interface::sendto( void *message, size_t length, int flags, const s
     if ( result < 0 ) {
         if ( debug > 1 ) {
             const char *error = strerror(errno);
-            syslog( LOG_NOTICE, "%s(%d) sendto failed: %s", _name, _index, error );
+            log_notice( "%s(%d) sendto failed: %s", _name, _index, error );
         }
     }
     ::time( &last_sendto );
@@ -815,16 +815,16 @@ bool Network::Interface::advertise() {
     if ( _icmp_socket == 0 ) return false;
     if ( not_private() ) {
         if ( debug > 1 ) {
-            syslog( LOG_NOTICE, "%s(%d) not advertising non-private interface", _name, _index );
+            log_notice( "%s(%d) not advertising non-private interface", _name, _index );
         }
         return true; // so that caller doesn't report an error
     }
     if ( _icmp_socket->not_bound() ) {
         if ( debug > 1 ) {
-            syslog( LOG_NOTICE, "advertise: binding ICMP socket for interface '%s'", _name );
+            log_notice( "advertise: binding ICMP socket for interface '%s'", _name );
         }
         if ( _icmp_socket->bind(&primary_address, _index) == false ) {
-            if ( debug > 0 ) syslog( LOG_NOTICE, "advertise: ICMP bind for '%s' failed", _name );
+            if ( debug > 0 ) log_notice( "advertise: ICMP bind for '%s' failed", _name );
             return false;
         }
     }
@@ -845,7 +845,7 @@ bool Network::Interface::advertise() {
             peer.copy_address( &recipient );
             if ( na.send( *_icmp_socket, &recipient ) == false ) {
                 if ( (debug > 0) or (advertise_errors < 1) ) {
-                    syslog( LOG_WARNING, "failed to send neighbor advertisement out '%s'", _name );
+                    log_warn( "failed to send neighbor advertisement out '%s'", _name );
                 }
                 ++advertise_errors;
             } else {
@@ -859,12 +859,12 @@ bool Network::Interface::advertise() {
     if ( peers_sent == 0 ) {
         long delta = ::time(0) - last_no_peer_report;
         if ( delta > 120 ) {
-            syslog( LOG_WARNING, "no peers found on %s", _name );
+            log_warn( "no peers found on %s", _name );
             if ( is_private() and not_quiesced() and (last_no_peer_report != 0) ) {
 	      if (has_fault_injected()) {
-		syslog( LOG_WARNING, "WARNING: sentinel file, detected skip attempt to recover %s", _name );
+		log_warn( "WARNING: sentinel file, detected skip attempt to recover %s", _name );
 	      } else {
-		  // syslog( LOG_WARNING, "WARNING: reset private interface" );
+		  // log_warn( "WARNING: reset private interface" );
 		  // bring_link_down();
 		  // bring_link_up();
 	      }
@@ -886,7 +886,7 @@ int Network::Interface::inbound_socket( char *address, uint16_t port ) {
     if ( inbound < 0 ) {
         char *err, e[128];
         err = strerror_r( errno, e, sizeof(e) );
-        syslog( LOG_ERR, "could not create diastole socket: %s", err );
+        log_err( "could not create diastole socket: %s", err );
         _exit( 1 );
     }
 
@@ -918,7 +918,7 @@ int Network::Interface::inbound_socket( char *address, uint16_t port ) {
     group.ipv6mr_interface = _index;
     result = setsockopt(inbound, IPPROTO_IPV6, IPV6_ADD_MEMBERSHIP, &group, sizeof(group));
     if ( result < 0 ) {
-        syslog( LOG_ERR, "could not join multicast group for interface '%s'", name() );
+        log_err( "could not join multicast group for interface '%s'", name() );
         // exit( 0 );
     }
 
@@ -935,7 +935,7 @@ int Network::Interface::inbound_socket( char *address, uint16_t port ) {
     }
 
     if ( fcntl(inbound, F_SETFD, FD_CLOEXEC) < 0 ) {
-        syslog( LOG_ERR, "could not set close on exec for inbound multicast socket '%s'", name() );
+        log_err( "could not set close on exec for inbound multicast socket '%s'", name() );
     }
 
     struct timeval tv;
@@ -943,10 +943,10 @@ int Network::Interface::inbound_socket( char *address, uint16_t port ) {
     tv.tv_usec = 0;
     result = setsockopt(inbound, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
     if ( result < 0 ) {
-        syslog( LOG_ERR, "could not set receive timeout for inbound multicast socket '%s'", name() );
+        log_err( "could not set receive timeout for inbound multicast socket '%s'", name() );
     }
 
-    if ( debug > 1 ) syslog( LOG_NOTICE, "inbound socket (%d) created for '%s'", inbound, _name );
+    if ( debug > 1 ) log_notice( "inbound socket (%d) created for '%s'", inbound, _name );
     return inbound;
 }
 
@@ -972,7 +972,7 @@ Network::Interface::carrier() const {
     snprintf( path, sizeof(path), "/sys/class/net/%s/carrier", name() );
     FILE *f = fopen(path, "r");
     if ( f == NULL ) {
-        syslog( LOG_ERR, "%s(%d) could not determine carrier", name(), index() );
+        log_err( "%s(%d) could not determine carrier", name(), index() );
         return false;
     }
     fscanf( f, "%d\n", &value  );
@@ -1007,7 +1007,7 @@ bool
 Network::Interface::rename( char *new_name ) {
     char *err, e[128];
 
-    syslog( LOG_NOTICE, "renaming '%s' to '%s'", _name, new_name );
+    log_notice( "renaming '%s' to '%s'", _name, new_name );
 
     struct ifreq request;
     strncpy( request.ifr_name,    _name,    IFNAMSIZ );
@@ -1020,7 +1020,7 @@ Network::Interface::rename( char *new_name ) {
             fd = ::socket(PF_INET6, SOCK_DGRAM, 0);
             if ( fd < 0 ) {
                 err = strerror_r( errno, e, sizeof(e) );
-                syslog( LOG_ERR, "interface rename failed to create socket for rename: %s", err );
+                log_err( "interface rename failed to create socket for rename: %s", err );
                 return false;
             }
         }
@@ -1032,7 +1032,7 @@ Network::Interface::rename( char *new_name ) {
 
     if ( result < 0 ) {
         err = strerror_r( error, e, sizeof(e) );
-        syslog( LOG_ERR, "interface rename failed: %s", err );
+        log_err( "interface rename failed: %s", err );
         // handle error
         return false;
     }
@@ -1041,10 +1041,10 @@ Network::Interface::rename( char *new_name ) {
     _name = strdup( new_name );
 
     if ( sscanf(_name, "%*[a-z]%d", &_ordinal) != 1 ) {
-        syslog( LOG_NOTICE, "could not determine ordinal for %s", _name );
+        log_notice( "could not determine ordinal for %s", _name );
         _ordinal = 0;
     }
-    syslog( LOG_NOTICE, "%s ordinal changed to %d", _name, _ordinal );
+    log_notice( "%s ordinal changed to %d", _name, _ordinal );
 
     return true;
 }
@@ -1086,7 +1086,7 @@ Network::Interface::intern_neighbor( struct in6_addr& address ) {
     }
     if ( in_use_count > 256 ) {
         if ( table_warning_reported == false ) {
-            syslog( LOG_WARNING, "WARNING: %s(%d) neighbor table exceeds 256 entries", name(), index() );
+            log_warn( "WARNING: %s(%d) neighbor table exceeds 256 entries", name(), index() );
             table_warning_reported = true;
         }
     }
@@ -1107,7 +1107,7 @@ Network::Interface::intern_neighbor( struct in6_addr& address ) {
             new_entry = true;
         } else {
 	    if ( table_error_reported == false ) {
-                syslog( LOG_ERR, "ERROR: %s(%d) neighbor table is full", name(), index() );
+                log_err( "ERROR: %s(%d) neighbor table is full", name(), index() );
                 table_error_reported = true;
             }
         }
@@ -1118,7 +1118,7 @@ Network::Interface::intern_neighbor( struct in6_addr& address ) {
         result->make_partner();
         char buffer[80];
         const char *address_string = inet_ntop(AF_INET6, &address, buffer, sizeof buffer);
-        syslog( LOG_NOTICE, "%s(%d) neighbor %s is partner", name(), index(), address_string );
+        log_notice( "%s(%d) neighbor %s is partner", name(), index(), address_string );
     }
 
     return result;
@@ -1194,7 +1194,7 @@ Network::Interface::accept_ra() {
     snprintf( path, sizeof(path), "/proc/sys/net/ipv6/conf/%s/accept_ra", name() );
     FILE *f = fopen(path, "r");
     if ( f == NULL ) {
-        syslog( LOG_ERR, "%s(%d) could not determine accept_ra", name(), index() );
+        log_err( "%s(%d) could not determine accept_ra", name(), index() );
         return false;
     }
     fscanf( f, "%d\n", &value  );
@@ -1210,7 +1210,7 @@ Network::Interface::accept_ra( bool value ) {
     snprintf( path, sizeof(path), "/proc/sys/net/ipv6/conf/%s/accept_ra", name() );
     FILE *f = fopen(path, "w");
     if ( f == NULL ) {
-        syslog( LOG_ERR, "%s(%d) could not disable accept_ra", name(), index() );
+        log_err( "%s(%d) could not disable accept_ra", name(), index() );
         return;
     }
     fprintf( f, "%d\n", value ? 1 : 0 );
@@ -1298,7 +1298,7 @@ bool Network::Interface::is_captured() const {
 bool Network::Interface::is_tunnelled() const {
     bool result = false;
 
-    syslog( LOG_NOTICE, "check if '%s' is tunnelled", name() );
+    log_notice( "check if '%s' is tunnelled", name() );
 
     // if this is not a bridge, it could not be tunnelled.
     if ( not_bridge() ) return false;
@@ -1307,7 +1307,7 @@ bool Network::Interface::is_tunnelled() const {
     char bridge_path[1024];
     sprintf( bridge_path, "../../../../class/net/%s", name() );
 
-    syslog( LOG_NOTICE, "check if '%s' is tunnelled", bridge_path );
+    log_notice( "check if '%s' is tunnelled", bridge_path );
 
     glob_t paths;
     memset(&paths, 0, sizeof(paths));
@@ -1316,11 +1316,11 @@ bool Network::Interface::is_tunnelled() const {
     for ( size_t i = 0 ; i < paths.gl_pathc ; i++ ) {
         int count = readlink( paths.gl_pathv[i], port_path, sizeof(port_path) );
         if ( count == -1 ) continue;
-        syslog( LOG_NOTICE, "check if '%s' is tunnelled through '%s'", bridge_path, port_path );
+        log_notice( "check if '%s' is tunnelled through '%s'", bridge_path, port_path );
         port_path[count] = '\0';
 
         if ( strcmp(port_path, bridge_path) == 0 ) {
-            syslog( LOG_NOTICE, "I (%s) am tunnelled through '%s'", bridge_path, paths.gl_pathv[i] );
+            log_notice( "I (%s) am tunnelled through '%s'", bridge_path, paths.gl_pathv[i] );
             result = true;
             break;
         }
@@ -1491,7 +1491,7 @@ bool Network::Interface::is_listening_to( const char *protocol, u_int16_t port )
 
     FILE *f = fopen(path, "r");
     if ( f == NULL ) {
-        syslog( LOG_ERR, "could not open '%s'", path );
+        log_err( "could not open '%s'", path );
         return false;
     }
     fgets( rest, sizeof rest, f );
@@ -1501,9 +1501,9 @@ bool Network::Interface::is_listening_to( const char *protocol, u_int16_t port )
                        &state, &transmitQ, &receiveQ, &timer_run, &time_length, 
                        &retransmits, &uid, &timeout, &inode, rest );
         switch (n) {
-        case  0: syslog( LOG_WARNING, "could not parse %s state", protocol ); continue;
+        case  0: log_warn( "could not parse %s state", protocol ); continue;
         case 15: break;
-        default: syslog( LOG_WARNING, "only parsed %d fields from %s", n, protocol ); continue;
+        default: log_warn( "only parsed %d fields from %s", n, protocol ); continue;
         }
         if ( local_port != port ) continue;
         if ( strlen(local_address) < 9 ) continue; // IPv4
@@ -1681,28 +1681,28 @@ bool Network::Interface::Initialize( Tcl_Interp *interp ) {
     }
 
     if ( Tcl_LinkVar(interp, "Network::Interface::debug", (char *)&debug, TCL_LINK_INT) != TCL_OK ) {
-        syslog( LOG_ERR, "failed to link Network::Interface::debug" );
+        log_err( "failed to link Network::Interface::debug" );
         _exit( 1 );
     }
 
     if ( Tcl_LinkVar(interp, "link_bounce_interval", (char *)&link_bounce_interval, TCL_LINK_INT) != TCL_OK ) {
-        syslog( LOG_ERR, "failed to link Network::Interface::link_bounce_interval" );
+        log_err( "failed to link Network::Interface::link_bounce_interval" );
         exit( 1 );
     }
 
     if ( Tcl_LinkVar(interp, "link_bounce_attempts", (char *)&link_bounce_attempts, TCL_LINK_INT) != TCL_OK ) {
-        syslog( LOG_ERR, "failed to link Network::Interface::link_bounce_attempts" );
+        log_err( "failed to link Network::Interface::link_bounce_attempts" );
         exit( 1 );
     }
 
     if ( Tcl_LinkVar(interp, "link_bounce_reattempt", (char *)&link_bounce_reattempt, TCL_LINK_INT) != TCL_OK ) {
-        syslog( LOG_ERR, "failed to link Network::Interface::link_bounce_reattempt" );
+        log_err( "failed to link Network::Interface::link_bounce_reattempt" );
         exit( 1 );
     }
 
     command = Tcl_CreateObjCommand(interp, "Network::Interface::new", Interface_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
-        // syslog ?? want to report TCL Error
+        // logger ?? want to report TCL Error
         return false;
     }
 

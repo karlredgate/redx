@@ -49,8 +49,8 @@
 
 #include <errno.h>
 #include <string.h>
-#include <syslog.h>
 
+#include "logger.h"
 #include "Hypercall.h"
 
 /**
@@ -82,7 +82,7 @@ Xen::Hypercall::Hypercall() {
  */
 Xen::Hypercall::~Hypercall() {
     if ( hypercall == NULL ) {
-        syslog( LOG_ERR, "trying to destruct a NULL hypercall" );
+        log_err( "trying to destruct a NULL hypercall" );
         abort();
     }
     xen_free( hypercall, sizeof(*hypercall) );
@@ -97,7 +97,7 @@ bool Xen::Hypercall::send() {
     // open file
     int fd = open("/proc/xen/privcmd", O_RDWR);
     if ( fd == -1 ) {
-        syslog( LOG_ERR, "failed to open hypervisor interface : %s",
+        log_err( "failed to open hypervisor interface : %s",
                strerror_r(errno, buffer, sizeof(buffer)) );
         exit( errno );
     }
@@ -112,7 +112,7 @@ bool Xen::Hypercall::send() {
         /*
          * \todo we get permission denied in Rio
          */
-        syslog( LOG_WARNING, "hypercall failed: %s",
+        log_warn( "hypercall failed: %s",
                strerror_r(errno, buffer, sizeof(buffer)) );
     }
     // more than once?
@@ -143,7 +143,7 @@ Xen::SysControl::SysControl( uint32_t cmd ) {
  */
 Xen::SysControl::~SysControl() {
     if ( request == NULL ) {
-        syslog( LOG_ERR, "trying to destruct a NULL SysControl" );
+        log_err( "trying to destruct a NULL SysControl" );
         abort();
     }
     xen_free( request, sizeof(*request) );
@@ -188,7 +188,7 @@ Xen::DomControl::DomControl( domid_t domain, uint32_t cmd ) {
  */
 Xen::DomControl::~DomControl() {
     if ( request == NULL ) {
-        syslog( LOG_ERR, "trying to destruct a NULL DomControl" );
+        log_err( "trying to destruct a NULL DomControl" );
         abort();
     }
     xen_free( request, sizeof(*request) );
@@ -234,14 +234,14 @@ Xen::SysControl::SysControl(XEN_SYSCTL_physinfo) {
 /**
  */
 Xen::GetPhysInfo::~GetPhysInfo() {
-    // syslog( LOG_NOTICE, "destruct GetPhysInfo" );
+    // log_notice( "destruct GetPhysInfo" );
 }
 
 /**
  */
 Xen::PhysInfo* Xen::GetPhysInfo::operator() ( ) {
     if ( Xen::SysControl::send() == false ) {
-        syslog( LOG_ERR, "GetPhysInfo failed" );
+        log_err( "GetPhysInfo failed" );
     }
     Xen::PhysInfo *info = new Xen::PhysInfo( &(request->u.physinfo) );
     return info;
@@ -251,13 +251,13 @@ Xen::PhysInfo* Xen::GetPhysInfo::operator() ( ) {
  */
 Xen::GetDomainInfoList::GetDomainInfoList() :
 Xen::SysControl::SysControl(XEN_SYSCTL_getdomaininfolist) {
-    // syslog( LOG_NOTICE, "construct GetDomainInfoList" );
+    // log_notice( "construct GetDomainInfoList" );
 }
 
 /**
  */
 Xen::GetDomainInfoList::~GetDomainInfoList() {
-    // syslog( LOG_NOTICE, "destruct GetDomainInfoList" );
+    // log_notice( "destruct GetDomainInfoList" );
 }
 
 /**
@@ -267,7 +267,7 @@ int Xen::GetDomainInfoList::operator() ( xen_domctl_getdomaininfo_t *domains, in
     request->u.getdomaininfolist.max_domains = size;
     set_xen_guest_handle( request->u.getdomaininfolist.buffer, domains );
     if ( Xen::SysControl::send() == false ) {
-        syslog( LOG_ERR, "GetDomainInfoList failed" );
+        log_err( "GetDomainInfoList failed" );
     }
     int count = request->u.getdomaininfolist.num_domains;
     return count;
@@ -299,7 +299,7 @@ Xen::DomControl::DomControl(domain, XEN_DOMCTL_getvcpuinfo) {
 /**
  */
 Xen::GetVcpuInfo::~GetVcpuInfo() {
-    // syslog( LOG_NOTICE, "destruct GetVcpuInfo" );
+    // log_notice( "destruct GetVcpuInfo" );
 }
 
 /**
@@ -307,7 +307,7 @@ Xen::GetVcpuInfo::~GetVcpuInfo() {
 Xen::VcpuInfo* Xen::GetVcpuInfo::operator() ( int vcpu ) {
     request->u.getvcpuinfo.vcpu = vcpu;
     if ( Xen::DomControl::send() == false ) {
-        syslog( LOG_ERR, "GetVcpuInfo failed" );
+        log_err( "GetVcpuInfo failed" );
     }
     Xen::VcpuInfo *info = new Xen::VcpuInfo( &(request->u.getvcpuinfo) );
     return info;
@@ -318,7 +318,7 @@ Xen::VcpuInfo* Xen::GetVcpuInfo::operator() ( int vcpu ) {
 Xen::VcpuInfo* Xen::GetVcpuInfo::operator() ( VcpuInfo *info ) {
     request->u.getvcpuinfo.vcpu = info->vcpu();
     if ( Xen::DomControl::send() == false ) {
-        syslog( LOG_ERR, "GetVcpuInfo failed" );
+        log_err( "GetVcpuInfo failed" );
     }
     info->update( &(request->u.getvcpuinfo) );
     return info;
@@ -333,7 +333,7 @@ Xen::DomainCommand::DomainCommand( domid_t domain, uint32_t command )
 /**
  */
 Xen::DomainCommand::~DomainCommand() {
-    // syslog( LOG_NOTICE, "destruct DomainCommand" );
+    // log_notice( "destruct DomainCommand" );
 }
 
 /**
@@ -341,7 +341,7 @@ Xen::DomainCommand::~DomainCommand() {
  */
 bool Xen::DomainCommand::operator() () {
     if ( Xen::DomControl::send() == false ) {
-        syslog( LOG_ERR, "DomainCommand failed" );
+        log_err( "DomainCommand failed" );
     }
     return true;
 }
@@ -434,7 +434,7 @@ Xen::DomControl::DomControl(domain, XEN_DOMCTL_getdomaininfo) {
 Xen::DomainInfo* Xen::GetDomainInfo::operator() ( domid_t domain ) {
     request->u.getdomaininfo.domain = domain;
     if ( Xen::DomControl::send() == false ) {
-        syslog( LOG_ERR, "GetDomainInfo failed" );
+        log_err( "GetDomainInfo failed" );
     }
     Xen::DomainInfo *info = new Xen::DomainInfo( &(request->u.getdomaininfo) );
     return info;

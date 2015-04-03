@@ -31,7 +31,6 @@
 #include <sys/mount.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include <syslog.h>
 #include <errno.h>
 #include <string.h>
 #include <sys/reboot.h>
@@ -41,6 +40,7 @@
 #include <tcl.h>
 #include "tcl_util.h"
 
+#include "logger.h"
 #include "Kernel.h"
 #include "AppInit.h"
 
@@ -108,7 +108,7 @@ daemonize_cmd( ClientData data, Tcl_Interp *interp,
     if ( fork() != 0 ) { _exit(0); }
 
     if ( setsid() < 0 ) {
-        syslog( LOG_NOTICE, "failed to setsid()" );
+        log_notice( "failed to setsid()" );
     }
 
     freopen( "/dev/null", "r", stdin );
@@ -116,10 +116,10 @@ daemonize_cmd( ClientData data, Tcl_Interp *interp,
     freopen( "/dev/null", "w", stderr );
 
     openlog( "(house:background)", LOG_PERROR, LOG_USER );
-    syslog( LOG_NOTICE, "spawning '%s'", command );
+    log_notice( "spawning '%s'", command );
 
     if ( execve(command, argv, static_envp) < 0 ) {
-        syslog( LOG_NOTICE, "failed to execve('%s')", command );
+        log_notice( "failed to execve('%s')", command );
         _exit(0);
     }
 
@@ -211,7 +211,7 @@ reboot_cmd( ClientData data, Tcl_Interp *interp,
     }
 
     char *message = Tcl_GetStringFromObj( objv[1], NULL );
-    syslog( LOG_NOTICE, "reboot: %s", message );
+    log_notice( "reboot: %s", message );
     sync();
     int result = ::reboot( RB_AUTOBOOT );
     if ( result < 0 ) {
@@ -239,7 +239,7 @@ halt_cmd( ClientData data, Tcl_Interp *interp,
     }
 
     char *message = Tcl_GetStringFromObj( objv[1], NULL );
-    syslog( LOG_NOTICE, "reboot: %s", message );
+    log_notice( "reboot: %s", message );
     sync();
     int result = ::reboot( RB_HALT_SYSTEM );
     if ( result < 0 ) {
@@ -267,7 +267,7 @@ poweroff_cmd( ClientData data, Tcl_Interp *interp,
     }
 
     char *message = Tcl_GetStringFromObj( objv[1], NULL );
-    syslog( LOG_NOTICE, "reboot: %s", message );
+    log_notice( "reboot: %s", message );
     sync();
     int result = ::reboot( RB_POWER_OFF );
     if ( result < 0 ) {
@@ -339,7 +339,7 @@ spawn_child( Tcl_Interp *interp, const char *command, int objc, Tcl_Obj * CONST 
      * fd[1] is for writing - child stdout
      */
     if ( pipe(fd) < 0 ) {
-        syslog( LOG_NOTICE, "failed to generate pipe for '%s'", command );
+        log_notice( "failed to generate pipe for '%s'", command );
         return -1;
     }
 
@@ -365,10 +365,10 @@ spawn_child( Tcl_Interp *interp, const char *command, int objc, Tcl_Obj * CONST 
     dup2( fd[1], 2 );
 
     if ( execve(command, argv, static_envp) < 0 ) {
-        syslog( LOG_NOTICE, "failed to execve '%s'", command );
+        log_notice( "failed to execve '%s'", command );
         _exit( 0 );
     }
-    syslog( LOG_NOTICE, "THIS MESSAGE SHOULD NEVER HAPPEN - exec failed" );
+    log_notice( "THIS MESSAGE SHOULD NEVER HAPPEN - exec failed" );
     _exit( 0 );
 }
 
@@ -397,7 +397,7 @@ wait_for_child( pid_t child, int timeout ) {
     struct timespec remaining = { 0, 0 };
 
     if ( child == 0 ) {
-        syslog( LOG_NOTICE, "asked to wait for an invalid pid" );
+        log_notice( "asked to wait for an invalid pid" );
         return 0;
     }
 
@@ -406,12 +406,12 @@ wait_for_child( pid_t child, int timeout ) {
         if ( pid == child ) {
             if ( WIFEXITED(status) ) {
                 if ( WEXITSTATUS(status) != 0 ) {
-                    syslog( LOG_NOTICE, "%d exited with status %d", pid, WEXITSTATUS(status) );
+                    log_notice( "%d exited with status %d", pid, WEXITSTATUS(status) );
                 }
                 return child; 
             }
             if ( WIFSIGNALED(status) ) {
-                syslog( LOG_NOTICE, "%d killed by signal %d", pid, WTERMSIG(status) );
+                log_notice( "%d killed by signal %d", pid, WTERMSIG(status) );
                 return child;
             }
         }
@@ -424,23 +424,23 @@ wait_for_child( pid_t child, int timeout ) {
             switch (errno) {
             case EINTR: continue;
             case EINVAL:
-                syslog( LOG_NOTICE, "waitpid() with an invalid argument" );
+                log_notice( "waitpid() with an invalid argument" );
                 break;
             case ECHILD:
-                syslog( LOG_NOTICE, "waitpid() for an invalid pid" );
+                log_notice( "waitpid() for an invalid pid" );
                 break;
             default:
-                syslog( LOG_NOTICE, "unknown errno from waitpid()" );
+                log_notice( "unknown errno from waitpid()" );
                 break;
             }
         }
-        syslog( LOG_NOTICE,
+        log_notice(
                 "waitpid() returned an invalid value with %d seconds remaining",
                 timeout );
         break;
     }
 
-    if ( debug ) syslog( LOG_NOTICE, "timed out, killing pid %d", child );
+    if ( debug ) log_notice( "timed out, killing pid %d", child );
     kill( child, SIGKILL );
 
     /* pid = waitpid( child, &status, WNOHANG ); */
@@ -468,7 +468,7 @@ timeout( Tcl_Interp *interp, int time_limit,
     pid_t child = spawn_child( interp, command, objc, objv, &out );
 
     if ( child < 0 ) {
-        syslog( LOG_NOTICE, "fork failed for '%s %s'", command, arg_string );
+        log_notice( "fork failed for '%s %s'", command, arg_string );
         Tcl_ResetResult( interp );
         char buffer[128];
         char *err = strerror_r(errno, buffer, sizeof(buffer));
@@ -477,13 +477,13 @@ timeout( Tcl_Interp *interp, int time_limit,
     }
 
     if ( tracing ) {
-        syslog( LOG_NOTICE, "spawned '%s %s' (%d)", command, arg_string, child );
+        log_notice( "spawned '%s %s' (%d)", command, arg_string, child );
     }
     int result = wait_for_child( child, time_limit );
 
     if ( result < 0 ) {
         close( out );
-        syslog( LOG_NOTICE, "timed out waiting for '%s' (%d)", command, child );
+        log_notice( "timed out waiting for '%s' (%d)", command, child );
         Svc_SetResult( interp, "timed out waiting for child", TCL_STATIC );
         return TCL_ERROR;
     }
@@ -497,7 +497,7 @@ timeout( Tcl_Interp *interp, int time_limit,
         bytes = read( out, buffer, sizeof(buffer)-1 );
         if ( bytes == 0 ) break;
         if ( bytes < 0 ) {
-            syslog( LOG_NOTICE, "error reading from child - skipping rest" );
+            log_notice( "error reading from child - skipping rest" );
             break;
         }
         buffer[bytes] = '\0';
@@ -582,61 +582,61 @@ bool Kernel_Module( Tcl_Interp *interp ) {
     }
 
     if ( Tcl_LinkVar(interp, "Kernel::debug", (char *)&debug, TCL_LINK_INT) != TCL_OK ) {
-        syslog( LOG_ERR, "failed to link Kernel::debug" );
+        log_err( "failed to link Kernel::debug" );
         return false;
     }
 
     command = Tcl_CreateObjCommand(interp, "Kernel::daemonize", daemonize_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
-        // syslog ?? want to report TCL Error
+        // logger ?? want to report TCL Error
         return false;
     }
 
     command = Tcl_CreateObjCommand(interp, "Kernel::mount", mount_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
-        // syslog ?? want to report TCL Error
+        // logger ?? want to report TCL Error
         return false;
     }
 
     command = Tcl_CreateObjCommand(interp, "Kernel::umount", umount_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
-        // syslog ?? want to report TCL Error
+        // logger ?? want to report TCL Error
         return false;
     }
 
     command = Tcl_CreateObjCommand(interp, "Kernel::reboot", reboot_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
-        // syslog ?? want to report TCL Error
+        // logger ?? want to report TCL Error
         return false;
     }
 
     command = Tcl_CreateObjCommand(interp, "Kernel::halt", halt_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
-        // syslog ?? want to report TCL Error
+        // logger ?? want to report TCL Error
         return false;
     }
 
     command = Tcl_CreateObjCommand(interp, "Kernel::poweroff", poweroff_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
-        // syslog ?? want to report TCL Error
+        // logger ?? want to report TCL Error
         return false;
     }
 
     command = Tcl_CreateObjCommand(interp, "Kernel::salute", salute_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
-        // syslog ?? want to report TCL Error
+        // logger ?? want to report TCL Error
         return false;
     }
 
     command = Tcl_CreateObjCommand(interp, "Kernel::timeout", timeout_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
-        // syslog ?? want to report TCL Error
+        // logger ?? want to report TCL Error
         return false;
     }
 
     command = Tcl_CreateObjCommand(interp, "Kernel::ipmitool", ipmitool_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
-        // syslog ?? want to report TCL Error
+        // logger ?? want to report TCL Error
         return false;
     }
 

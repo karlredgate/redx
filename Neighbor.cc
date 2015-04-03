@@ -39,7 +39,6 @@
 #include <signal.h>
 #include <fcntl.h>
 #include <time.h>
-#include <syslog.h>
 #include <string.h>
 #include <glob.h>
 #include <errno.h>
@@ -47,6 +46,7 @@
 #include <tcl.h>
 #include "tcl_util.h"
 
+#include "logger.h"
 #include "util.h"
 #include "host_table.h"
 #include "NetLink.h"
@@ -61,7 +61,7 @@ Network::Node::uuid( UUID& that ) {
     _uuid = that;
     _ordinal = 255;
     valid = true;
-    // syslog( LOG_NOTICE, "new node allocated with uuid %s", _uuid.to_s() );
+    // log_notice( "new node allocated with uuid %s", _uuid.to_s() );
 }
 
 /**
@@ -69,7 +69,7 @@ Network::Node::uuid( UUID& that ) {
 void
 Network::Node::ordinal( uint8_t value ) {
     _ordinal = value;
-    // syslog( LOG_NOTICE, "node%d %s", _ordinal, _uuid.to_s() );
+    // log_notice( "node%d %s", _ordinal, _uuid.to_s() );
 }
 
 /**
@@ -96,7 +96,7 @@ public:
     virtual ~ClearNodePartner() {}
     virtual int operator() ( Network::Node& node ) {
         if ( node.not_partner() ) return 0;
-        syslog( LOG_NOTICE, "clear partner [%s]", node.uuid().to_s() );
+        log_notice( "clear partner [%s]", node.uuid().to_s() );
         node.clear_partner();
         return 1;
     }
@@ -136,7 +136,7 @@ Network::Peer::node( Node *that ) {
      */
     if ( is_partner() and _node->not_partner() ) {
         _node->make_partner();
-        syslog( LOG_NOTICE, "node %s is partner", _node->uuid().to_s() );
+        log_notice( "node %s is partner", _node->uuid().to_s() );
     }
 
     /*
@@ -152,7 +152,7 @@ Network::Peer::node( Node *that ) {
     if ( debug < 2 ) return;
     char buffer[80];
     const char *address_string = inet_ntop(AF_INET6, &lladdr, buffer, sizeof buffer);
-    syslog( LOG_NOTICE, "%s at %s is node %s",
+    log_notice( "%s at %s is node %s",
                         (_node->is_partner() ? "partner" : "neighbor"),
                         address_string, _node->uuid().to_s() );
 }
@@ -176,7 +176,7 @@ Network::Peer::address( struct in6_addr *addr ) {
     if ( debug < 2 ) return;
     char buffer[80];
     const char *address_string = inet_ntop(AF_INET6, addr, buffer, sizeof buffer);
-    syslog( LOG_NOTICE, "new neighbor %s", address_string );
+    log_notice( "new neighbor %s", address_string );
 }
 
 /**
@@ -278,7 +278,7 @@ Network::Peer::has_address( struct in6_addr *address ) {
 bool
 Network::Peer::send_topology_event( Network::Interface *interface ) {
     char node_ordinal = (node() == NULL) ? '?' : ('0' + node()->ordinal());
-    syslog( LOG_NOTICE, "sending event to spine for node%c:%s%d seen on %s",
+    log_notice( "sending event to spine for node%c:%s%d seen on %s",
                         node_ordinal,
                         is_private() ? "priv" : "biz", ordinal(),
                         interface->name() );
@@ -287,7 +287,7 @@ Network::Peer::send_topology_event( Network::Interface *interface ) {
     pid_t child = fork();
 
     if ( child < 0 ) {
-        syslog( LOG_ERR, "failed to send %s event - couldn't fork", event_name );
+        log_err( "failed to send %s event - couldn't fork", event_name );
         return false;
     }
 
@@ -301,7 +301,7 @@ Network::Peer::send_topology_event( Network::Interface *interface ) {
     char *argv[] = { const_cast<char*>("genevent"), event_name, 0 };
     char *envp[] = { 0 };
     if ( execve("/usr/lib/spine/bin/genevent", argv, envp) < 0 ) {
-        syslog( LOG_ERR, "failed to send %s event - couldn't execve", event_name );
+        log_err( "failed to send %s event - couldn't execve", event_name );
         _exit( 0 );
     }
 
@@ -340,7 +340,7 @@ Network::Peer::topology_changed( Network::Monitor *monitor, Network::Interface *
     char remote_interface_name[32];
     construct_remote_interface_name( this, remote_interface_name,
                                      sizeof(remote_interface_name) );
-    syslog( LOG_NOTICE, "Topology change: node%c:%s seen on %s",
+    log_notice( "Topology change: node%c:%s seen on %s",
                         node_ordinal, remote_interface_name, interface->name() );
 
     _spine_notified = true;
@@ -361,45 +361,45 @@ bool Neighbor_Module( Tcl_Interp *interp ) {
     }
 
     if ( Tcl_LinkVar(interp, "Network::debug", (char *)&debug, TCL_LINK_INT) != TCL_OK ) {
-        syslog( LOG_ERR, "failed to link Network::debug" );
+        log_err( "failed to link Network::debug" );
         exit( 1 );
     }
 
     command = Tcl_CreateObjCommand(interp, "Network::Monitor", Monitor_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
-        // syslog ?? want to report TCL Error
+        // logger ?? want to report TCL Error
         return false;
     }
 
     command = Tcl_CreateObjCommand(interp, "Network::Probe", Probe_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
-        // syslog ?? want to report TCL Error
+        // logger ?? want to report TCL Error
         return false;
     }
 
     command = Tcl_CreateObjCommand(interp, "Network::Manager", Manager_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
-        // syslog ?? want to report TCL Error
+        // logger ?? want to report TCL Error
         return false;
     }
 
     if ( Network::Interface::Initialize(interp) == false ) {
-        syslog( LOG_ERR, "Network::Interface::Initialize failed" );
+        log_err( "Network::Interface::Initialize failed" );
         return false;
     }
 
     if ( Network::SharedNetwork::Initialize(interp) == false ) {
-        syslog( LOG_ERR, "Network::SharedNetwork::Initialize failed" );
+        log_err( "Network::SharedNetwork::Initialize failed" );
         return false;
     }
 
     if ( Network::Bridge::Initialize(interp) == false ) {
-        syslog( LOG_ERR, "Network::Bridge::Initialize failed" );
+        log_err( "Network::Bridge::Initialize failed" );
         return false;
     }
 
     if ( Network::Tunnel::Initialize(interp) == false ) {
-        syslog( LOG_ERR, "Network::Tunnel:Initialize failed" );
+        log_err( "Network::Tunnel:Initialize failed" );
         return false;
     }
 
