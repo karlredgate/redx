@@ -56,6 +56,7 @@ namespace Network {
 
     class Bridge;
     class Interface;
+    class Tunnel;
     class Node;
     class Peer;
 
@@ -239,13 +240,6 @@ namespace Network {
 //	SharedNetwork   *find_shared( Device *device);
 //	void            update_shared( Device *device);
 
-//	bool    early_link_state( Device *device );
-//	bool    link_state( Device *device );
-//	bool	set_early_link_state( Device *device, bool new_state );
-//	bool    hb_state( Device *device );
-//	bool    set_hb_state( Device *device, bool new_state );
-
-//	bool	early_bizcon_state( const char *interface );
 //	void	new_tunnel( const char *interface );
         void    maintain_vtund_tunnel( const char *interface_name );
         void    create_vtund_client( const char *interface_name );
