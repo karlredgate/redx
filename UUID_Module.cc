@@ -137,6 +137,112 @@ UUID_cmd( ClientData data, Tcl_Interp *interp,
 
 /**
  */
+static int
+guid_obj( ClientData data, Tcl_Interp *interp,
+             int objc, Tcl_Obj * CONST *objv )
+{
+    guid_t *guid = (guid_t *)data;
+    char buffer[36];
+
+    if ( objc == 1 ) {
+        Tcl_SetObjResult( interp, Tcl_NewLongObj((long)(guid)) );
+        return TCL_OK;
+    }
+
+    char *command = Tcl_GetStringFromObj( objv[1], NULL );
+    if ( Tcl_StringMatch(command, "type") ) {
+        Svc_SetResult( interp, "UUID", TCL_STATIC );
+        return TCL_OK;
+    }
+
+#if 0
+    if ( Tcl_StringMatch(command, "data") ) {
+        Tcl_Obj *obj = Tcl_NewByteArrayObj( uuid->raw(), 16 );
+        Tcl_SetObjResult( interp, obj );
+        return TCL_OK;
+    }
+#endif
+
+    if ( Tcl_StringMatch(command, "string") ) {
+        format_guid( buffer, guid );
+        Tcl_Obj *obj = Tcl_NewStringObj( buffer, 36 );
+        Tcl_SetObjResult( interp, obj );
+        return TCL_OK;
+    }
+
+    if ( Tcl_StringMatch(command, "set") ) {
+        if ( objc < 3 ) {
+            Tcl_ResetResult( interp );
+            Tcl_WrongNumArgs( interp, 1, objv, "set value" );
+            return TCL_ERROR;
+        }
+        char *guid_string = Tcl_GetStringFromObj( objv[2], NULL );
+        parse_guid( guid_string, guid );
+        format_guid( buffer, guid );
+        Tcl_Obj *obj = Tcl_NewStringObj( buffer, 36 );
+        Tcl_SetObjResult( interp, obj );
+        return TCL_OK;
+    }
+
+#if 0
+    uint8_t *x = uuid->raw();
+    if ( Tcl_StringMatch(command, "dump") ) {
+        printf( "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x\n",
+                x[0], x[1],  x[2],  x[3],  x[4],  x[5],  x[6],  x[7],
+                x[8], x[9], x[10], x[11], x[12], x[13], x[14], x[15] );
+        Tcl_ResetResult( interp );
+        return TCL_OK;
+    }
+#endif
+
+    Svc_SetResult( interp, "Unknown command for UUID object", TCL_STATIC );
+    return TCL_ERROR;
+}
+
+/**
+ */
+static void
+guid_delete( ClientData data ) {
+    guid_t *guid = (guid_t *)data;
+    free( guid );
+}
+
+
+/**
+ */
+static int
+guid_cmd( ClientData data, Tcl_Interp *interp,
+             int objc, Tcl_Obj * CONST *objv )
+{
+    if ( objc < 2 ) {
+        Tcl_ResetResult( interp );
+        Tcl_WrongNumArgs( interp, 1, objv, "name [value]" );
+        return TCL_ERROR;
+    }
+    char *name = Tcl_GetStringFromObj( objv[1], NULL );
+
+    if ( objc == 2 ) {
+        guid_t *object = (guid_t *)malloc( sizeof(guid_t) );
+        Tcl_CreateObjCommand( interp, name, guid_obj, (ClientData)object, guid_delete );
+        Svc_SetResult( interp, name, TCL_VOLATILE );
+        return TCL_OK;
+    }
+
+    if ( objc != 3 ) {
+        Tcl_ResetResult( interp );
+        Tcl_WrongNumArgs( interp, 1, objv, "name value" );
+        return TCL_ERROR;
+    }
+
+    char *guid_string = Tcl_GetStringFromObj( objv[2], NULL );
+    guid_t *object = (guid_t *)malloc( sizeof(guid_t) );
+    Tcl_CreateObjCommand( interp, name, guid_obj, (ClientData)object, guid_delete );
+    Svc_SetResult( interp, name, TCL_VOLATILE );
+    return TCL_OK;
+}
+
+/**
+ */
 static bool
 UUID_Module( Tcl_Interp *interp ) {
     Tcl_Command command;
