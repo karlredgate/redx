@@ -74,3 +74,6 @@ Kernel.o :: Kernel.h
 Thread.o :: Thread.h PlatformThread.h
 
 .PHONY: test
+
+test:
+	for testcase in testcases/*; do ./redx $$testcase ; done
