@@ -1,0 +1,72 @@
+.\" manual page [] for Service
+.\" $Id: Service.3 24160 2008-02-14 00:05:17Z kredgate $
+.\" 
+.\"
+.TH Service 3 "Jan 19 2008" "Redgate"
+.SH NAME
+Service \- Redgate service model
+.SH SYNOPSIS
+.nf
+.\" XXX
+.B #include "Service.h"
+.br
+.PP
+.BI "Service service( " service_name ); 
+.BI "service.initialize( argc, argv, " app_init );
+.BI "service.start();
+.SH DESCRIPTION
+.LP
+
+This man page is just a template so far ...
+I need to clean it up
+
+Example url "\fBhttp://dutname:8999/data/stats.xml\fR".
+
+Command line options are available to the configuration file through
+the \fIargv\fR variable, but are not directly processed by REDX
+at startup.
+.SH CONFIGURATION FILE
+.LP
+\fIredx\fR can be changed from its default configuration using the
+/etc/redx/redx.conf file.  The following options can be set:
+.TP
+.B set advertise_interval \fIseconds\fR
+The advertise interval is the delay between generation of neighbor
+advertisements on each interface.
+The neighbor advertisements make sure that the neighbor table
+is kept up to date on all cluster members.
+.SH PLATFORM FILES
+.LP
+\fIekg\fR renames interfaces based on the platform configuration files.
+
+DESCRIBE FURTHER the order of evaluation of these files and what that means.
+
+.SH DIAGNOSTICS
+.LP
+Messages are sent to the syslog daemon using facility LOG_DAEMON.
+The messages file is already gathered as part of buggrab.
+The stdout log file should not be particularly useful for buggrab,
+since it should be completely empty.
+.SH FILES
+.TP
+.B /etc/ekg/ekg.conf
+Configuration file.
+.TP
+.B /var/log/ekg.log
+Log for libraries that attempt to write to stdout.
+.TP
+.B /etc/ekg/platform/PowerEdge-1850
+The platform file for all Dell PowerEdge 1850s.
+.TP
+.B /etc/ekg/platform/0CU542-A00
+The platform description file for this specific board type and revision.
+.SH SEE ALSO
+.TP
+.B stump.8
+.SH NOTES
+\fIekg\fR is installed as part of the spine rpm and is configured to be
+started/restarted by init.
+ekg does not catch any signals yet, so most will simply kill it.
+
+.SH AUTHOR
+Karl N. Redgate
