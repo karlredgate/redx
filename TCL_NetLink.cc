@@ -49,6 +49,8 @@
 #include "logger.h"
 #include "NetLink.h"
 
+#include "app_init.h"
+
 /**
  * This is defined in the iproute2 tools, and looked useful.
  */
@@ -866,7 +868,8 @@ GetNeighbor_cmd( ClientData data, Tcl_Interp *interp,
 
 /**
  */
-bool NetLink::Initialize( Tcl_Interp *interp ) {
+static bool
+NetLink_Module( Tcl_Interp *interp ) {
     Tcl_Command command;
 
     for ( int i = 0 ; i < MAX_RTFACTORY ; i++ ) {
@@ -976,5 +979,7 @@ bool NetLink::Initialize( Tcl_Interp *interp ) {
 
     return true;
 }
+
+app_init( NetLink_Module );
 
 /* vim: set autoindent expandtab sw=4 : */
