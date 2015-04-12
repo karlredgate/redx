@@ -26,15 +26,13 @@
  *
  */
 
-#include <asm/types.h>
+#include <stdint.h>
 #include <sys/stat.h>
 #include <sys/mman.h>
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <sys/wait.h>
 #include <arpa/inet.h>
-#include <linux/netlink.h>
-#include <linux/rtnetlink.h>
 #include <stdlib.h>
 #include <signal.h>
 #include <fcntl.h>
@@ -48,9 +46,21 @@
 
 #include "logger.h"
 #include "util.h"
-#include "host_table.h"
-#include "NetLink.h"
-#include "Network.h"
+#include "Neighbor.h"
+#include "Interface.h"
+
+/*
+ * I do not like this - try to eliminate OS defines
+ */
+#if defined(__APPLE__) || defined(__darwin__)
+/* OSX seems not to define these. */
+#ifndef s6_addr16
+#define s6_addr16 __u6_addr.__u6_addr16
+#endif
+#ifndef s6_addr32
+#define s6_addr32 __u6_addr.__u6_addr32
+#endif
+#endif
 
 namespace { int debug = 0; }
 
