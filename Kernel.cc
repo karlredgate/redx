@@ -115,7 +115,7 @@ daemonize_cmd( ClientData data, Tcl_Interp *interp,
     freopen( "/dev/null", "w", stdout );
     freopen( "/dev/null", "w", stderr );
 
-    openlog( "(house:background)", LOG_PERROR, LOG_USER );
+    log_open_user( "(house:background)" );
     log_notice( "spawning '%s'", command );
 
     if ( execve(command, argv, static_envp) < 0 ) {

@@ -33,6 +33,9 @@
 extern "C" {
 #endif
 
+void log_open_user( const char *name );
+void log_open_daemon( const char *name );
+
 void log_info( const char *format, ... );
 void log_notice( const char *format, ... );
 void log_warn( const char *format, ... );

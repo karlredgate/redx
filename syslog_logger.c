@@ -26,8 +26,20 @@
  *
  */
 
+#define _BSD_SOURCE
+
 #include <syslog.h>
 #include <stdarg.h>
+
+void
+log_open_user( const char *name ) {
+    openlog( name, LOG_PERROR, LOG_USER );
+}
+
+void
+log_open_daemon( const char *name ) {
+    openlog( name, LOG_PERROR, LOG_DAEMON );
+}
 
 void
 log_info( const char *format, ... ) {
