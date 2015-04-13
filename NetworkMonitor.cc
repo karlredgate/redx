@@ -494,7 +494,7 @@ int Network::Monitor::each_interface( InterfaceIterator& callback ) {
     std::map<int, Interface *>::const_iterator iter = interfaces.begin();
     while ( iter != interfaces.end() ) {
         Network::Interface *interface = iter->second;
-        if ( interface != NULL )  result += callback( *interface );
+        if ( interface != NULL )  result += callback( interface );
         iter++;
     }
 
@@ -935,7 +935,7 @@ class WriteHostsForInterface : public Network::InterfaceIterator {
 public:
     WriteHostsForInterface( int fd ) : fd(fd) {}
     virtual ~WriteHostsForInterface() {}
-    virtual int operator() ( Network::Interface& interface ) {
+    virtual int operator() ( Network::Interface * interface ) {
         struct host_entry entry;
         memset( &entry, 0, sizeof(entry) );
 

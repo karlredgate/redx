@@ -251,17 +251,6 @@ namespace Network {
         static bool Initialize( Tcl_Interp * );
     };
 
-    /**
-     * Interface to allow the monitor to callback this object for each
-     * interface.
-     */
-    class InterfaceIterator {
-    public:
-        InterfaceIterator() {}
-        virtual ~InterfaceIterator() {}
-        virtual int operator() ( Interface& ) = 0;
-    };
-
 }
 
 #endif
