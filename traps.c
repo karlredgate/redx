@@ -26,6 +26,8 @@
  *
  */
 
+#define _POSIX_C_SOURCE 199309L
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/mman.h>
@@ -37,6 +39,7 @@
 #include <signal.h>
 #include <string.h>
 #include <errno.h>
+#include <signal.h>
 #include <execinfo.h>
 #include <glob.h>
 
