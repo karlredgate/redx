@@ -59,6 +59,7 @@
 #include "NetLink.h"
 #include "Network.h"
 #include "ICMPv6.h"
+#include "Interface.h"
 
 #include "tcl_util.h"
 
@@ -287,7 +288,7 @@ void Network::Interface::linkDown( NetLink::LinkMessage *message ) {
 void Network::Interface::update( NetLink::LinkMessage *message ) {
     unsigned int ignore_mask = ~(IFF_NOARP);
 
-    char *family = "UNKNOWN";
+    const char *family = "UNKNOWN";
     switch ( message->family() ) {
     case AF_BRIDGE: family = "BRIDGE" ; break;
     case AF_INET6 : family = "INET6" ; break;
