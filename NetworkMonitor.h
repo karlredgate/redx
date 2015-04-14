@@ -48,6 +48,7 @@
 #include "Thread.h"
 #include "NetLink.h"
 #include "InterfaceIterator.h"
+#include "NodeIterator.h"
 
 namespace ICMPv6 { class Socket; }
 
@@ -83,16 +84,8 @@ namespace Network {
     };
     typedef ListenerInterface *(*ListenerInterfaceFactory)( Tcl_Interp *, Monitor *, Interface * );
 
-    /**
-     */
-    class NodeIterator {
-    public:
-        NodeIterator() {}
-        virtual ~NodeIterator() {}
-        virtual int operator() ( Node& ) = 0;
-    };
-
     class Manager;
+
     /**
      * Monitor thread for watching network events and performing actions
      * when they occur.

@@ -84,15 +84,6 @@ namespace Network {
     };
     typedef ListenerInterface *(*ListenerInterfaceFactory)( Tcl_Interp *, Monitor *, Interface * );
 
-    /**
-     */
-    class NodeIterator {
-    public:
-        NodeIterator() {}
-        virtual ~NodeIterator() {}
-        virtual int operator() ( Node& ) = 0;
-    };
-
     class Event {
     private:
         char *_name;

@@ -151,15 +151,6 @@ namespace Network {
         virtual int operator() ( Peer& ) = 0;
     };
 
-    /**
-     */
-    class NodeIterator {
-    public:
-        NodeIterator() {}
-        virtual ~NodeIterator() {}
-        virtual int operator() ( Node& ) = 0;
-    };
-
 }
 
 #endif
