@@ -28,4 +28,8 @@
 
 #include "PlatformInterface.h"
 
+int
+network_interface_index( const char *name ) {
+}
+
 /* vim: set autoindent expandtab sw=4 : */

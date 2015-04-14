@@ -34,6 +34,7 @@
 extern "C" {
 #endif
 
+int network_interface_index( const char * );
 
 #ifdef __cplusplus
 }

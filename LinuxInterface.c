@@ -28,4 +28,23 @@
 
 #include "PlatformInterface.h"
 
+int
+network_interface_index( const char *name ) {
+    struct ifreq ifr;
+    int s;
+    s = ::socket(PF_PACKET, SOCK_DGRAM, 0);
+    if (s < 0)  return;
+
+    memset(&ifr, 0, sizeof(ifr));
+    strncpy(ifr.ifr_name, _name, IFNAMSIZ);
+    int result = ioctl(s, SIOCGIFINDEX, &ifr);
+    close(s);
+
+    if ( result < 0 ) {
+        return -1;
+    }
+
+    _index = ifr.ifr_ifindex;
+}
+
 /* vim: set autoindent expandtab sw=4 : */
