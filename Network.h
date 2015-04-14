@@ -47,6 +47,7 @@
 #include "UUID.h"
 #include "Thread.h"
 #include "NetLink.h"
+#include "InterfaceIterator.h"
 
 namespace ICMPv6 { class Socket; }
 
@@ -60,6 +61,7 @@ namespace Network {
     class Node;
     class Peer;
 
+    class SharedNetwork;
     class Monitor;
 
     /**
@@ -89,68 +91,6 @@ namespace Network {
         NodeIterator() {}
         virtual ~NodeIterator() {}
         virtual int operator() ( Node& ) = 0;
-    };
-
-    class Manager;
-    /**
-     * Monitor thread for watching network events and performing actions
-     * when they occur.
-     */
-    class Monitor : public Thread, NetLink::RouteReceiveCallbackInterface {
-    private:
-        Tcl_Interp *interp;
-        NetLink::RouteSocket *route_socket;
-        ListenerInterfaceFactory factory;
-        std::map <int, Interface*> interfaces;
-
-        pthread_mutex_t node_table_lock;
-        static const int NODE_TABLE_SIZE = 4096;
-        Node *node_table;
-        bool table_warning_reported;
-	bool table_error_reported;
-
-        Network::Manager *_manager;
-
-        void persist_interface_configuration();
-        void capture( Interface * );
-        void bring_up( Interface * );
-
-        void load_cache();
-        void save_cache();
-
-    public:
-        Monitor( Tcl_Interp *, ListenerInterfaceFactory, Network::Manager * );
-        virtual ~Monitor() {}
-        virtual void run();
-        virtual void probe();
-        virtual void receive( NetLink::NewLink* );
-        virtual void receive( NetLink::DelLink* );
-        virtual void receive( NetLink::NewRoute* );
-        virtual void receive( NetLink::DelRoute* );
-        virtual void receive( NetLink::NewAddress* );
-        virtual void receive( NetLink::DelAddress* );
-        virtual void receive( NetLink::NewNeighbor* );
-        virtual void receive( NetLink::DelNeighbor* );
-        virtual void receive( NetLink::RouteMessage* );
-        virtual void receive( NetLink::RouteError* );
-        int sendto( void *, size_t, int, const struct sockaddr_in6 * );
-        int advertise();
-        int each_interface( InterfaceIterator& );
-        Interface *find_bridge_interface( Interface* );
-        Interface *find_physical_interface( Interface* );
-        void topology_changed();
-
-        /**
-         * The node list is a list of known supernova nodes that have been
-         * seen on any/all interfaces.  Each node that has been seen on a
-         * specific interface is added to the peer list on that interface.
-         */
-        Node* intern_node( UUID & );
-        bool remove_node( UUID * );
-        Node* find_node( UUID * );
-        int each_node( NodeIterator& );
-
-        void update_hosts();
     };
 
     class Event {
