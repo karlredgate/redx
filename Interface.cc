@@ -26,7 +26,8 @@
  *
  */
 
-#include <asm/types.h>
+#include <stdint.h>
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/socket.h>
@@ -60,6 +61,7 @@
 #include "Network.h"
 #include "ICMPv6.h"
 #include "Interface.h"
+#include "Neighbor.h"
 
 #include "tcl_util.h"
 
