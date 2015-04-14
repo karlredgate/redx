@@ -32,10 +32,14 @@
 #include <stdint.h>
 #include <sys/socket.h>
 #include <sys/time.h>
+
+#if 0
 #include <linux/netlink.h>
 #include <linux/rtnetlink.h>
 #include <linux/if.h>
 #include <linux/netdevice.h>
+#endif
+
 #include <netinet/in.h>
 #include <netinet/ip6.h>
 #include <unistd.h>
@@ -44,7 +48,9 @@
 #include <list>
 #include <map>
 
+#if 0
 #include "NetLink.h"
+#endif
 
 namespace ICMPv6 { class Socket; }
 

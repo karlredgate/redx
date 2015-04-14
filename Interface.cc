@@ -35,13 +35,17 @@
 #include <sys/mman.h>
 
 // do not like this ... want the generic include
-#include <linux/if.h>
+/* #include <linux/if.h> */
 #include <net/if_arp.h>
+
+#if 0
 #include <linux/sockios.h>
 
 #include <linux/netlink.h>
 #include <linux/rtnetlink.h>
 #include <linux/ethtool.h>
+#endif
+
 #include <netinet/in.h>
 #include <netinet/ip6.h>
 #include <arpa/inet.h>
@@ -57,8 +61,12 @@
 
 #include "logger.h"
 #include "util.h"
+#if 0
+NEED TO FACTOR OUT NELINK
 #include "NetLink.h"
 #include "Network.h"
+#endif
+
 #include "ICMPv6.h"
 #include "Interface.h"
 #include "Neighbor.h"
@@ -129,24 +137,11 @@ Network::Interface::Interface( Tcl_Interp *interp, char *initname )
   previous_carrier(false),
   last_sendto(0), last_no_peer_report(0), table_warning_reported(false),
   table_error_reported(false),
-  advertise_errors(0), initiated_tunnel(false), _removed(false) {
+  advertise_errors(0), initiated_tunnel(false), _removed(false)
+{
+
     _name = strdup(initname);
-    struct ifreq ifr;
-    int s;
-
-/* EDM XXX socket is never closed */
-
-    s = ::socket(PF_PACKET, SOCK_DGRAM, 0);
-    if (s < 0)  return;
-
-    memset(&ifr, 0, sizeof(ifr));
-    strncpy(ifr.ifr_name, _name, IFNAMSIZ);
-    if (ioctl(s, SIOCGIFINDEX, &ifr) < 0) {
-        close(s);
-        return;
-    }
-
-    _index = ifr.ifr_ifindex;
+    _index = network_interface_index( _name );
 
     struct ifreq request;
     if ( get_mac(_name, &request) ) {

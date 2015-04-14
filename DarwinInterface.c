@@ -28,8 +28,12 @@
 
 #include "PlatformInterface.h"
 
+/**
+ * Use SIOCGIFCONF and return ifr_intval from the struct
+ */
 int
 network_interface_index( const char *name ) {
+    return 0;
 }
 
 /* vim: set autoindent expandtab sw=4 : */

@@ -26,6 +26,7 @@
  *
  */
 
+#include <net/if.h>
 #include "PlatformInterface.h"
 
 int
@@ -44,7 +45,7 @@ network_interface_index( const char *name ) {
         return -1;
     }
 
-    _index = ifr.ifr_ifindex;
+    return ifr.ifr_ifindex;
 }
 
 /* vim: set autoindent expandtab sw=4 : */
