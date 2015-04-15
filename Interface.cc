@@ -260,7 +260,7 @@ Network::Interface::Interface( Tcl_Interp *interp, NetLink::NewLink *message )
     neighbors = NULL;
 }
 
-void Network::Interface::linkUp( NetLink::LinkMessage *message ) {
+void Network::Interface::linkUp( Kernel::NetworkLinkUpEvent *message ) {
     char cmd[128];
     int status = 1;
     bool is_biz = is_business();
@@ -271,7 +271,7 @@ void Network::Interface::linkUp( NetLink::LinkMessage *message ) {
     unknown_carrier = false;
 }
 
-void Network::Interface::linkDown( NetLink::LinkMessage *message ) {
+void Network::Interface::linkDown( Kernel::NetworkLinkDownEvent *message ) {
     char cmd[128];
     int status = 1;
 

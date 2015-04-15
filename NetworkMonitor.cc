@@ -96,10 +96,11 @@ void Network::Monitor::receive( NetLink::NewLink *message ) {
 //                if ( interface->not_captured() )  capture( interface );
 //            }
             if ( interface->has_link() ) {
-	      interface->linkUp( message );
+              Kernel::NetworkLinkUpEvent event;
+              interface->linkUp( &event );
             } else {
               Kernel::NetworkLinkDownEvent event;
-	      interface->linkDown( &event );
+              interface->linkDown( &event );
             }
         }
 
@@ -172,7 +173,8 @@ void Network::Monitor::receive( NetLink::NewLink *message ) {
 
         if ( interface->link_changed() ) {
             if ( interface->has_link() ) {
-	        interface->linkUp( message );
+                Kernel::NetworkLinkUpEvent event;
+                interface->linkUp( &event );
                 link_message = ", link up";
 
                 if ( interface->is_up() and interface->is_private() and
@@ -184,7 +186,7 @@ void Network::Monitor::receive( NetLink::NewLink *message ) {
 
             } else {
                 Kernel::NetworkLinkDownEvent event;
-	        interface->linkDown( &event );
+                interface->linkDown( &event );
                 link_message = ", link down";
                 interface->clean_topology();
                 topology_changed();
@@ -207,7 +209,7 @@ void Network::Monitor::receive( NetLink::NewLink *message ) {
             report_required = true;
         }
         if ( interface->promiscuity_changed() ) {
-	    promisc_message = interface->is_promiscuous() ? ", went promiscuous" : ", left promiscuous";
+            promisc_message = interface->is_promiscuous() ? ", went promiscuous" : ", left promiscuous";
             report_required = true;
         }
         if ( report_required or (debug > 0) ) {
@@ -264,12 +266,13 @@ void Network::Monitor::receive( NetLink::DelLink *message ) {
 
     if ( interface->link_changed() ) {
         if ( interface->has_link() ) {
-	    interface->linkUp( message );
+            Kernel::NetworkLinkUpEvent event;
+            interface->linkUp( &event );
             link_message = ", link up";
         } else {
             // pass message into the NetworkLinkDownEvent
             Kernel::NetworkLinkDownEvent event;
-	    interface->linkDown( &event );
+            interface->linkDown( &event );
             link_message = ", link down";
         }
         report_required = true;
@@ -284,7 +287,7 @@ void Network::Monitor::receive( NetLink::DelLink *message ) {
         report_required = true;
     }
     if ( interface->promiscuity_changed() ) {
-	promisc_message = interface->is_promiscuous() ? ", went promiscuous" : ", left promiscuous";
+        promisc_message = interface->is_promiscuous() ? ", went promiscuous" : ", left promiscuous";
         report_required = true;
     }
     if ( report_required or (debug > 0) ) {
@@ -754,7 +757,7 @@ Network::Monitor::intern_node( UUID& uuid ) {
         }
     }
     if ( result == NULL ) {
-        if ( available == NULL ) {	// EDM ??? wasn't this set above ???
+        if ( available == NULL ) {        // EDM ??? wasn't this set above ???
             for ( ; i < NODE_TABLE_SIZE ; ++i ) {
                 Network::Node& node = node_table[i];
                 if ( node.is_valid() ) continue;
@@ -767,7 +770,7 @@ Network::Monitor::intern_node( UUID& uuid ) {
             available->uuid( uuid );
             result = available;
         } else {
-	    if ( table_error_reported == false ) {
+            if ( table_error_reported == false ) {
                 log_err( "ERROR: node table is full" );
                 table_error_reported = true;
             }
@@ -1214,7 +1217,7 @@ Probe_cmd( ClientData data, Tcl_Interp *interp,
     int fd;
     fd = socket( AF_NETLINK, SOCK_RAW, NETLINK_ROUTE );
     if ( socket < 0 ) {
-	log_err( "Probe socket() failed, %s", strerror(errno) );
+        log_err( "Probe socket() failed, %s", strerror(errno) );
         exit( 1 );
     }
     // setup sndbuf and rcvbuf
@@ -1225,7 +1228,7 @@ Probe_cmd( ClientData data, Tcl_Interp *interp,
     address.nl_family = AF_NETLINK;
     address.nl_groups = 0;
     if ( bind(fd, (struct sockaddr *)&address, sizeof(address)) < 0 ) {
-	log_err( "Probe bind() failed, %s", strerror(errno) );
+        log_err( "Probe bind() failed, %s", strerror(errno) );
         exit( 1 );
     }
 
@@ -1244,7 +1247,7 @@ Probe_cmd( ClientData data, Tcl_Interp *interp,
 
     result = sendto( fd, (void*)&nlreq, sizeof(nlreq), 0, (struct sockaddr *)&address, sizeof(address) );
     if ( result < 0 ) {
-	log_err( "Probe sendto() failed, %s", strerror(errno) );
+        log_err( "Probe sendto() failed, %s", strerror(errno) );
         exit( 1 );
     }
 
@@ -1275,7 +1278,7 @@ Probe_cmd( ClientData data, Tcl_Interp *interp,
                 // normally just continue here
                 printf( "interupted recvmsg\n" );
             } else {
-	        log_err( "Probe recvmsg() failed, %s", strerror(errno) );
+                log_err( "Probe recvmsg() failed, %s", strerror(errno) );
             }
             continue;
         }

@@ -147,7 +147,7 @@ namespace Network {
         void create_sockets();
         void bring_link_down();
         void bring_link_up();
-        void linkUp( NetLink::LinkMessage * );
+        void linkUp( Kernel::NetworkLinkUpEvent * );
         void linkDown( Kernel::NetworkLinkDownEvent * );
         void update( NetLink::LinkMessage * );
         void get_settings();
