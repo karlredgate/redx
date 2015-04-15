@@ -18,7 +18,7 @@ CFLAGS += -g $(INCLUDE_DIRS) -Wall -rdynamic
 OBJS = redx.o 
 OBJS += AppInit.o
 OBJS += Thread.o
-OBJS += StringList.o
+OBJS += SMBIOSStringList.o
 OBJS += UUID.o
 OBJS += ICMPv6.o
 OBJS += xuid.o
@@ -70,8 +70,8 @@ clean:
 
 distclean: uninstall clean
 
-StringList.o :: StringList.h
-BIOS.o :: BIOS.h
+SMBIOSStringList.o :: SMBIOSStringList.h
+SMBIOS.o :: SMBIOS.h
 Hypercall.o :: Hypercall.h
 Kernel.o :: Kernel.h
 Thread.o :: Thread.h PlatformThread.h

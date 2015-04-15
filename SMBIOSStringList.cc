@@ -27,7 +27,7 @@
 
 #include <stdlib.h>
 #include <tcl.h>
-#include "StringList.h"
+#include "SMBIOSStringList.h"
 
 /**
  */
