@@ -21,7 +21,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-/** \file Xen.cc
+/** \file TCL_Hypercall.cc
  * \brief 
  *
  */
@@ -471,148 +471,7 @@ GetDomainInfoList_cmd( ClientData data, Tcl_Interp *interp,
 
 /**
  */
-static int
-XenStoreRead_cmd( ClientData data, Tcl_Interp *interp,
-             int objc, Tcl_Obj * CONST *objv )
-{
-    if ( objc != 2 ) {
-        Tcl_ResetResult( interp );
-        Tcl_WrongNumArgs( interp, 1, objv, "key" );
-        return TCL_ERROR;
-    }
-
-    int len;
-    char *key = Tcl_GetStringFromObj( objv[1], &len );
-
-    Xen::Store store;
-    char *value = store.read( key );
-    Tcl_Obj *result = Tcl_NewStringObj( value, -1 );
-    Tcl_SetObjResult( interp, result );
-    free( value );
-    return TCL_OK;
-}
-
-/**
- */
-static int
-XenStoreWrite_cmd( ClientData data, Tcl_Interp *interp,
-             int objc, Tcl_Obj * CONST *objv )
-{
-    if ( objc != 3 ) {
-        Tcl_ResetResult( interp );
-        Tcl_WrongNumArgs( interp, 1, objv, "key value" );
-        return TCL_ERROR;
-    }
-
-    int len;
-    char *key   = Tcl_GetStringFromObj( objv[1], &len );
-    char *value = Tcl_GetStringFromObj( objv[2], &len );
-
-    Xen::Store store;
-    if ( store.write(key, value) ) {
-        Tcl_SetObjResult( interp, objv[2] );
-        return TCL_OK;
-    }
-
-    Svc_SetResult( interp, (char *)store.error_message(), TCL_VOLATILE );
-    char e[128];
-    char *err;
-    err = strerror_r( store.error(), e, sizeof(e) );
-    Tcl_AppendResult( interp, err, NULL );
-    return TCL_ERROR;
-}
-
-/**
- */
-static int
-XenStoreMkdir_cmd( ClientData data, Tcl_Interp *interp,
-             int objc, Tcl_Obj * CONST *objv )
-{
-    if ( objc != 2 ) {
-        Tcl_ResetResult( interp );
-        Tcl_WrongNumArgs( interp, 1, objv, "key" );
-        return TCL_ERROR;
-    }
-
-    int len;
-    char *key = Tcl_GetStringFromObj( objv[1], &len );
-
-    Xen::Store store;
-    if ( store.mkdir(key) ) {
-        Tcl_ResetResult( interp );
-        return TCL_OK;
-    }
-
-    Svc_SetResult( interp, (char *)store.error_message(), TCL_VOLATILE );
-    char e[128];
-    char *err;
-    err = strerror_r( store.error(), e, sizeof(e) );
-    Tcl_AppendResult( interp, err, NULL );
-    return TCL_ERROR;
-}
-
-/**
- */
-static int
-XenStoreRemove_cmd( ClientData data, Tcl_Interp *interp,
-             int objc, Tcl_Obj * CONST *objv )
-{
-    if ( objc != 2 ) {
-        Tcl_ResetResult( interp );
-        Tcl_WrongNumArgs( interp, 1, objv, "key" );
-        return TCL_ERROR;
-    }
-
-    int len;
-    char *key = Tcl_GetStringFromObj( objv[1], &len );
-
-    Xen::Store store;
-    if ( store.remove(key) ) {
-        Tcl_ResetResult( interp );
-        return TCL_OK;
-    }
-
-    Svc_SetResult( interp, (char *)store.error_message(), TCL_VOLATILE );
-    char e[128];
-    char *err;
-    err = strerror_r( store.error(), e, sizeof(e) );
-    Tcl_AppendResult( interp, err, NULL );
-    return TCL_ERROR;
-}
-
-/**
- */
-static int
-XenStoreList_cmd( ClientData data, Tcl_Interp *interp,
-             int objc, Tcl_Obj * CONST *objv )
-{
-    if ( objc != 2 ) {
-        Tcl_ResetResult( interp );
-        Tcl_WrongNumArgs( interp, 1, objv, "key" );
-        return TCL_ERROR;
-    }
-
-    int len;
-    char *key = Tcl_GetStringFromObj( objv[1], &len );
-
-    Tcl_Obj *list = Tcl_NewListObj( 0, 0 );
-
-    Xen::Store store;
-    Xen::StorePath *values = store.readdir( key );
-    Xen::StorePath *child = values;
-    while ( child != 0 ) {
-        Tcl_ListObjAppendElement( interp, list, Tcl_NewStringObj(child->path, -1) );
-        child = child->next;
-    }
-    // delete values;
-
-    Tcl_SetObjResult( interp, list );
-    return TCL_OK;
-}
-
-/**
- */
-bool Xen::Initialize( Tcl_Interp *interp ) {
+bool XenHypercall_Module( Tcl_Interp *interp ) {
     Tcl_Command command;
 
     Tcl_Namespace *ns = Tcl_CreateNamespace(interp, "Xen", (ClientData)0, NULL);
@@ -650,42 +509,9 @@ bool Xen::Initialize( Tcl_Interp *interp ) {
         return false;
     }
 
-    ns = Tcl_CreateNamespace(interp, "Xen::Store", (ClientData)0, NULL);
-    if ( ns == NULL ) {
-        return false;
-    }
-
-    command = Tcl_CreateObjCommand(interp, "Xen::Store::read", XenStoreRead_cmd, (ClientData)0, NULL);
-    if ( command == NULL ) {
-        // logger ?? want to report TCL Error
-        return false;
-    }
-
-    command = Tcl_CreateObjCommand(interp, "Xen::Store::write", XenStoreWrite_cmd, (ClientData)0, NULL);
-    if ( command == NULL ) {
-        // logger ?? want to report TCL Error
-        return false;
-    }
-
-    command = Tcl_CreateObjCommand(interp, "Xen::Store::mkdir", XenStoreMkdir_cmd, (ClientData)0, NULL);
-    if ( command == NULL ) {
-        // logger ?? want to report TCL Error
-        return false;
-    }
-
-    command = Tcl_CreateObjCommand(interp, "Xen::Store::remove", XenStoreRemove_cmd, (ClientData)0, NULL);
-    if ( command == NULL ) {
-        // logger ?? want to report TCL Error
-        return false;
-    }
-
-    command = Tcl_CreateObjCommand(interp, "Xen::Store::list", XenStoreList_cmd, (ClientData)0, NULL);
-    if ( command == NULL ) {
-        // logger ?? want to report TCL Error
-        return false;
-    }
-
     return true;
 }
+
+app_init( XenHypercall_Module );
 
 /* vim: set autoindent expandtab sw=4 : */
