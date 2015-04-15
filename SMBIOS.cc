@@ -58,8 +58,8 @@ SMBIOS::Structure::Structure( void *address ) {
     data = (uint8_t *)address;
     structure_type = data[0];
     header_length = data[1];
-    strings = new StringList( (char *)(data + header_length) );
-    StringList &s = *strings;
+    strings = new SMBIOS::StringList( (char *)(data + header_length) );
+    SMBIOS::StringList &s = *strings;
 
     int count = strings->count();
     if ( debug ) printf( "%d strings\n", count );
@@ -81,7 +81,7 @@ SMBIOS::Structure::~Structure() {
 const char *
 SMBIOS::Structure::string( uint8_t n ) const {
     uint8_t index = data[n] - 1;
-    StringList &s = *strings;
+    SMBIOS::StringList &s = *strings;
     if ( s.count() < index ) return NULL;
     return s[index];
 }

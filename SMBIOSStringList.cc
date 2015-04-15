@@ -21,7 +21,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-/** \file StringList.cc
+/** \file SMBIOSStringList.cc
  * \brief 
  */
 
@@ -31,13 +31,13 @@
 
 /**
  */
-StringList::StringList( char *data ) : strings(0) {
+SMBIOS::StringList::StringList( char *data ) : strings(0) {
     parse( data, 0 );
 }
 
 /**
  */
-StringList::~StringList() {
+SMBIOS::StringList::~StringList() {
     if ( strings != 0 )  free( strings );
 }
 
@@ -45,7 +45,7 @@ StringList::~StringList() {
  * start with n=0, increment with each recursion
  * at end of recursion set the string pointer
  */
-void StringList::parse( const char *data, int n ) {
+void SMBIOS::StringList::parse( const char *data, int n ) {
     if ( *data == '\0' ) { // end of strings
         _count = n;
         if ( _count != 0 ) {
