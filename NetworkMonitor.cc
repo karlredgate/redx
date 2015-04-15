@@ -98,7 +98,8 @@ void Network::Monitor::receive( NetLink::NewLink *message ) {
             if ( interface->has_link() ) {
 	      interface->linkUp( message );
             } else {
-	      interface->linkDown( message );
+              Kernel::NetworkLinkDownEvent event;
+	      interface->linkDown( &event );
             }
         }
 
@@ -182,7 +183,8 @@ void Network::Monitor::receive( NetLink::NewLink *message ) {
                 }
 
             } else {
-	        interface->linkDown( message );
+                Kernel::NetworkLinkDownEvent event;
+	        interface->linkDown( &event );
                 link_message = ", link down";
                 interface->clean_topology();
                 topology_changed();
@@ -265,7 +267,9 @@ void Network::Monitor::receive( NetLink::DelLink *message ) {
 	    interface->linkUp( message );
             link_message = ", link up";
         } else {
-	    interface->linkDown( message );
+            // pass message into the NetworkLinkDownEvent
+            Kernel::NetworkLinkDownEvent event;
+	    interface->linkDown( &event );
             link_message = ", link down";
         }
         report_required = true;

@@ -58,6 +58,15 @@
 namespace { int debug = 0; }
 
 /**
+ */
+Kernel::Event() {
+}
+
+/**
+ */
+Kernel::~Event() {
+}
+/**
  * \todo need the interface object for the bridge ...
  */
 Kernel::NetworkLinkDownEvent() {

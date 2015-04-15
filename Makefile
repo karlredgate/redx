@@ -25,6 +25,8 @@ OBJS += xuid.o
 OBJS += string_util.o
 OBJS += tcl_util.o
 OBJS += traps.o
+OBJS += TCL_Interface.o
+OBJS += Interface.o
 OBJS += UUID_Module.o
 OBJS += $(PLATFORM_OBJS)
 

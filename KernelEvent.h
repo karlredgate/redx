@@ -35,7 +35,10 @@ namespace Kernel {
 
     /**
      */
-    class Event;
+    class Event {
+    public:
+        Event();
+    };
 
     class NetworkLinkDownEvent : public Event {
     public:

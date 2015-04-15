@@ -48,9 +48,7 @@
 #include <list>
 #include <map>
 
-#if 0
-#include "NetLink.h"
-#endif
+#include "KernelEvent.h"
 
 namespace ICMPv6 { class Socket; }
 
@@ -150,7 +148,7 @@ namespace Network {
         void bring_link_down();
         void bring_link_up();
         void linkUp( NetLink::LinkMessage * );
-        void linkDown( NetLink::LinkMessage * );
+        void linkDown( Kernel::NetworkLinkDownEvent * );
         void update( NetLink::LinkMessage * );
         void get_settings();
         time_t last_sent() const { return last_sendto; }
