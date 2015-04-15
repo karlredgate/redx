@@ -68,6 +68,7 @@ NEED TO FACTOR OUT NELINK
 #endif
 
 #include "ICMPv6.h"
+#include "PlatformInterface.h"
 #include "Interface.h"
 #include "Neighbor.h"
 
@@ -1469,6 +1470,11 @@ bool Network::Interface::running_changed()     const { return (changed & IFF_RUN
 bool Network::Interface::promiscuity_changed() const { return (changed & IFF_PROMISC) != 0; }
 bool Network::Interface::dormancy_changed()    const { return (changed & IFF_DORMANT) != 0; }
 bool Network::Interface::link_changed()        const { return (changed & IFF_LOWER_UP) != 0; }
+
+bool Network::Interface::up()                  const { return (last_flags & IFF_UP) != 0; }
+bool Network::Interface::loopback()            const { return (last_flags & IFF_LOOPBACK) != 0; }
+bool Network::Interface::running()             const { return (last_flags & IFF_RUNNING) != 0; }
+bool Network::Interface::multicast()           const { return (last_flags & IFF_MULTICAST) != 0; }
 
 /**
  */

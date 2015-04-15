@@ -125,10 +125,10 @@ namespace Network {
         int inbound_socket( char *, uint16_t );
         ICMPv6::Socket * icmp_socket();
 
-        bool up()        const { return (last_flags & IFF_UP)        != 0; }
-        bool loopback()  const { return (last_flags & IFF_LOOPBACK)  != 0; }
-        bool running()   const { return (last_flags & IFF_RUNNING)   != 0; }
-        bool multicast() const { return (last_flags & IFF_MULTICAST) != 0; }
+        bool up()        const;
+        bool loopback()  const;
+        bool running()   const;
+        bool multicast() const;
         int  index()     const { return _index; }
         int  ordinal()   const { return _ordinal; }
         char *name()     const { return _name; }
