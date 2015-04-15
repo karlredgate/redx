@@ -27,6 +27,7 @@
  */
 
 #include <stdint.h>
+#include <stdlib.h> // for exit()
 
 #include "logger.h"
 
@@ -52,7 +53,7 @@ Interface_obj( ClientData data, Tcl_Interp *interp,
 
     char *command = Tcl_GetStringFromObj( objv[1], NULL );
     if ( Tcl_StringMatch(command, "type") ) {
-        Tcl_SetResult( interp, "Network::Interface", TCL_STATIC );
+        Tcl_StaticSetResult( interp, "Network::Interface" );
         return TCL_OK;
     }
 
@@ -112,7 +113,7 @@ Interface_obj( ClientData data, Tcl_Interp *interp,
         return TCL_OK;
     }
 
-    Tcl_SetResult( interp, "Unknown command for Interface object", TCL_STATIC );
+    Tcl_StaticSetResult( interp, "Unknown command for Interface object" );
     return TCL_ERROR;
 }
 
