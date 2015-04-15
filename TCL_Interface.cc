@@ -34,7 +34,7 @@
 #include "Interface.h"
 
 #include "tcl_util.h"
-#include "app_init.h"
+#include "AppInit.h"
 
 /**
  */
