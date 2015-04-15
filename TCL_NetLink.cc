@@ -80,7 +80,7 @@ RouteSocket_obj( ClientData data, Tcl_Interp *interp,
     }
     char *command = Tcl_GetStringFromObj( objv[1], NULL );
     if ( Tcl_StringMatch(command, "type") ) {
-        Svc_SetResult( interp, "NetLink::RouteSocket", TCL_STATIC );
+        Tcl_StaticSetResult( interp, "NetLink::RouteSocket" );
         return TCL_OK;
     }
 
@@ -103,7 +103,7 @@ RouteSocket_obj( ClientData data, Tcl_Interp *interp,
         Tcl_ResetResult( interp );
         return TCL_OK;
     }
-    Svc_SetResult( interp, "Unknown command for RouteSocket object", TCL_STATIC );
+    Tcl_StaticSetResult( interp, "Unknown command for RouteSocket object" );
     return TCL_ERROR;
 }
 
@@ -154,18 +154,18 @@ GetLink_obj( ClientData data, Tcl_Interp *interp,
 
     char *command = Tcl_GetStringFromObj( objv[1], NULL );
     if ( Tcl_StringMatch(command, "type") ) {
-        Svc_SetResult( interp, "NetLink::GetLink", TCL_STATIC );
+        Tcl_StaticSetResult( interp, "NetLink::GetLink" );
         return TCL_OK;
     }
 
     if ( Tcl_StringMatch(command, "send") ) {
-        Svc_SetResult( interp, "send not implemented", TCL_STATIC );
+        Tcl_StaticSetResult( interp, "send not implemented" );
         return TCL_ERROR;
 
         Tcl_ResetResult( interp );
         return TCL_OK;
     }
-    Svc_SetResult( interp, "Unknown command for GetLink object", TCL_STATIC );
+    Tcl_StaticSetResult( interp, "Unknown command for GetLink object" );
     return TCL_ERROR;
 }
 
@@ -214,18 +214,18 @@ NewLink_obj( ClientData data, Tcl_Interp *interp,
 
     char *command = Tcl_GetStringFromObj( objv[1], NULL );
     if ( Tcl_StringMatch(command, "type") ) {
-        Svc_SetResult( interp, "NetLink::NewLink", TCL_STATIC );
+        Tcl_StaticSetResult( interp, "NetLink::NewLink" );
         return TCL_OK;
     }
 
     if ( Tcl_StringMatch(command, "send") ) {
-        Svc_SetResult( interp, "send not implemented", TCL_STATIC );
+        Tcl_StaticSetResult( interp, "send not implemented" );
         return TCL_ERROR;
 
         Tcl_ResetResult( interp );
         return TCL_OK;
     }
-    Svc_SetResult( interp, "Unknown command for NewLink object", TCL_STATIC );
+    Tcl_StaticSetResult( interp, "Unknown command for NewLink object" );
     return TCL_ERROR;
 }
 
@@ -274,18 +274,18 @@ DelLink_obj( ClientData data, Tcl_Interp *interp,
 
     char *command = Tcl_GetStringFromObj( objv[1], NULL );
     if ( Tcl_StringMatch(command, "type") ) {
-        Svc_SetResult( interp, "NetLink::DelLink", TCL_STATIC );
+        Tcl_StaticSetResult( interp, "NetLink::DelLink" );
         return TCL_OK;
     }
 
     if ( Tcl_StringMatch(command, "send") ) {
-        Svc_SetResult( interp, "send not implemented", TCL_STATIC );
+        Tcl_StaticSetResult( interp, "send not implemented" );
         return TCL_ERROR;
 
         Tcl_ResetResult( interp );
         return TCL_OK;
     }
-    Svc_SetResult( interp, "Unknown command for DelLink object", TCL_STATIC );
+    Tcl_StaticSetResult( interp, "Unknown command for DelLink object" );
     return TCL_ERROR;
 }
 
@@ -334,18 +334,18 @@ NewAddress_obj( ClientData data, Tcl_Interp *interp,
 
     char *command = Tcl_GetStringFromObj( objv[1], NULL );
     if ( Tcl_StringMatch(command, "type") ) {
-        Svc_SetResult( interp, "NetLink::NewAddress", TCL_STATIC );
+        Tcl_StaticSetResult( interp, "NetLink::NewAddress" );
         return TCL_OK;
     }
 
     if ( Tcl_StringMatch(command, "send") ) {
-        Svc_SetResult( interp, "send not implemented", TCL_STATIC );
+        Tcl_StaticSetResult( interp, "send not implemented" );
         return TCL_ERROR;
 
         Tcl_ResetResult( interp );
         return TCL_OK;
     }
-    Svc_SetResult( interp, "Unknown command for NewAddress object", TCL_STATIC );
+    Tcl_StaticSetResult( interp, "Unknown command for NewAddress object" );
     return TCL_ERROR;
 }
 
@@ -402,18 +402,18 @@ DelAddress_obj( ClientData data, Tcl_Interp *interp,
 
     char *command = Tcl_GetStringFromObj( objv[1], NULL );
     if ( Tcl_StringMatch(command, "type") ) {
-        Svc_SetResult( interp, "NetLink::DelAddress", TCL_STATIC );
+        Tcl_StaticSetResult( interp, "NetLink::DelAddress" );
         return TCL_OK;
     }
 
     if ( Tcl_StringMatch(command, "send") ) {
-        Svc_SetResult( interp, "send not implemented", TCL_STATIC );
+        Tcl_StaticSetResult( interp, "send not implemented" );
         return TCL_ERROR;
 
         Tcl_ResetResult( interp );
         return TCL_OK;
     }
-    Svc_SetResult( interp, "Unknown command for DelAddress object", TCL_STATIC );
+    Tcl_StaticSetResult( interp, "Unknown command for DelAddress object" );
     return TCL_ERROR;
 }
 
@@ -462,18 +462,18 @@ GetAddress_obj( ClientData data, Tcl_Interp *interp,
 
     char *command = Tcl_GetStringFromObj( objv[1], NULL );
     if ( Tcl_StringMatch(command, "type") ) {
-        Svc_SetResult( interp, "NetLink::GetAddress", TCL_STATIC );
+        Tcl_StaticSetResult( interp, "NetLink::GetAddress" );
         return TCL_OK;
     }
 
     if ( Tcl_StringMatch(command, "send") ) {
-        Svc_SetResult( interp, "send not implemented", TCL_STATIC );
+        Tcl_StaticSetResult( interp, "send not implemented" );
         return TCL_ERROR;
 
         Tcl_ResetResult( interp );
         return TCL_OK;
     }
-    Svc_SetResult( interp, "Unknown command for GetAddress object", TCL_STATIC );
+    Tcl_StaticSetResult( interp, "Unknown command for GetAddress object" );
     return TCL_ERROR;
 }
 
@@ -522,18 +522,18 @@ GetRoute_obj( ClientData data, Tcl_Interp *interp,
 
     char *command = Tcl_GetStringFromObj( objv[1], NULL );
     if ( Tcl_StringMatch(command, "type") ) {
-        Svc_SetResult( interp, "NetLink::GetRoute", TCL_STATIC );
+        Tcl_StaticSetResult( interp, "NetLink::GetRoute" );
         return TCL_OK;
     }
 
     if ( Tcl_StringMatch(command, "send") ) {
-        Svc_SetResult( interp, "send not implemented", TCL_STATIC );
+        Tcl_StaticSetResult( interp, "send not implemented" );
         return TCL_ERROR;
 
         Tcl_ResetResult( interp );
         return TCL_OK;
     }
-    Svc_SetResult( interp, "Unknown command for GetRoute object", TCL_STATIC );
+    Tcl_StaticSetResult( interp, "Unknown command for GetRoute object" );
     return TCL_ERROR;
 }
 
@@ -582,18 +582,18 @@ NewRoute_obj( ClientData data, Tcl_Interp *interp,
 
     char *command = Tcl_GetStringFromObj( objv[1], NULL );
     if ( Tcl_StringMatch(command, "type") ) {
-        Svc_SetResult( interp, "NetLink::NewRoute", TCL_STATIC );
+        Tcl_StaticSetResult( interp, "NetLink::NewRoute" );
         return TCL_OK;
     }
 
     if ( Tcl_StringMatch(command, "send") ) {
-        Svc_SetResult( interp, "send not implemented", TCL_STATIC );
+        Tcl_StaticSetResult( interp, "send not implemented" );
         return TCL_ERROR;
 
         Tcl_ResetResult( interp );
         return TCL_OK;
     }
-    Svc_SetResult( interp, "Unknown command for NewRoute object", TCL_STATIC );
+    Tcl_StaticSetResult( interp, "Unknown command for NewRoute object" );
     return TCL_ERROR;
 }
 
@@ -642,18 +642,18 @@ DelRoute_obj( ClientData data, Tcl_Interp *interp,
 
     char *command = Tcl_GetStringFromObj( objv[1], NULL );
     if ( Tcl_StringMatch(command, "type") ) {
-        Svc_SetResult( interp, "NetLink::DelRoute", TCL_STATIC );
+        Tcl_StaticSetResult( interp, "NetLink::DelRoute" );
         return TCL_OK;
     }
 
     if ( Tcl_StringMatch(command, "send") ) {
-        Svc_SetResult( interp, "send not implemented", TCL_STATIC );
+        Tcl_StaticSetResult( interp, "send not implemented" );
         return TCL_ERROR;
 
         Tcl_ResetResult( interp );
         return TCL_OK;
     }
-    Svc_SetResult( interp, "Unknown command for DelRoute object", TCL_STATIC );
+    Tcl_StaticSetResult( interp, "Unknown command for DelRoute object" );
     return TCL_ERROR;
 }
 
@@ -702,18 +702,18 @@ NewNeighbor_obj( ClientData data, Tcl_Interp *interp,
 
     char *command = Tcl_GetStringFromObj( objv[1], NULL );
     if ( Tcl_StringMatch(command, "type") ) {
-        Svc_SetResult( interp, "NetLink::NewNeighbor", TCL_STATIC );
+        Tcl_StaticSetResult( interp, "NetLink::NewNeighbor" );
         return TCL_OK;
     }
 
     if ( Tcl_StringMatch(command, "send") ) {
-        Svc_SetResult( interp, "send not implemented", TCL_STATIC );
+        Tcl_StaticSetResult( interp, "send not implemented" );
         return TCL_ERROR;
 
         Tcl_ResetResult( interp );
         return TCL_OK;
     }
-    Svc_SetResult( interp, "Unknown command for NewNeighbor object", TCL_STATIC );
+    Tcl_StaticSetResult( interp, "Unknown command for NewNeighbor object" );
     return TCL_ERROR;
 }
 
@@ -762,18 +762,18 @@ DelNeighbor_obj( ClientData data, Tcl_Interp *interp,
 
     char *command = Tcl_GetStringFromObj( objv[1], NULL );
     if ( Tcl_StringMatch(command, "type") ) {
-        Svc_SetResult( interp, "NetLink::DelNeighbor", TCL_STATIC );
+        Tcl_StaticSetResult( interp, "NetLink::DelNeighbor" );
         return TCL_OK;
     }
 
     if ( Tcl_StringMatch(command, "send") ) {
-        Svc_SetResult( interp, "send not implemented", TCL_STATIC );
+        Tcl_StaticSetResult( interp, "send not implemented" );
         return TCL_ERROR;
 
         Tcl_ResetResult( interp );
         return TCL_OK;
     }
-    Svc_SetResult( interp, "Unknown command for DelNeighbor object", TCL_STATIC );
+    Tcl_StaticSetResult( interp, "Unknown command for DelNeighbor object" );
     return TCL_ERROR;
 }
 
@@ -822,18 +822,18 @@ GetNeighbor_obj( ClientData data, Tcl_Interp *interp,
 
     char *command = Tcl_GetStringFromObj( objv[1], NULL );
     if ( Tcl_StringMatch(command, "type") ) {
-        Svc_SetResult( interp, "NetLink::GetNeighbor", TCL_STATIC );
+        Tcl_StaticSetResult( interp, "NetLink::GetNeighbor" );
         return TCL_OK;
     }
 
     if ( Tcl_StringMatch(command, "send") ) {
-        Svc_SetResult( interp, "send not implemented", TCL_STATIC );
+        Tcl_StaticSetResult( interp, "send not implemented" );
         return TCL_ERROR;
 
         Tcl_ResetResult( interp );
         return TCL_OK;
     }
-    Svc_SetResult( interp, "Unknown command for GetNeighbor object", TCL_STATIC );
+    Tcl_StaticSetResult( interp, "Unknown command for GetNeighbor object" );
     return TCL_ERROR;
 }
 
