@@ -41,7 +41,7 @@
 #include "tcl_util.h"
 
 #include "logger.h"
-#include "BIOS.h"
+#include "SMBIOS.h"
 
 namespace {
     typedef SMBIOS::Structure *(*StructureFactory)( void * );
@@ -479,52 +479,6 @@ SMBIOS::Header::locate() {
 
 found_smbios:
     return p;
-}
-
-/**
- * This is a sample command for testing the straight line netlink
- * probe code.
- */
-static int 
-Probe_cmd( ClientData data, Tcl_Interp *interp,
-             int objc, Tcl_Obj * CONST *objv )
-{
-    SMBIOS::Header smbios;
-    smbios.probe( SMBIOS::Header::locate() );
-    return TCL_OK;
-}
-
-/**
- * we can find the SMBIOS address directly by looking through the BIOS data structures directly
- */
-bool BIOS::Initialize( Tcl_Interp *interp ) {
-    Tcl_Command command;
-
-    Tcl_Namespace *ns = Tcl_CreateNamespace(interp, "BIOS", (ClientData)0, NULL);
-    if ( ns == NULL ) {
-        return false;
-    }
-
-    using namespace SMBIOS;
-
-    ns = Tcl_CreateNamespace(interp, "SMBIOS", (ClientData)0, NULL);
-    if ( ns == NULL ) {
-        return false;
-    }
-
-    if ( Tcl_LinkVar(interp, "SMBIOS::debug", (char *)&debug, TCL_LINK_INT) != TCL_OK ) {
-        log_err( "failed to link SMBIOS::debug" );
-        exit( 1 );
-    }
-
-    // create TCL commands for creating BIOS/SMBIOS structures
-    command = Tcl_CreateObjCommand(interp, "SMBIOS::Probe", Probe_cmd, (ClientData)0, NULL);
-    if ( command == NULL ) {
-        // logger ?? want to report TCL Error
-        return false;
-    }
-
-    return true;
 }
 
 /* vim: set autoindent expandtab sw=4 : */

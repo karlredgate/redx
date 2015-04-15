@@ -21,12 +21,12 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-/** \file BIOS.h
+/** \file SMBIOS.h
  * \brief 
  */
 
-#ifndef _BIOS_H_
-#define _BIOS_H_
+#ifndef _SMBIOS_H_
+#define _SMBIOS_H_
 
 #include <stdint.h>
 #include <unistd.h>
