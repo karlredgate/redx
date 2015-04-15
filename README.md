@@ -17,4 +17,6 @@ build
  * Add S3 commands
  * Add Windows commands
  * Build under mingw
+ * KVM
+ * DBus
 
