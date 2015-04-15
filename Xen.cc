@@ -123,7 +123,7 @@ PauseDomain_obj( ClientData data, Tcl_Interp *interp,
     }
     char *command = Tcl_GetStringFromObj( objv[1], NULL );
     if ( Tcl_StringMatch(command, "type") ) {
-        Svc_SetResult( interp, "Xen::PauseDomain", TCL_STATIC );
+        Tcl_StaticSetResult( interp, "Xen::PauseDomain" );
         return TCL_OK;
     }
 
@@ -149,7 +149,7 @@ PauseDomain_obj( ClientData data, Tcl_Interp *interp,
         Tcl_ResetResult( interp );
         return TCL_OK;
     }
-    Svc_SetResult( interp, "Unknown command for RouteSocket object", TCL_STATIC );
+    Tcl_StaticSetResult( interp, "Unknown command for RouteSocket object" );
     return TCL_ERROR;
 }
 
@@ -199,7 +199,7 @@ UnpauseDomain_obj( ClientData data, Tcl_Interp *interp,
     }
     char *command = Tcl_GetStringFromObj( objv[1], NULL );
     if ( Tcl_StringMatch(command, "type") ) {
-        Svc_SetResult( interp, "Xen::UnpauseDomain", TCL_STATIC );
+        Tcl_StaticSetResult( interp, "Xen::UnpauseDomain" );
         return TCL_OK;
     }
 
@@ -225,7 +225,7 @@ UnpauseDomain_obj( ClientData data, Tcl_Interp *interp,
         Tcl_ResetResult( interp );
         return TCL_OK;
     }
-    Svc_SetResult( interp, "Unknown command for RouteSocket object", TCL_STATIC );
+    Tcl_StaticSetResult( interp, "Unknown command for RouteSocket object" );
     return TCL_ERROR;
 }
 
@@ -275,7 +275,7 @@ DestroyDomain_obj( ClientData data, Tcl_Interp *interp,
     }
     char *command = Tcl_GetStringFromObj( objv[1], NULL );
     if ( Tcl_StringMatch(command, "type") ) {
-        Svc_SetResult( interp, "Xen::DestroyDomain", TCL_STATIC );
+        Tcl_StaticSetResult( interp, "Xen::DestroyDomain" );
         return TCL_OK;
     }
 
@@ -293,7 +293,7 @@ DestroyDomain_obj( ClientData data, Tcl_Interp *interp,
         Tcl_ResetResult( interp );
         return TCL_OK;
     }
-    Svc_SetResult( interp, "Unknown command for RouteSocket object", TCL_STATIC );
+    Tcl_StaticSetResult( interp, "Unknown command for RouteSocket object" );
     return TCL_ERROR;
 }
 
@@ -352,7 +352,7 @@ GetDomainInfoList_obj( ClientData data, Tcl_Interp *interp,
     }
     char *command = Tcl_GetStringFromObj( objv[1], NULL );
     if ( Tcl_StringMatch(command, "type") ) {
-        Svc_SetResult( interp, "Xen::GetDomainInfoList", TCL_STATIC );
+        Tcl_StaticSetResult( interp, "Xen::GetDomainInfoList" );
         return TCL_OK;
     }
 
