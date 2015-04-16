@@ -50,7 +50,7 @@
 #include "util.h"
 #include "host_table.h"
 #include "NetLink.h"
-#include "Network.h"
+#include "NetLinkMonitor.h"
 
 namespace { int debug = 0; }
 
