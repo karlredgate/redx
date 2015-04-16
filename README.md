@@ -55,3 +55,40 @@ build
 imptrace is a bash script that uses Dtrace scripts and ruby.
 Need to look for PDF of dtrace on OSX C interface.
 
+Other DTrace tools
+
+ * diskhits
+ * dtruss
+ * errinfo
+ * execsnoop
+ * fddist
+ * iopattern
+ * iosnoop
+ * iotop
+ * lastwords
+ * opensnoop
+ * procsystime
+ * rwsnoop
+ * sampleproc
+ * timerfires
+ * topsyscall
+
+Check dustmite ( https://github.com/CyberShadow/DustMite/wiki )
+
+ * pubsub
+ * Rex/DeRez
+ * mig - Mach Interface Generator ??
+ * allmemory
+ * heap
+ * leaks
+ * vmmap
+ * hdiutil
+ * hdik
+ * ioreg
+ * mkbom -- create a bill-of-materials file
+ * bom(5), ditto(8)  lsbom(8)
+ * asctl -- App Sandbox Control Tool
+ * codesign -- Create and manipulate code signatures
+ * csreq(1), xcodebuild(1), `codesign_allocate(1)`
+
+<!-- vim: set autoindent expandtab sw=4 syntax=markdown: -->
