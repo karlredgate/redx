@@ -49,7 +49,7 @@
 #include "logger.h"
 #include "NetLink.h"
 
-#include "app_init.h"
+#include "AppInit.h"
 
 /**
  * This is defined in the iproute2 tools, and looked useful.
