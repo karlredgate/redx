@@ -26,8 +26,8 @@
  *
  */
 
-#ifndef _NETWORK_MONITOR_H_
-#define _NETWORK_MONITOR_H_
+#ifndef _NETLINK_MONITOR_H_
+#define _NETLINK_MONITOR_H_
 
 #include <stdint.h>
 #include <sys/socket.h>
