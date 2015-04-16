@@ -21,7 +21,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-/** \file NetworkMonitor.cc
+/** \file NetLinkMonitor.cc
  * \brief 
  *
  */
@@ -74,7 +74,7 @@ public:
  *
  * 
  */
-void Network::Monitor::receive( NetLink::NewLink *message ) {
+void NetLink::Monitor::receive( NetLink::NewLink *message ) {
     bool link_requires_repair = false;
     Interface *interface = interfaces[ message->index() ];
 
@@ -240,7 +240,7 @@ void Network::Monitor::receive( NetLink::NewLink *message ) {
 
 /**
  */
-void Network::Monitor::receive( NetLink::DelLink *message ) {
+void NetLink::Monitor::receive( NetLink::DelLink *message ) {
 
     if ( message->index() == 0 ) {
         log_warn( "received a DelLink message for inteface index 0 (INVALID)" );
@@ -323,9 +323,9 @@ void Network::Monitor::receive( NetLink::DelLink *message ) {
 
 /**
  */
-void Network::Monitor::receive( NetLink::NewRoute *message ) {
+void NetLink::Monitor::receive( NetLink::NewRoute *message ) {
     if ( debug > 1 ) {
-        log_info( "Network::Monitor => process NewRoute -->  scope %d, family %d\n",
+        log_info( "NetLink::Monitor => process NewRoute -->  scope %d, family %d\n",
                 message->scope(),
                 message->family()
         );
@@ -334,9 +334,9 @@ void Network::Monitor::receive( NetLink::NewRoute *message ) {
 
 /**
  */
-void Network::Monitor::receive( NetLink::DelRoute *message ) {
+void NetLink::Monitor::receive( NetLink::DelRoute *message ) {
     if ( debug > 1 ) {
-        log_info( "Network::Monitor => process DelRoute -->  scope %d, family %d\n",
+        log_info( "NetLink::Monitor => process DelRoute -->  scope %d, family %d\n",
                 message->scope(),
                 message->family()
         );
@@ -345,7 +345,7 @@ void Network::Monitor::receive( NetLink::DelRoute *message ) {
 
 /**
  */
-void Network::Monitor::receive( NetLink::NewAddress *message ) {
+void NetLink::Monitor::receive( NetLink::NewAddress *message ) {
 
     Interface *interface = interfaces[ message->index() ];
     if ( interface == NULL ) {
@@ -383,7 +383,7 @@ void Network::Monitor::receive( NetLink::NewAddress *message ) {
 
 /**
  */
-void Network::Monitor::receive( NetLink::DelAddress *message ) {
+void NetLink::Monitor::receive( NetLink::DelAddress *message ) {
 
     Interface *interface = interfaces[ message->index() ];
     if ( interface == NULL ) {
@@ -417,25 +417,25 @@ void Network::Monitor::receive( NetLink::DelAddress *message ) {
 
 /**
  */
-void Network::Monitor::receive( NetLink::NewNeighbor *message ) {
+void NetLink::Monitor::receive( NetLink::NewNeighbor *message ) {
     if ( debug > 1 ) {
-        log_info( "Network::Monitor => process NewNeighbor \n" );
+        log_info( "NetLink::Monitor => process NewNeighbor \n" );
     }
 }
 
 /**
  */
-void Network::Monitor::receive( NetLink::DelNeighbor *message ) {
+void NetLink::Monitor::receive( NetLink::DelNeighbor *message ) {
     if ( debug > 1 ) {
-        log_info( "Network::Monitor => process DelNeighbor\n");
+        log_info( "NetLink::Monitor => process DelNeighbor\n");
     }
 }
 
 /**
  */
-void Network::Monitor::receive( NetLink::RouteMessage *message ) {
+void NetLink::Monitor::receive( NetLink::RouteMessage *message ) {
     if ( debug > 1 ) {
-        log_info( "Network::Monitor unknown RouteMessage (%d) -- skipping\n", message->type_code() );
+        log_info( "NetLink::Monitor unknown RouteMessage (%d) -- skipping\n", message->type_code() );
     }
 }
 
@@ -443,9 +443,9 @@ void Network::Monitor::receive( NetLink::RouteMessage *message ) {
  * \todo should have some internal state that tells us the last message
  * we received was an error, and what the error was.
  */
-void Network::Monitor::receive( NetLink::RouteError *message ) {
+void NetLink::Monitor::receive( NetLink::RouteError *message ) {
     if ( debug > 1 ) {
-        log_info( "Network::Monitor RouteError %d\n", message->error() );
+        log_info( "NetLink::Monitor RouteError %d\n", message->error() );
     }
 }
 
@@ -458,7 +458,7 @@ void Network::Monitor::receive( NetLink::RouteError *message ) {
  * See Interface::sendto() method (in Interface.cc) for description
  * of how this is done.
  */
-int Network::Monitor::sendto( void *message, size_t length, int flags, const struct sockaddr_in6 *address) {
+int NetLink::Monitor::sendto( void *message, size_t length, int flags, const struct sockaddr_in6 *address) {
     std::map<int, Interface *>::const_iterator iter = interfaces.begin();
     while ( iter != interfaces.end() ) {
         Network::Interface *interface = iter->second;
@@ -482,7 +482,7 @@ int Network::Monitor::sendto( void *message, size_t length, int flags, const str
  *
  * See the Interface.cc advertise code for how this is done.
  */
-int Network::Monitor::advertise() {
+int NetLink::Monitor::advertise() {
     std::map<int, Interface *>::const_iterator iter = interfaces.begin();
     while ( iter != interfaces.end() ) {
         Network::Interface *interface = iter->second;
@@ -495,7 +495,7 @@ int Network::Monitor::advertise() {
 
 /** Iterate and call a callback for each Interface.
  */
-int Network::Monitor::each_interface( InterfaceIterator& callback ) {
+int NetLink::Monitor::each_interface( InterfaceIterator& callback ) {
     int result = 0;
 
     std::map<int, Interface *>::const_iterator iter = interfaces.begin();
@@ -510,7 +510,7 @@ int Network::Monitor::each_interface( InterfaceIterator& callback ) {
 
 /** Iterate and call a callback for each Node.
  */
-int Network::Monitor::each_node( NodeIterator& callback ) {
+int NetLink::Monitor::each_node( NodeIterator& callback ) {
     int result = 0;
 
     pthread_mutex_lock( &node_table_lock );
@@ -529,7 +529,7 @@ int Network::Monitor::each_node( NodeIterator& callback ) {
  */
 
 Network::Interface *
-Network::Monitor::find_bridge_interface( Interface *interface ) {
+NetLink::Monitor::find_bridge_interface( Interface *interface ) {
     if ( interface->not_physical() ) return NULL;
     if ( interface->not_captured() ) return NULL;
 
@@ -565,7 +565,7 @@ Network::Monitor::find_bridge_interface( Interface *interface ) {
  */
 
 Network::Interface *
-Network::Monitor::find_physical_interface( Interface *interface ) {
+NetLink::Monitor::find_physical_interface( Interface *interface ) {
     if ( interface->not_bridge() ) return NULL;
 
     char path[1024];
@@ -631,7 +631,7 @@ send_topology_event( const char *who ) {
 
 /**
  */
-void Network::Monitor::topology_changed() {
+void NetLink::Monitor::topology_changed() {
 
 // If no Manager, send the event ourselves.
 
@@ -644,7 +644,7 @@ void Network::Monitor::topology_changed() {
 
 /** Persist the current interface config.
  */
-void Network::Monitor::persist_interface_configuration() {
+void NetLink::Monitor::persist_interface_configuration() {
     log_notice( "persisting the change in interface configuration" );
     FILE *f = fopen( "/etc/udev/rules.d/.tmp", "w" );
     std::map<int, Interface *>::const_iterator iter = interfaces.begin();
@@ -672,7 +672,7 @@ void Network::Monitor::persist_interface_configuration() {
  * The number is simply cloned from the backing interface to
  * the bridge name.
  */
-void Network::Monitor::capture( Interface *interface ) {
+void NetLink::Monitor::capture( Interface *interface ) {
     if ( interface->has_fault_injected() ) {
         log_notice( "%s(%d) fault injected, not capturing in bridge", interface->name(), interface->index() );
         return;
@@ -713,7 +713,7 @@ void Network::Monitor::capture( Interface *interface ) {
 /** Bring up link and addresses for this interface
  *
  */
-void Network::Monitor::bring_up( Interface *interface ) {
+void NetLink::Monitor::bring_up( Interface *interface ) {
     if ( debug > 0 ) log_notice( "bring up '%s'", interface->name() );
 
     if ( interface->has_fault_injected() ) {
@@ -732,7 +732,7 @@ void Network::Monitor::bring_up( Interface *interface ) {
  *
  */
 Network::Node*
-Network::Monitor::intern_node( UUID& uuid ) {
+NetLink::Monitor::intern_node( UUID& uuid ) {
     int in_use_count = 0;
     Network::Node *result = NULL;
     Network::Node *available = NULL;
@@ -785,7 +785,7 @@ Network::Monitor::intern_node( UUID& uuid ) {
  *
  */
 bool
-Network::Monitor::remove_node( UUID *uuid ) {
+NetLink::Monitor::remove_node( UUID *uuid ) {
     pthread_mutex_lock( &node_table_lock );
     for ( int i = 0 ; i < NODE_TABLE_SIZE ; ++i ) {
         Network::Node& node = node_table[i];
@@ -802,7 +802,7 @@ Network::Monitor::remove_node( UUID *uuid ) {
  *
  */
 Network::Node*
-Network::Monitor::find_node( UUID *uuid ) {
+NetLink::Monitor::find_node( UUID *uuid ) {
     using namespace Network;
     Node *result = NULL;
 
@@ -823,7 +823,7 @@ Network::Monitor::find_node( UUID *uuid ) {
  * priv0 is down and we cannot discover the node id dynamically.
  */
 void
-Network::Monitor::save_cache() {
+NetLink::Monitor::save_cache() {
     FILE *f = fopen( "partner-cache", "w" );
     if ( f == NULL ) {
         log_notice( "could not save partner cache" );
@@ -855,7 +855,7 @@ Network::Monitor::save_cache() {
 /**
  */
 void
-Network::Monitor::clear_partners() {
+NetLink::Monitor::clear_partners() {
     ClearNodePartner callback;
     int partner_count = each_node( callback );
     if ( partner_count > 0 ) {
@@ -870,7 +870,7 @@ Network::Monitor::clear_partners() {
  * discovered a partner node on priv0.
  */
 void
-Network::Monitor::load_cache() {
+NetLink::Monitor::load_cache() {
     char buffer[80];
     FILE *f = fopen( "partner-cache", "r" );
 
@@ -987,7 +987,7 @@ public:
  * node0.ip6.ibiz0    fe80::XXXX
  */
 void
-Network::Monitor::update_hosts() {
+NetLink::Monitor::update_hosts() {
     if ( mkfile(const_cast<char*>("hosts.tmp"), HOST_TABLE_SIZE) == 0 ) {
         log_err( "could not create the tmp hosts table" );
         return;
@@ -1038,7 +1038,7 @@ Network::Monitor::update_hosts() {
  * 
  * ZeroConf specific interfaces
  */
-void Network::Monitor::run() {
+void NetLink::Monitor::run() {
 
 // Disable neighbor and route messages from being reported
 // because we do not process them and we can get 100's of them
@@ -1067,7 +1067,7 @@ void Network::Monitor::run() {
     }
 }
 
-void Network::Monitor::probe() {
+void NetLink::Monitor::probe() {
     if ( route_socket == NULL ) return;
     if ( debug > 0 ) log_notice( "Monitor: sending probe" );
     NetLink::RouteSocket &rs = *route_socket;
@@ -1087,7 +1087,7 @@ void Network::Monitor::probe() {
  * Tcl_Interp arg to the constructor is for handlers that are registered
  * for network events.  (?? also how to handle ASTs for handlers)
  */
-Network::Monitor::Monitor( Tcl_Interp *interp, Network::ListenerInterfaceFactory factory,
+NetLink::Monitor::Monitor( Tcl_Interp *interp, Network::ListenerInterfaceFactory factory,
                            Network::Manager *manager )
 : Thread("netlink.monitor"), interp(interp), route_socket(NULL), factory(factory),
   table_warning_reported(false), table_error_reported(false), _manager(manager) {
@@ -1110,8 +1110,7 @@ static int
 Monitor_obj( ClientData data, Tcl_Interp *interp,
              int objc, Tcl_Obj * CONST *objv )
 {
-    using namespace Network;
-    Monitor *monitor = (Monitor *)data;
+    NetLink::Monitor *monitor = (NetLink::Monitor *)data;
 
     if ( objc == 1 ) {
         Tcl_SetObjResult( interp, Tcl_NewLongObj((long)(monitor)) );
@@ -1120,7 +1119,7 @@ Monitor_obj( ClientData data, Tcl_Interp *interp,
 
     char *command = Tcl_GetStringFromObj( objv[1], NULL );
     if ( Tcl_StringMatch(command, "type") ) {
-        Svc_SetResult( interp, "Network::Monitor", TCL_STATIC );
+        Svc_SetResult( interp, "NetLink::Monitor", TCL_STATIC );
         return TCL_OK;
     }
 
@@ -1169,8 +1168,7 @@ Monitor_obj( ClientData data, Tcl_Interp *interp,
  */
 static void
 Monitor_delete( ClientData data ) {
-    using namespace Network;
-    Monitor *message = (Monitor *)data;
+    NetLink::Monitor *message = (NetLink::Monitor *)data;
     delete message;
 }
 
@@ -1186,15 +1184,14 @@ Monitor_cmd( ClientData data, Tcl_Interp *interp,
         return TCL_ERROR;
     }
 
-    using namespace Network;
-    ListenerInterfaceFactory factory;
+    Network::ListenerInterfaceFactory factory;
     void *p = (void *)&(factory); // avoid strict aliasing errors in the compiler
     if ( Tcl_GetLongFromObj(interp,objv[2],(long*)p) != TCL_OK ) {
         Svc_SetResult( interp, "invalid listener object", TCL_STATIC );
         return TCL_ERROR;
     }
     char *name = Tcl_GetStringFromObj( objv[1], NULL );
-    Monitor *object = new Monitor( interp, factory, NULL );
+    NetLink::Monitor *object = new NetLink::Monitor( interp, factory, NULL );
     Tcl_CreateObjCommand( interp, name, Monitor_obj, (ClientData)object, Monitor_delete );
     Svc_SetResult( interp, name, TCL_VOLATILE );
     return TCL_OK;
@@ -1361,8 +1358,7 @@ static int
 Manager_obj( ClientData data, Tcl_Interp *interp,
              int objc, Tcl_Obj * CONST *objv )
 {
-    using namespace Network;
-    Manager *manager = (Manager *)data;
+    Network::Manager *manager = (Network::Manager *)data;
 
     if ( objc == 1 ) {
         Tcl_SetObjResult( interp, Tcl_NewLongObj((long)(manager)) );
@@ -1433,9 +1429,8 @@ Manager_cmd( ClientData data, Tcl_Interp *interp,
         return TCL_ERROR;
     }
 
-    using namespace Network;
     char *name = Tcl_GetStringFromObj( objv[1], NULL );
-    Manager *object = new Manager( interp );
+    Network::Manager *object = new Network::Manager( interp );
     Tcl_CreateObjCommand( interp, name, Manager_obj, (ClientData)object, Manager_delete );
     Svc_SetResult( interp, name, TCL_VOLATILE );
     return TCL_OK;
@@ -1445,27 +1440,27 @@ Manager_cmd( ClientData data, Tcl_Interp *interp,
  * need some way to find these objects...
  * use TCL ..hmmm
  */
-bool NetworkMonitor_Module( Tcl_Interp *interp ) {
+bool NetLinkMonitor_Module( Tcl_Interp *interp ) {
 
     Tcl_Command command;
 
-    Tcl_Namespace *ns = Tcl_CreateNamespace(interp, "Network", (ClientData)0, NULL);
+    Tcl_Namespace *ns = Tcl_CreateNamespace(interp, "NetLink", (ClientData)0, NULL);
     if ( ns == NULL ) {
         return false;
     }
 
-    if ( Tcl_LinkVar(interp, "Network::debug", (char *)&debug, TCL_LINK_INT) != TCL_OK ) {
-        log_err( "failed to link Network::debug" );
+    if ( Tcl_LinkVar(interp, "NetLink::debug", (char *)&debug, TCL_LINK_INT) != TCL_OK ) {
+        log_err( "failed to link NetLink::debug" );
         exit( 1 );
     }
 
-    command = Tcl_CreateObjCommand(interp, "Network::Monitor", Monitor_cmd, (ClientData)0, NULL);
+    command = Tcl_CreateObjCommand(interp, "NetLink::Monitor", Monitor_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
         // logger ?? want to report TCL Error
         return false;
     }
 
-    command = Tcl_CreateObjCommand(interp, "Network::Probe", Probe_cmd, (ClientData)0, NULL);
+    command = Tcl_CreateObjCommand(interp, "NetLink::Probe", Probe_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
         // logger ?? want to report TCL Error
         return false;

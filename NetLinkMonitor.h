@@ -55,12 +55,11 @@ namespace ICMPv6 { class Socket; }
 /**
  */
 namespace Network {
-
-    class Bridge;
     class Interface;
-    class Tunnel;
     class Node;
-    class Peer;
+}
+
+namespace NetLink {
 
     class Monitor;
 
@@ -82,7 +81,7 @@ namespace Network {
         virtual ~ListenerInterface() {}
         virtual Thread* thread() = 0;
     };
-    typedef ListenerInterface *(*ListenerInterfaceFactory)( Tcl_Interp *, Monitor *, Interface * );
+    typedef ListenerInterface *(*ListenerInterfaceFactory)( Tcl_Interp *, Monitor *, Network::Interface * );
 
     class Manager;
 
@@ -95,19 +94,19 @@ namespace Network {
         Tcl_Interp *interp;
         NetLink::RouteSocket *route_socket;
         ListenerInterfaceFactory factory;
-        std::map <int, Interface*> interfaces;
+        std::map <int, Network::Interface*> interfaces;
 
         pthread_mutex_t node_table_lock;
         static const int NODE_TABLE_SIZE = 4096;
-        Node *node_table;
+        Network::Node *node_table;
         bool table_warning_reported;
 	bool table_error_reported;
 
         Network::Manager *_manager;
 
         void persist_interface_configuration();
-        void capture( Interface * );
-        void bring_up( Interface * );
+        void capture( Network::Interface * );
+        void bring_up( Network::Interface * );
 
         void load_cache();
         void save_cache();
@@ -130,8 +129,8 @@ namespace Network {
         int sendto( void *, size_t, int, const struct sockaddr_in6 * );
         int advertise();
         int each_interface( InterfaceIterator& );
-        Interface *find_bridge_interface( Interface* );
-        Interface *find_physical_interface( Interface* );
+        Network::Interface *find_bridge_interface( Network::Interface* );
+        Network::Interface *find_physical_interface( Network::Interface* );
         void topology_changed();
 
         /**
@@ -139,10 +138,10 @@ namespace Network {
          * seen on any/all interfaces.  Each node that has been seen on a
          * specific interface is added to the peer list on that interface.
          */
-        Node* intern_node( UUID & );
+        Network::Node* intern_node( UUID & );
         bool remove_node( UUID * );
-        Node* find_node( UUID * );
-        int each_node( NodeIterator& );
+        Network::Node* find_node( UUID * );
+        int each_node( Network::NodeIterator& );
 
         void update_hosts();
     };
