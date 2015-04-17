@@ -26,15 +26,22 @@
  *
  */
 
+#define _BSD_SOURCE
+#include <features.h>
+
+#include <sys/ioctl.h>
 #include <net/if.h>
+#include <unistd.h>
+#include <string.h>
+
 #include "PlatformInterface.h"
 
 int
-network_interface_index( const char *name ) {
+network_interface_index( const char *_name ) {
     struct ifreq ifr;
     int s;
-    s = ::socket(PF_PACKET, SOCK_DGRAM, 0);
-    if (s < 0)  return;
+    s = socket(PF_PACKET, SOCK_DGRAM, 0);
+    if (s < 0)  return -1;
 
     memset(&ifr, 0, sizeof(ifr));
     strncpy(ifr.ifr_name, _name, IFNAMSIZ);
