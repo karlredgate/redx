@@ -85,9 +85,6 @@ void NetLink::Monitor::receive( NetLink::NewLink *message ) {
         }
         interface = new Network::Interface( interp, message );
         interfaces[ message->index() ] = interface;
-        if ( _manager != NULL ) {
-            _manager->add_interface( interface );
-        }
 
         interface->update( message );
 
@@ -600,46 +597,7 @@ NetLink::Monitor::find_physical_interface( Interface *interface ) {
 
 /**
  */
-static bool
-send_topology_event( const char *who ) {
-    log_notice( "%s sending NetTopologyUpdate event to spine", who );
-
-    char *event_name = const_cast<char*>("SuperNova::NetTopologyUpdate");
-    pid_t child = fork();
-
-    if ( child < 0 ) {
-        log_err( "failed to send %s event - couldn't fork", event_name );
-        return false;
-    }
-
-    if ( child > 0 ) {
-        int status;
-        waitpid( child, &status, 0);
-        return true;
-    }
-
-    char *argv[] = { const_cast<char*>("genevent"), event_name, 0 };
-    char *envp[] = { 0 };
-    if ( execve("/usr/lib/spine/bin/genevent", argv, envp) < 0 ) {
-        log_err( "failed to send %s event - couldn't execve", event_name );
-        _exit( 0 );
-    }
-
-    // NOT REACHED
-    return true;
-}
-
-/**
- */
 void NetLink::Monitor::topology_changed() {
-
-// If no Manager, send the event ourselves.
-
-    if ( _manager != NULL ) {
-        _manager->topology_changed();
-    } else {
-        send_topology_event("Monitor");
-    }
 }
 
 /** Persist the current interface config.
