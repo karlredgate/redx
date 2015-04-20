@@ -114,7 +114,7 @@ namespace Network {
     public:
         Interface( Tcl_Interp * );
         Interface( Tcl_Interp *, char * );
-        Interface( Tcl_Interp *, NetLink::NewLink * );
+        // Interface( Tcl_Interp *, NetLink::NewLink * );
         virtual ~Interface();
 
         inline operator int() const { return _index; }

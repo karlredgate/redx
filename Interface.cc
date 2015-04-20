@@ -163,7 +163,8 @@ Network::Interface::Interface( Tcl_Interp *interp, char *initname )
 
 /**
  */
-Network::Interface::Interface( Tcl_Interp *interp, NetLink::NewLink *message )
+// Network::Interface::Interface( Tcl_Interp *interp, NetLink::NewLink *message )
+Network::Interface::Interface( Tcl_Interp *interp )
 : interp(interp), 
   netlink_flags(0),        /* current state of flags reported by netlink */
   netlink_change(0),       /* netlink thinks flags have changed */
@@ -180,10 +181,14 @@ Network::Interface::Interface( Tcl_Interp *interp, NetLink::NewLink *message )
   table_error_reported(false),
   advertise_errors(0), initiated_tunnel(false), _removed(false) {
 
+#if 0
+// All of these need to come from a kernel generic arg
+
     _index = message->index();
     _name = strdup( message->name() );
 
     update( message ) ;
+#endif
 
     _no_ordinal = true;
     int slot = -1;
@@ -191,13 +196,9 @@ Network::Interface::Interface( Tcl_Interp *interp, NetLink::NewLink *message )
     if ( sscanf(_name, "sync_pci%dp%d", &slot, &port) == 2 ) {
         if ( ( slot >= 0 ) && ( slot <= 15 ) &&
              ( port >= 0 ) && ( port <= 3 ) ) {
-            _ordinal = 0x40 | ( (slot & 0xf) << 2 ) | port;	// this will encode 10gb private links into existing message format
+            _ordinal = 0x40 | ( (slot & 0xf) << 2 ) | port;
             _no_ordinal = false;
         }
-    } else if ( sscanf(_name, "priv%d", &_ordinal) == 1 ) {
-        _no_ordinal = false;
-    } else if ( sscanf(_name, "ibiz%d", &_ordinal) == 1 ) {
-        _no_ordinal = false;
     } else {
         log_notice( "could not parse interface name '%s'", _name );
     }
@@ -206,7 +207,10 @@ Network::Interface::Interface( Tcl_Interp *interp, NetLink::NewLink *message )
         log_notice( "Interface %s ordinal is %d", _name, _ordinal );
     }
 
+#if 0
+// need new kernel generic interface
     unsigned char *address = message->MAC();
+#endif
 
     struct ifreq request;
     if ( mac_is_zero(address) ) {
