@@ -64,7 +64,7 @@ Channel_obj( ClientData data, Tcl_Interp *interp,
 
     char *command = Tcl_GetStringFromObj( objv[1], NULL );
     if ( Tcl_StringMatch(command, "type") ) {
-        Svc_SetResult( interp, "Channel", TCL_STATIC );
+        Tcl_StaticSetResult( interp, "Channel" );
         return TCL_OK;
     }
 
@@ -129,7 +129,7 @@ Channel_obj( ClientData data, Tcl_Interp *interp,
         _exit( 0 );
     }
 
-    Svc_SetResult( interp, "Unknown command for Channel object", TCL_STATIC );
+    Tcl_StaticSetResult( interp, "Unknown command for Channel object" );
     return TCL_ERROR;
 }
 

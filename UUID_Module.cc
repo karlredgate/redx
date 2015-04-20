@@ -53,7 +53,7 @@ UUID_obj( ClientData data, Tcl_Interp *interp,
 
     char *command = Tcl_GetStringFromObj( objv[1], NULL );
     if ( Tcl_StringMatch(command, "type") ) {
-        Svc_SetResult( interp, "UUID", TCL_STATIC );
+        Tcl_StaticSetResult( interp, "UUID" );
         return TCL_OK;
     }
 
@@ -91,7 +91,7 @@ UUID_obj( ClientData data, Tcl_Interp *interp,
         return TCL_OK;
     }
 
-    Svc_SetResult( interp, "Unknown command for UUID object", TCL_STATIC );
+    Tcl_StaticSetResult( interp, "Unknown command for UUID object" );
     return TCL_ERROR;
 }
 
@@ -151,7 +151,7 @@ guid_obj( ClientData data, Tcl_Interp *interp,
 
     char *command = Tcl_GetStringFromObj( objv[1], NULL );
     if ( Tcl_StringMatch(command, "type") ) {
-        Svc_SetResult( interp, "UUID", TCL_STATIC );
+        Tcl_StaticSetResult( interp, "UUID" );
         return TCL_OK;
     }
 
@@ -215,7 +215,7 @@ guid_obj( ClientData data, Tcl_Interp *interp,
         return TCL_OK;
     }
 
-    Svc_SetResult( interp, "Unknown command for UUID object", TCL_STATIC );
+    Tcl_StaticSetResult( interp, "Unknown command for UUID object" );
     return TCL_ERROR;
 }
 

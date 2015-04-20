@@ -62,7 +62,7 @@ thread_cmd( ClientData data, Tcl_Interp *interp,
         return TCL_OK;
     }
 
-    Svc_SetResult( interp, "Unknown command for thread object", TCL_STATIC );
+    Tcl_StaticSetResult( interp, "Unknown command for thread object" );
     return TCL_ERROR;
 }
 
@@ -197,7 +197,7 @@ Thread::TclCommand( ClientData data, Tcl_Interp *interp,
         return TCL_OK;
     }
 
-    Svc_SetResult( interp, "Unknown command for thread object", TCL_STATIC );
+    Tcl_StaticSetResult( interp, "Unknown command for thread object" );
     return TCL_ERROR;
 }
 
