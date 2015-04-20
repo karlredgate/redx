@@ -92,29 +92,6 @@ static bool mac_is_zero( unsigned char *address ) {
     if ( address[5] != 0 ) return false;
     return true;
 }
-
-/**
- */
-bool
-get_mac( char *interface_name, struct ifreq *request ) {
-    int sock = socket( AF_INET, SOCK_STREAM, 0 );
-    if ( sock < 0 ) {
-        log_warn( "could not open socket to get intf mac addr" );
-        return false;
-    }
-    memset( request, 0, sizeof(*request) );
-    strncpy( request->ifr_name, interface_name, IFNAMSIZ );
-    // request->ifr_hwaddr.sa_family = ARPHRD_ETHER;
-    int result = ioctl(sock, SIOCGIFHWADDR, request);
-    const char *error = strerror(errno);
-    close( sock );
-    if ( result < 0 ) {
-        log_warn( "failed to get MAC address for '%s': %s",
-                            interface_name, error );
-        return false;
-    }
-    return true;
-}
 
 /**
  */
@@ -144,15 +121,7 @@ Network::Interface::Interface( Tcl_Interp *interp, char *initname )
     _name = strdup(initname);
     _index = network_interface_index( _name );
 
-    struct ifreq request;
-    if ( get_mac(_name, &request) ) {
-        unsigned char *address = (unsigned char *)request.ifr_hwaddr.sa_data;
-        MAC[0] = address[0];
-        MAC[1] = address[1];
-        MAC[2] = address[2];
-        MAC[3] = address[3];
-        MAC[4] = address[4];
-        MAC[5] = address[5];
+    if ( get_mac_address(_name, MAC) ) {
         lladdr( &primary_address );
     }
     get_settings();
@@ -210,23 +179,11 @@ Network::Interface::Interface( Tcl_Interp *interp )
 #if 0
 // need new kernel generic interface
     unsigned char *address = message->MAC();
-#endif
-
-    struct ifreq request;
     if ( mac_is_zero(address) ) {
-        if ( get_mac(_name, &request) ) {
-            address = (unsigned char *)request.ifr_hwaddr.sa_data;
-        }
+#endif
+    if ( get_mac_address(_name, MAC) ) {
+        lladdr( &primary_address );
     }
-
-    MAC[0] = address[0];
-    MAC[1] = address[1];
-    MAC[2] = address[2];
-    MAC[3] = address[3];
-    MAC[4] = address[4];
-    MAC[5] = address[5];
-
-    lladdr( &primary_address );
 
     bool is_phys = is_physical();
 
