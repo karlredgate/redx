@@ -149,7 +149,9 @@ namespace Network {
         void bring_link_up();
         void linkUp( Kernel::NetworkLinkUpEvent * );
         void linkDown( Kernel::NetworkLinkDownEvent * );
+#if 0
         void update( NetLink::LinkMessage * );
+#endif
         void get_settings();
         time_t last_sent() const { return last_sendto; }
         void clean_topology() const;

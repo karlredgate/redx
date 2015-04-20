@@ -240,22 +240,6 @@ Network::Interface::Interface( Tcl_Interp *interp, NetLink::NewLink *message )
     char buffer[80];
     const char *llname = inet_ntop( AF_INET6, &primary_address, buffer, sizeof(buffer) );
 
-    if ( is_phys ) {
-        get_settings();
-        log_notice( "%s: %02x:%02x:%02x:%02x:%02x:%02x [%s] %d Mb/s, %s duplex",
-                            _name,
-                            address[0], address[1], address[2],
-                            address[3], address[4], address[5],
-                            llname,
-                            _speed, (is_full_duplex() ? "full" : "half") );
-    } else {
-        log_notice( "%s: %02x:%02x:%02x:%02x:%02x:%02x [%s]",
-                            _name,
-                            address[0], address[1], address[2],
-                            address[3], address[4], address[5],
-                            llname );
-    }
-
     pthread_mutex_init( &neighbor_table_lock, NULL );
     neighbors = NULL;
 }
@@ -283,6 +267,9 @@ void Network::Interface::linkDown( Kernel::NetworkLinkDownEvent *message ) {
 /**
  * Update State Variables that track message flags
  */
+#if 0
+ THIS NEEDS TO BE REPLACED WITH A KENEL GENERIC INTERFACE
+ probably more than one method
 void Network::Interface::update( NetLink::LinkMessage *message ) {
     unsigned int ignore_mask = ~(IFF_NOARP);
 
@@ -321,6 +308,7 @@ void Network::Interface::update( NetLink::LinkMessage *message ) {
     last_flags = netlink_flags;
 
 }
+#endif
 
 /**
  * Could generate a NullResponseHandler object??
