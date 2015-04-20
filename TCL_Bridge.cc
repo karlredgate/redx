@@ -51,6 +51,10 @@
 #include "tcl_util.h"
 #include "AppInit.h"
 
+namespace {
+    int debug = 0;
+}
+
 /**
  */
 static int
