@@ -29,6 +29,8 @@
 #include <stdint.h>
 #include <stdlib.h> // for exit()
 
+#include <arpa/inet.h> // for inet_ntop()
+
 #include "logger.h"
 
 #include "PlatformInterface.h"
@@ -37,6 +39,15 @@
 #include "tcl_util.h"
 #include "AppInit.h"
 
+// Need a way to connect the real vars to the TCL implementation
+// without the TCL interfaces present in the real interface
+namespace {
+    int debug = 0;
+    // These may not really be necessary anymore
+    int link_bounce_interval = 1200;
+    int link_bounce_attempts = 2;
+    int link_bounce_reattempt = 1200;   // 1 hour total
+}
 /**
  */
 static int
@@ -194,7 +205,7 @@ bool NetworkInterface_Module( Tcl_Interp *interp ) {
         return false;
     }
 
-    char *script =
+    const char *script =
     "namespace eval interface { array set name {} }\n"
     "proc interface {config} {\n"
     "   namespace eval interface $config\n"
