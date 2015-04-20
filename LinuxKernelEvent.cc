@@ -52,6 +52,7 @@
 #include "logger.h"
 #include "Bridge.h"
 #include "Interface.h"
+#include "KernelEvent.h"
 #include "tcl_util.h"
 #include "AppInit.h"
 
