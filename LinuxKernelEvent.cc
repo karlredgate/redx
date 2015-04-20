@@ -39,10 +39,6 @@
 #include <linux/if_bridge.h>
 #include <linux/sockios.h>
 
-// Do I need these?
-#include <sys/time.h>
-#include <sys/ioctl.h>
-
 #include <stdio.h>  // for sys_errlist
 #include <stdlib.h>
 #include <string.h>
@@ -50,8 +46,6 @@
 #include <glob.h>
 
 #include "logger.h"
-#include "Bridge.h"
-#include "Interface.h"
 #include "KernelEvent.h"
 #include "tcl_util.h"
 #include "AppInit.h"
@@ -60,32 +54,32 @@ namespace { int debug = 0; }
 
 /**
  */
-Kernel::Event() {
+Kernel::Event::Event() {
 }
 
 /**
  */
-Kernel::~Event() {
+Kernel::Event::~Event() {
 }
 /**
  * \todo need the interface object for the bridge ...
  */
-Kernel::NetworkLinkDownEvent() {
+Kernel::NetworkLinkDownEvent::NetworkLinkDownEvent() {
 }
 
 /**
  */
-Kernel::~NetworkLinkDownEvent() {
+Kernel::NetworkLinkDownEvent::~NetworkLinkDownEvent() {
 }
 
 /**
  */
-Kernel::NetworkLinkUpEvent() {
+Kernel::NetworkLinkUpEvent::NetworkLinkUpEvent() {
 }
 
 /**
  */
-Kernel::~NetworkLinkUpEvent() {
+Kernel::NetworkLinkUpEvent::~NetworkLinkUpEvent() {
 }
 
 /* vim: set autoindent expandtab sw=4 : */

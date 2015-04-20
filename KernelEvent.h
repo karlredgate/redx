@@ -38,16 +38,19 @@ namespace Kernel {
     class Event {
     public:
         Event();
+        ~Event();
     };
 
     class NetworkLinkDownEvent : public Event {
     public:
         NetworkLinkDownEvent();
+        ~NetworkLinkDownEvent();
     };
 
     class NetworkLinkUpEvent : public Event {
     public:
         NetworkLinkUpEvent();
+        ~NetworkLinkUpEvent();
     };
 
 }
