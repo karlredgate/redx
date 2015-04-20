@@ -75,6 +75,7 @@ SMBIOS.o :: SMBIOS.h
 Hypercall.o :: Hypercall.h
 Kernel.o :: Kernel.h
 Thread.o :: Thread.h PlatformThread.h
+LinuxInterface.o :: PlatformInterface.h
 
 .PHONY: test
 

@@ -33,8 +33,10 @@
 #include <net/if.h>
 #include <unistd.h>
 #include <string.h>
+#include <errno.h>
 
 #include "PlatformInterface.h"
+#include "logger.h"
 
 int
 network_interface_index( const char *_name ) {
@@ -55,4 +57,38 @@ network_interface_index( const char *_name ) {
     return ifr.ifr_ifindex;
 }
 
-/* vim: set autoindent expandtab sw=4 : */
+int
+get_mac_address( char *interface_name, unsigned char *mac ) {
+    int sock = socket( AF_INET, SOCK_STREAM, 0 );
+    if ( sock < 0 ) {
+        log_warn( "could not open socket to get intf mac addr" );
+        return 0;
+    }
+
+    struct ifreq request;
+    memset( &request, 0, sizeof(request) );
+    strncpy( request.ifr_name, interface_name, IFNAMSIZ );
+    // request->ifr_hwaddr.sa_family = ARPHRD_ETHER;
+
+    int result = ioctl(sock, SIOCGIFHWADDR, &request);
+    const char *error = strerror(errno);
+    close( sock );
+
+    if ( result < 0 ) {
+        log_warn( "failed to get MAC address for '%s': %s",
+                            interface_name, error );
+        return 0;
+    }
+
+    unsigned char *address = (unsigned char *)request.ifr_hwaddr.sa_data;
+    mac[0] = address[0];
+    mac[1] = address[1];
+    mac[2] = address[2];
+    mac[3] = address[3];
+    mac[4] = address[4];
+    mac[5] = address[5];
+
+    return 1;
+}
+
+/* vim: set autoindent expandtab sw=4: */
