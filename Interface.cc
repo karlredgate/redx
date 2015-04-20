@@ -1475,6 +1475,12 @@ bool Network::Interface::up()                  const { return (last_flags & IFF_
 bool Network::Interface::loopback()            const { return (last_flags & IFF_LOOPBACK) != 0; }
 bool Network::Interface::running()             const { return (last_flags & IFF_RUNNING) != 0; }
 bool Network::Interface::multicast()           const { return (last_flags & IFF_MULTICAST) != 0; }
+
+int Network::Interface::index()           const { return _index; }
+int Network::Interface::ordinal()         const { return _ordinal; }
+int Network::Interface::speed()           const { return _speed; }
+
+char * Network::Interface::name()         const { return _name; }
 
 /**
  */

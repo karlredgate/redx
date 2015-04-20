@@ -127,10 +127,10 @@ namespace Network {
         bool loopback()  const;
         bool running()   const;
         bool multicast() const;
-        int  index()     const { return _index; }
-        int  ordinal()   const { return _ordinal; }
-        char *name()     const { return _name; }
-        int  speed()     const { return _speed; }
+        int  index()     const;
+        int  ordinal()   const;
+        char *name()     const;
+        int  speed()     const;
         void eui64( uint8_t * ) const;
         void lladdr( struct in6_addr * );
         unsigned char *mac() { return MAC; }
