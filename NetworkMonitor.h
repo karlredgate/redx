@@ -113,7 +113,7 @@ namespace Network {
         void save_cache();
 
     public:
-        Monitor( Tcl_Interp *, ListenerInterfaceFactory, Network::Manager * );
+        Monitor( Tcl_Interp *, ListenerInterfaceFactory );
         virtual ~Monitor() {}
         virtual void run();
         virtual void probe();
@@ -132,7 +132,6 @@ namespace Network {
         int each_interface( InterfaceIterator& );
         Interface *find_bridge_interface( Interface* );
         Interface *find_physical_interface( Interface* );
-        void topology_changed();
 
         /**
          * The node list is a list of known supernova nodes that have been

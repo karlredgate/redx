@@ -146,26 +146,6 @@ namespace NetLink {
         void update_hosts();
     };
 
-    class Event {
-    private:
-        char *_name;
-        void *_data;
-    public:
-        Event( const char *name, void *data );
-        ~Event();
-        inline char *name() { return _name; }
-        inline void *data() { return _data; }
-    };
-
-    class EventReceiver {
-    public:
-        EventReceiver() {}
-        virtual ~EventReceiver() {}
-        virtual void operator() ( Event& ) = 0;
-    };
-
-    bool Initialize( Tcl_Interp * );
-
 }
 
 #endif

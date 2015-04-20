@@ -186,7 +186,6 @@ void NetLink::Monitor::receive( NetLink::NewLink *message ) {
                 interface->linkDown( &event );
                 link_message = ", link down";
                 interface->clean_topology();
-                topology_changed();
             }
             report_required = true;
         }
@@ -593,11 +592,6 @@ NetLink::Monitor::find_physical_interface( Interface *interface ) {
 
     if ( debug > 0 ) log_notice( "Unable to find physical interface for %s", interface->name() );
     return NULL;
-}
-
-/**
- */
-void NetLink::Monitor::topology_changed() {
 }
 
 /** Persist the current interface config.
@@ -1045,10 +1039,9 @@ void NetLink::Monitor::probe() {
  * Tcl_Interp arg to the constructor is for handlers that are registered
  * for network events.  (?? also how to handle ASTs for handlers)
  */
-NetLink::Monitor::Monitor( Tcl_Interp *interp, Network::ListenerInterfaceFactory factory,
-                           Network::Manager *manager )
+NetLink::Monitor::Monitor( Tcl_Interp *interp, Network::ListenerInterfaceFactory factory )
 : Thread("netlink.monitor"), interp(interp), route_socket(NULL), factory(factory),
-  table_warning_reported(false), table_error_reported(false), _manager(manager) {
+  table_warning_reported(false), table_error_reported(false) {
     pthread_mutex_init( &node_table_lock, NULL );
     size_t size = sizeof(Node) * NODE_TABLE_SIZE;
     node_table = (Node *)mmap( 0, size, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, 0, 0 );
@@ -1298,103 +1291,6 @@ finish:
 }
 
 /**
- */
-Network::Event::Event( const char *name, void *data ) {
-    _name = strdup(name);
-    _data = data;
-}
-
-/**
- */
-Network::Event::~Event() {
-    if ( _name != NULL ) free(_name);
-}
-
-/**
- */
-static int
-Manager_obj( ClientData data, Tcl_Interp *interp,
-             int objc, Tcl_Obj * CONST *objv )
-{
-    Network::Manager *manager = (Network::Manager *)data;
-
-    if ( objc == 1 ) {
-        Tcl_SetObjResult( interp, Tcl_NewLongObj((long)(manager)) );
-        return TCL_OK;
-    }
-
-    char *command = Tcl_GetStringFromObj( objv[1], NULL );
-    if ( Tcl_StringMatch(command, "type") ) {
-        Svc_SetResult( interp, "Network::Manager", TCL_STATIC );
-        return TCL_OK;
-    }
-
-    if ( Tcl_StringMatch(command, "start") ) {
-        // this should have some sort of result so we know it has started correctly
-        manager->start();
-        /*
-        if ( result == NULL ) {
-            Tcl_ResetResult( interp );
-            return TCL_OK;
-        }
-        Svc_SetResult( interp, (char *)result, TCL_STATIC );
-        return TCL_ERROR;
-        */
-
-            Tcl_ResetResult( interp );
-            return TCL_OK;
-    }
-
-    /**
-     */
-    if ( Tcl_StringMatch(command, "stop") ) {
-        /*
-        const char *result = manager->stop();
-        if ( result == NULL ) {
-            Tcl_ResetResult( interp );
-            return TCL_OK;
-        }
-        Svc_SetResult( interp, (char *)result, TCL_STATIC );
-        return TCL_ERROR;
-        */
-
-            Tcl_ResetResult( interp );
-            return TCL_OK;
-    }
-
-    Svc_SetResult( interp, "Unknown command for Manager object", TCL_STATIC );
-    return TCL_ERROR;
-}
-
-/**
- */
-static void
-Manager_delete( ClientData data ) {
-    using namespace Network;
-    Manager *message = (Manager *)data;
-    delete message;
-}
-
-/**
- */
-static int
-Manager_cmd( ClientData data, Tcl_Interp *interp,
-             int objc, Tcl_Obj * CONST *objv )
-{
-    if ( objc != 2 ) {
-        Tcl_ResetResult( interp );
-        Tcl_WrongNumArgs( interp, 1, objv, "name" );
-        return TCL_ERROR;
-    }
-
-    char *name = Tcl_GetStringFromObj( objv[1], NULL );
-    Network::Manager *object = new Network::Manager( interp );
-    Tcl_CreateObjCommand( interp, name, Manager_obj, (ClientData)object, Manager_delete );
-    Svc_SetResult( interp, name, TCL_VOLATILE );
-    return TCL_OK;
-}
-
-/**
  * need some way to find these objects...
  * use TCL ..hmmm
  */
@@ -1419,12 +1315,6 @@ bool NetLinkMonitor_Module( Tcl_Interp *interp ) {
     }
 
     command = Tcl_CreateObjCommand(interp, "NetLink::Probe", Probe_cmd, (ClientData)0, NULL);
-    if ( command == NULL ) {
-        // logger ?? want to report TCL Error
-        return false;
-    }
-
-    command = Tcl_CreateObjCommand(interp, "Network::Manager", Manager_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
         // logger ?? want to report TCL Error
         return false;
