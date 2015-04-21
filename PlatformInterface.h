@@ -24,23 +24,14 @@
 /** \file PlatformInterface.h
  * \brief Platform specific network interface code.
  *
- * These utility functions are in C.
  */
 
 #ifndef _PLATFORM_INTERFACE_H_
 #define _PLATFORM_INTERFACE_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 int network_interface_index( const char * );
 int get_mac_address( char *interface_name, unsigned char *mac );
 int set_interface_address( int index, struct in6_addr *address );
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif
 
