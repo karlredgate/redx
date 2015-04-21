@@ -301,7 +301,7 @@ void Network::Interface::configure_addresses() {
         // Now what??
         break;
     default:
-        log_err( "unknown error (%d) from addr config request (%s)", handler.error(), name() );
+        log_err( "unknown error (%d) from addr config request (%s)", error, name() );
         break;
     }
 }
