@@ -276,14 +276,7 @@ void Network::Interface::update( NetLink::LinkMessage *message ) {
  *
  */
 void Network::Interface::configure_addresses() {
-    using namespace NetLink;
-    RouteSocket rs;
-    NewAddress new_address( index(), &primary_address );
-    new_address.prefix( 64 );
-
-    RouteResponseHandler handler;
-    new_address.send( rs );
-    rs.receive( &handler );
+    int error = set_interface_address( index(), &primary_address );
 
     /**
      * Currently we just ignore all errors from the address config request.
@@ -291,7 +284,7 @@ void Network::Interface::configure_addresses() {
      *
      * \todo error behavior for failed addr config requests?
      */
-    switch ( handler.error() ) {
+    switch ( error ) {
     case       0:
         if ( debug > 0 ) {
             log_notice( "configured address for '%s'", name() );
