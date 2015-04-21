@@ -91,4 +91,8 @@ get_mac_address( char *interface_name, unsigned char *mac ) {
     return 1;
 }
 
+int
+set_interface_address( int index, struct in6_addr *address ) {
+}
+
 /* vim: set autoindent expandtab sw=4: */

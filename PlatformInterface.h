@@ -36,6 +36,7 @@ extern "C" {
 
 int network_interface_index( const char * );
 int get_mac_address( char *interface_name, unsigned char *mac );
+int set_interface_address( int index, struct in6_addr *address );
 
 #ifdef __cplusplus
 }
