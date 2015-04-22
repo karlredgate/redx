@@ -71,6 +71,8 @@ NEED TO FACTOR OUT NELINK
 #include "Network.h"
 #endif
 
+#include "PlatformCompat.h"
+
 #include "ICMPv6.h"
 #include "PlatformInterface.h"
 #include "Interface.h"

@@ -41,6 +41,10 @@
 # define IPV6_ADD_MEMBERSHIP IPV6_JOIN_GROUP
 #endif 
 
+#ifndef MAP_ANONYMOUS
+# define MAP_ANONYMOUS MAP_ANON
+#endif
+
 #endif
 
 /* vim: set autoindent expandtab sw=4 : */
