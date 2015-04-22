@@ -34,6 +34,10 @@
 #include <sys/ioctl.h>
 #include <sys/mman.h>
 
+#ifndef MAP_ANONYMOUS
+# define MAP_ANONYMOUS MAP_ANON
+#endif
+
 // do not like this ... want the generic include
 /* #include <linux/if.h> */
 #include <net/if_arp.h>
