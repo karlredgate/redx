@@ -988,58 +988,6 @@ bool Network::Interface::is_named_tunN() const {
     return true;
 }
 
-#if 0
-// =============================================================================
-//  Standard interface flags (netdevice->flags). 
-#define IFF_UP          0x1             /* interface is up              */
-#define IFF_BROADCAST   0x2             /* broadcast address valid      */
-#define IFF_DEBUG       0x4             /* turn on debugging            */
-#define IFF_LOOPBACK    0x8             /* is a loopback net            */
-#define IFF_POINTOPOINT 0x10            /* interface is has p-p link    */
-#define IFF_NOTRAILERS  0x20            /* avoid use of trailers        */
-#define IFF_RUNNING     0x40            /* interface RFC2863 OPER_UP    */
-#define IFF_NOARP       0x80            /* no ARP protocol              */
-#define IFF_PROMISC     0x100           /* receive all packets          */
-#define IFF_ALLMULTI    0x200           /* receive all multicast packets*/
-
-#define IFF_MASTER      0x400           /* master of a load balancer    */
-#define IFF_SLAVE       0x800           /* slave of a load balancer     */
-
-#define IFF_MULTICAST   0x1000          /* Supports multicast           */
-
-#define IFF_PORTSEL     0x2000          /* can set media type           */
-#define IFF_AUTOMEDIA   0x4000          /* auto media select active     */
-#define IFF_DYNAMIC     0x8000          /* dialup device with changing addresses*/
-
-#define IFF_LOWER_UP    0x10000         /* driver signals L1 up         */
-#define IFF_DORMANT     0x20000         /* driver signals dormant       */
-
-#define IFF_ECHO        0x40000         /* echo sent packets            */
-
-#define IFF_VOLATILE    (IFF_LOOPBACK|IFF_POINTOPOINT|IFF_BROADCAST|IFF_ECHO|\
-                         IFF_MASTER|IFF_SLAVE|IFF_RUNNING|IFF_LOWER_UP|IFF_DORMANT)
-// =============================================================================
-#endif
-
-bool Network::Interface::is_up()          const { return (last_flags & IFF_UP) != 0; }
-bool Network::Interface::is_running()     const { return (last_flags & IFF_RUNNING) != 0; }
-bool Network::Interface::is_promiscuous() const { return (last_flags & IFF_PROMISC) != 0; }
-bool Network::Interface::is_dormant()     const { return (last_flags & IFF_DORMANT) != 0; }
-bool Network::Interface::has_link()       const { return (last_flags & IFF_LOWER_UP) != 0; }
-
-/**
- */
-bool Network::Interface::up_changed()          const { return (changed & IFF_UP) != 0; }
-bool Network::Interface::running_changed()     const { return (changed & IFF_RUNNING) != 0; }
-bool Network::Interface::promiscuity_changed() const { return (changed & IFF_PROMISC) != 0; }
-bool Network::Interface::dormancy_changed()    const { return (changed & IFF_DORMANT) != 0; }
-bool Network::Interface::link_changed()        const { return (changed & IFF_LOWER_UP) != 0; }
-
-bool Network::Interface::up()                  const { return (last_flags & IFF_UP) != 0; }
-bool Network::Interface::loopback()            const { return (last_flags & IFF_LOOPBACK) != 0; }
-bool Network::Interface::running()             const { return (last_flags & IFF_RUNNING) != 0; }
-bool Network::Interface::multicast()           const { return (last_flags & IFF_MULTICAST) != 0; }
-
 int Network::Interface::index()           const { return _index; }
 int Network::Interface::ordinal()         const { return _ordinal; }
 int Network::Interface::speed()           const { return _speed; }
