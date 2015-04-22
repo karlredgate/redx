@@ -105,4 +105,160 @@ set_interface_address( int index, struct in6_addr *address ) {
     return handler.error();
 }
 
+/**
+ */
+void
+Network::Interface::get_settings() {
+    struct ifreq request;
+    struct ethtool_cmd data;
+
+    memset( &request, 0, sizeof(request) );
+    strcpy( request.ifr_name, name() );
+    int ethtool = ::socket( AF_INET, SOCK_DGRAM, 0 );
+
+    data.cmd = ETHTOOL_GSET;
+    request.ifr_data = (caddr_t)&data;
+    int error = ::ioctl( ethtool, SIOCETHTOOL, &request );
+
+    if ( error < 0 ) {
+        log_err( "failed to get ethtool settings for '%s'", name() );
+    }
+    close( ethtool );
+
+    _speed  = data.speed;
+    _duplex = data.duplex;
+    _port   = data.port;
+}
+
+/**
+ */
+static int
+get_offload( char *name, int command ) {
+    struct ifreq request;
+    struct ethtool_value eval;
+
+    memset( &request, 0, sizeof(request) );
+    strcpy( request.ifr_name, name );
+    int ethtool = ::socket( AF_INET, SOCK_DGRAM, 0 );
+
+    eval.cmd = command;
+    request.ifr_data = (caddr_t)&eval;
+    int result = ioctl(ethtool, SIOCETHTOOL, &request);
+    close( ethtool );
+
+    if (result != 0) {
+        return -1;
+    } else {
+        return eval.data;
+    }
+}
+
+/**
+ */
+int
+Network::Interface::rx_offload() const {
+    return get_offload( name(), ETHTOOL_GRXCSUM );
+}
+
+/**
+ */
+int
+Network::Interface::tx_offload() const {
+    return get_offload( name(), ETHTOOL_GTXCSUM );
+}
+
+/**
+ */
+int
+Network::Interface::sg_offload() const {
+    return get_offload( name(), ETHTOOL_GSG );
+}
+
+/**
+ */
+int
+Network::Interface::tso_offload() const {
+    return get_offload( name(), ETHTOOL_GTSO );
+}
+
+/**
+ */
+int
+Network::Interface::ufo_offload() const {
+    return get_offload( name(), ETHTOOL_GUFO );
+}
+
+/**
+ */
+int
+Network::Interface::gso_offload() const {
+    return get_offload( name(), ETHTOOL_GGSO );
+}
+
+/**
+ */
+static void
+set_offload( char *name, int command, int value ) {
+    struct ifreq request;
+    struct ethtool_value eval;
+
+    memset( &request, 0, sizeof(request) );
+    strcpy( request.ifr_name, name );
+    int ethtool = ::socket( AF_INET, SOCK_DGRAM, 0 );
+
+    eval.cmd = command;
+    eval.data = value;
+    request.ifr_data = (caddr_t)&eval;
+    int result = ioctl(ethtool, SIOCETHTOOL, &request);
+    close( ethtool );
+
+    if (result != 0) {
+        char *err, e[128];
+        err = strerror_r( errno, e, sizeof(e) );
+        log_err( "failed to set ethtool offload settings for '%s': %s", name, err );
+    }
+}
+
+/**
+ */
+void
+Network::Interface::rx_offload( int value ) const {
+    set_offload( name(), ETHTOOL_SRXCSUM, value );
+}
+
+/**
+ */
+void
+Network::Interface::tx_offload( int value ) const {
+    set_offload( name(), ETHTOOL_STXCSUM, value );
+}
+
+/**
+ */
+void
+Network::Interface::sg_offload( int value ) const {
+    set_offload( name(), ETHTOOL_SSG, value );
+}
+
+/**
+ */
+void
+Network::Interface::tso_offload( int value ) const {
+    set_offload( name(), ETHTOOL_STSO, value );
+}
+
+/**
+ */
+void
+Network::Interface::ufo_offload( int value ) const {
+    set_offload( name(), ETHTOOL_SUFO, value );
+}
+
+/**
+ */
+void
+Network::Interface::gso_offload( int value ) const {
+    set_offload( name(), ETHTOOL_SGSO, value );
+}
+
 /* vim: set autoindent expandtab sw=4: */
