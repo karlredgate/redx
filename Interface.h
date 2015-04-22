@@ -189,8 +189,6 @@ namespace Network {
         inline bool not_full_duplex() const { return not is_full_duplex(); }
         inline bool not_bridge()      const { return not is_bridge(); }
         inline bool not_captured()    const { return not is_captured(); }
-	inline bool not_business()    const { return not is_business(); }
-        inline bool not_sync()        const { return not is_sync(); }
         inline bool not_tunnelled()   const { return not is_tunnelled(); }
         inline bool not_named_ethN()  const { return not is_named_ethN(); }
 	inline bool not_named_netN()  const { return not is_named_netN(); }

@@ -202,8 +202,6 @@ Network::Interface::Interface( Tcl_Interp *interp )
 void Network::Interface::linkUp( Kernel::NetworkLinkUpEvent *message ) {
     char cmd[128];
     int status = 1;
-    bool is_biz = is_business();
-    bool is_priv= is_private();
 
     last_processed_flags = netlink_flags;
     previous_carrier = current_carrier;
@@ -364,16 +362,16 @@ Network::Interface::icmp_socket() {
 
         // If this were a biz/bridge -- we could reset the phys interface
         // if we reset the bridge interface -- we may lose the cluster IP?
+#if 0
         if ( is_private() ) {
             log_warn( "%s(%d): reset private interface", name(), index() );
             bounce_link();
         }
+#endif
 
 	if ( _removed ) return NULL;
 
         nanosleep( &delay, NULL );
-/* EDM XXX should probably put an upper bound on this, but we don't want to
-   increase the frequency of the logger message above... */
         delay.tv_sec += 5;
     }
 
@@ -739,54 +737,6 @@ Network::Interface::preferred_name() const {
         printf( "PREFERRED NAME FOR '%s' at '%s' is '%s'\n", _name, bus, new_name );
     }
     return strdup( new_name );
-}
-
-/** Rename a network interface.
- */
-bool
-Network::Interface::rename( char *new_name ) {
-    char *err, e[128];
-
-    log_notice( "renaming '%s' to '%s'", _name, new_name );
-
-    struct ifreq request;
-    strncpy( request.ifr_name,    _name,    IFNAMSIZ );
-    strncpy( request.ifr_newname, new_name, IFNAMSIZ );
-
-    int fd = ::socket(PF_INET, SOCK_DGRAM, 0);
-    if ( fd < 0 ) {
-        fd = ::socket(PF_PACKET, SOCK_DGRAM, 0);
-        if ( fd < 0 ) {
-            fd = ::socket(PF_INET6, SOCK_DGRAM, 0);
-            if ( fd < 0 ) {
-                strerror_r( errno, e, sizeof(e) );
-                log_err( "interface rename failed to create socket for rename: %s", e );
-                return false;
-            }
-        }
-    }
-
-    int result = ioctl( fd, SIOCSIFNAME, &request );
-    int error = errno;
-    close( fd );
-
-    if ( result < 0 ) {
-        strerror_r( error, e, sizeof(e) ); // this return 0 on success
-        log_err( "interface rename failed: %s", e );
-        // handle error
-        return false;
-    }
-
-    free( _name );
-    _name = strdup( new_name );
-
-    if ( sscanf(_name, "%*[a-z]%d", &_ordinal) != 1 ) {
-        log_notice( "could not determine ordinal for %s", _name );
-        _ordinal = 0;
-    }
-    log_notice( "%s ordinal changed to %d", _name, _ordinal );
-
-    return true;
 }
 
 /** Add peer to neighbor list.

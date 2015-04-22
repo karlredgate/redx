@@ -403,4 +403,52 @@ bool Network::Interface::is_tunnelled() const {
     return result;
 }
 
+/** Rename a network interface.
+ */
+bool
+Network::Interface::rename( char *new_name ) {
+    char *err, e[128];
+
+    log_notice( "renaming '%s' to '%s'", _name, new_name );
+
+    struct ifreq request;
+    strncpy( request.ifr_name,    _name,    IFNAMSIZ );
+    strncpy( request.ifr_newname, new_name, IFNAMSIZ );
+
+    int fd = ::socket(PF_INET, SOCK_DGRAM, 0);
+    if ( fd < 0 ) {
+        fd = ::socket(PF_PACKET, SOCK_DGRAM, 0);
+        if ( fd < 0 ) {
+            fd = ::socket(PF_INET6, SOCK_DGRAM, 0);
+            if ( fd < 0 ) {
+                strerror_r( errno, e, sizeof(e) );
+                log_err( "interface rename failed to create socket for rename: %s", e );
+                return false;
+            }
+        }
+    }
+
+    int result = ioctl( fd, SIOCSIFNAME, &request );
+    int error = errno;
+    close( fd );
+
+    if ( result < 0 ) {
+        strerror_r( error, e, sizeof(e) ); // this return 0 on success
+        log_err( "interface rename failed: %s", e );
+        // handle error
+        return false;
+    }
+
+    free( _name );
+    _name = strdup( new_name );
+
+    if ( sscanf(_name, "%*[a-z]%d", &_ordinal) != 1 ) {
+        log_notice( "could not determine ordinal for %s", _name );
+        _ordinal = 0;
+    }
+    log_notice( "%s ordinal changed to %d", _name, _ordinal );
+
+    return true;
+}
+
 /* vim: set autoindent expandtab sw=4: */
