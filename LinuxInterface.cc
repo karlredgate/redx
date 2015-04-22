@@ -31,15 +31,21 @@
 #define _BSD_SOURCE
 #include <features.h>
 
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <sys/ioctl.h>
 #include <net/if.h>
+
+#include <linux/ethtool.h>
 
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
+#include <glob.h>
 #include <errno.h>
 
-#include "PlatformInterface.h"
+#include "NetLink.h"
+#include "Interface.h"
 #include "logger.h"
 
 int
