@@ -24,6 +24,8 @@
 /** \file LinuxInterface.c
  * \brief 
  *
+ * Contains method definitions that are platform specific for the
+ * Interface class.  There are related files for other platforms.
  */
 
 #define _BSD_SOURCE
@@ -103,6 +105,17 @@ set_interface_address( int index, struct in6_addr *address ) {
     rs.receive( &handler );
 
     return handler.error();
+}
+
+/**
+ */
+void
+Network::Interface::platform_init() {
+    _index = network_interface_index( _name );
+
+    if ( get_mac_address(_name, MAC) ) {
+        lladdr( &primary_address );
+    }
 }
 
 /**
@@ -259,6 +272,135 @@ Network::Interface::ufo_offload( int value ) const {
 void
 Network::Interface::gso_offload( int value ) const {
     set_offload( name(), ETHTOOL_SGSO, value );
+}
+
+/**
+ */
+bool
+Network::Interface::negotiate() {
+    long delta = ::time(0) - last_negotiation;
+    if ( delta < 60 ) {
+        log_notice( "negotiated link for '%s' too recently, skipping renegotiate", name() );
+        return false;
+    }
+
+    if ( is_quiesced() ) {
+        log_notice( "%s(%d): is quiesced, not negotiating", name(), index() );
+        return false;
+    }
+
+    log_notice( "%s(%d): negotiate link", name(), index() );
+
+    struct ifreq request;
+    struct ethtool_value data;
+
+    memset( &request, 0, sizeof(request) );
+    strcpy( request.ifr_name, name() );
+    int ethtool = ::socket( AF_INET, SOCK_DGRAM, 0 );
+
+    data.cmd = ETHTOOL_NWAY_RST;
+    request.ifr_data = (caddr_t)&data;
+    int error = ioctl( ethtool, SIOCETHTOOL, &request );
+
+    bool result = true;
+    if ( error < 0 ) {
+        log_err( "%s(%d): failed to negotiate link", name(), index() );
+        result = false;
+    }
+    close( ethtool );
+
+    ::time( &last_negotiation );
+    return result;
+}
+
+/**
+ * \todo check lstat errno -- because there may be some cases where this 
+ * really is a physical device
+ */
+bool Network::Interface::is_physical() const {
+    char path[1024];
+    struct stat stat;
+
+    sprintf( path, "/sys/class/net/%s/device", _name );
+// XXX BugzID 17210 TI-COWLEY kernel sysfs has /device for vifs
+    if ( ( lstat(path, &stat) == 0 ) && not_named_vifN() ) {
+        return true;
+    }
+    return false;
+}
+
+/**
+ */
+bool Network::Interface::is_full_duplex() const {
+    return (_duplex & DUPLEX_FULL) != 0;
+}
+
+/**
+ * On Linux this is determined through sysfs
+ */
+bool Network::Interface::is_bridge() const {
+    char path[1024];
+    struct stat stat;
+
+    sprintf( path, "/sys/class/net/%s/bridge", _name );
+    if ( lstat(path, &stat) == 0 ) {
+        return true;
+    }
+    return false;
+}
+
+/**
+ */
+bool Network::Interface::is_captured() const {
+    char path[1024];
+    struct stat stat;
+
+    sprintf( path, "/sys/class/net/%s/brport", _name );
+    if ( lstat(path, &stat) == 0 ) {
+        return true;
+    }
+    return false;
+}
+
+/**
+ * True if this bridge has a tunnel interface captured.
+ */
+    // for each net/*/brport if its bridge is my bridge interface
+    // glob /sys/class/net/*/brport/bridge
+    // if realname of link is /sys/class/net/<myname> ...
+bool Network::Interface::is_tunnelled() const {
+    bool result = false;
+
+    log_notice( "check if '%s' is tunnelled", name() );
+
+    // if this is not a bridge, it could not be tunnelled.
+    if ( not_bridge() ) return false;
+
+    char port_path[1024];
+    char bridge_path[1024];
+    sprintf( bridge_path, "../../../../class/net/%s", name() );
+
+    log_notice( "check if '%s' is tunnelled", bridge_path );
+
+    glob_t paths;
+    memset(&paths, 0, sizeof(paths));
+
+    glob( "/sys/class/net/tun*/brport/bridge", GLOB_NOSORT, NULL, &paths );
+    for ( size_t i = 0 ; i < paths.gl_pathc ; i++ ) {
+        int count = readlink( paths.gl_pathv[i], port_path, sizeof(port_path) );
+        if ( count == -1 ) continue;
+        log_notice( "check if '%s' is tunnelled through '%s'", bridge_path, port_path );
+        port_path[count] = '\0';
+
+        if ( strcmp(port_path, bridge_path) == 0 ) {
+            log_notice( "I (%s) am tunnelled through '%s'", bridge_path, paths.gl_pathv[i] );
+            result = true;
+            break;
+        }
+    }
+    globfree( &paths );
+
+    return result;
 }
 
 /* vim: set autoindent expandtab sw=4: */

@@ -117,15 +117,9 @@ Network::Interface::Interface( Tcl_Interp *interp, char *initname )
   table_error_reported(false),
   advertise_errors(0), _removed(false)
 {
-
     _name = strdup(initname);
-    _index = network_interface_index( _name );
-
-    if ( get_mac_address(_name, MAC) ) {
-        lladdr( &primary_address );
-    }
+    platform_init();
     get_settings();
-
     pthread_mutex_init( &neighbor_table_lock, NULL );
     neighbors = NULL;
 }
@@ -411,45 +405,6 @@ Network::Interface::bounce_expired() {
 
 /**
  */
-bool
-Network::Interface::negotiate() {
-    long delta = ::time(0) - last_negotiation;
-    if ( delta < 60 ) {
-        log_notice( "negotiated link for '%s' too recently, skipping renegotiate", name() );
-        return false;
-    }
-
-    if ( is_quiesced() ) {
-        log_notice( "%s(%d): is quiesced, not negotiating", name(), index() );
-        return false;
-    }
-
-    log_notice( "%s(%d): negotiate link", name(), index() );
-
-    struct ifreq request;
-    struct ethtool_value data;
-
-    memset( &request, 0, sizeof(request) );
-    strcpy( request.ifr_name, name() );
-    int ethtool = ::socket( AF_INET, SOCK_DGRAM, 0 );
-
-    data.cmd = ETHTOOL_NWAY_RST;
-    request.ifr_data = (caddr_t)&data;
-    int error = ioctl( ethtool, SIOCETHTOOL, &request );
-
-    bool result = true;
-    if ( error < 0 ) {
-        log_err( "%s(%d): failed to negotiate link", name(), index() );
-        result = false;
-    }
-    close( ethtool );
-
-    ::time( &last_negotiation );
-    return result;
-}
-
-/**
- */
 void
 Network::Interface::repair_link_speed() {
 // Commented out due to IPS discussion on 5/29/08
@@ -670,8 +625,8 @@ int Network::Interface::inbound_socket( char *address, uint16_t port ) {
     inbound = ::socket( AF_INET6, SOCK_DGRAM, 0 );
     if ( inbound < 0 ) {
         char *err, e[128];
-        err = strerror_r( errno, e, sizeof(e) );
-        log_err( "could not create diastole socket: %s", err );
+        strerror_r( errno, e, sizeof(e) );
+        log_err( "could not create diastole socket: %s", e );
         _exit( 1 );
     }
 
@@ -804,8 +759,8 @@ Network::Interface::rename( char *new_name ) {
         if ( fd < 0 ) {
             fd = ::socket(PF_INET6, SOCK_DGRAM, 0);
             if ( fd < 0 ) {
-                err = strerror_r( errno, e, sizeof(e) );
-                log_err( "interface rename failed to create socket for rename: %s", err );
+                strerror_r( errno, e, sizeof(e) );
+                log_err( "interface rename failed to create socket for rename: %s", e );
                 return false;
             }
         }
@@ -816,8 +771,8 @@ Network::Interface::rename( char *new_name ) {
     close( fd );
 
     if ( result < 0 ) {
-        err = strerror_r( error, e, sizeof(e) );
-        log_err( "interface rename failed: %s", err );
+        strerror_r( error, e, sizeof(e) ); // this return 0 on success
+        log_err( "interface rename failed: %s", e );
         // handle error
         return false;
     }
@@ -1027,95 +982,6 @@ bool Network::Interface::is_primary( struct in6_addr *address ) {
 }
 
 /**
- * \todo check lstat errno -- because there may be some cases where this 
- * really is a physical device
- */
-bool Network::Interface::is_physical() const {
-    char path[1024];
-    struct stat stat;
-
-    sprintf( path, "/sys/class/net/%s/device", _name );
-// XXX BugzID 17210 TI-COWLEY kernel sysfs has /device for vifs
-    if ( ( lstat(path, &stat) == 0 ) && not_named_vifN() ) {
-        return true;
-    }
-    return false;
-}
-
-/**
- */
-bool Network::Interface::is_full_duplex() const {
-    return (_duplex & DUPLEX_FULL) != 0;
-}
-
-/**
- */
-bool Network::Interface::is_bridge() const {
-    char path[1024];
-    struct stat stat;
-
-    sprintf( path, "/sys/class/net/%s/bridge", _name );
-    if ( lstat(path, &stat) == 0 ) {
-        return true;
-    }
-    return false;
-}
-
-/**
- */
-bool Network::Interface::is_captured() const {
-    char path[1024];
-    struct stat stat;
-
-    sprintf( path, "/sys/class/net/%s/brport", _name );
-    if ( lstat(path, &stat) == 0 ) {
-        return true;
-    }
-    return false;
-}
-
-/**
- * True if this bridge has a tunnel interface captured.
- */
-    // for each net/*/brport if its bridge is my bridge interface
-    // glob /sys/class/net/*/brport/bridge
-    // if realname of link is /sys/class/net/<myname> ...
-bool Network::Interface::is_tunnelled() const {
-    bool result = false;
-
-    log_notice( "check if '%s' is tunnelled", name() );
-
-    // if this is not a bridge, it could not be tunnelled.
-    if ( not_bridge() ) return false;
-
-    char port_path[1024];
-    char bridge_path[1024];
-    sprintf( bridge_path, "../../../../class/net/%s", name() );
-
-    log_notice( "check if '%s' is tunnelled", bridge_path );
-
-    glob_t paths;
-    memset(&paths, 0, sizeof(paths));
-
-    glob( "/sys/class/net/tun*/brport/bridge", GLOB_NOSORT, NULL, &paths );
-    for ( size_t i = 0 ; i < paths.gl_pathc ; i++ ) {
-        int count = readlink( paths.gl_pathv[i], port_path, sizeof(port_path) );
-        if ( count == -1 ) continue;
-        log_notice( "check if '%s' is tunnelled through '%s'", bridge_path, port_path );
-        port_path[count] = '\0';
-
-        if ( strcmp(port_path, bridge_path) == 0 ) {
-            log_notice( "I (%s) am tunnelled through '%s'", bridge_path, paths.gl_pathv[i] );
-            result = true;
-            break;
-        }
-    }
-    globfree( &paths );
-
-    return result;
-}
-
-/**
  */
 bool Network::Interface::is_quiesced() const {
     char sentinel[128];
@@ -1127,60 +993,16 @@ bool Network::Interface::is_quiesced() const {
  */
 bool Network::Interface::has_fault_injected() const {
     char sentinel[128];
-    sprintf( sentinel, "/var/log/spine/%s.fault", name() );
+    sprintf( sentinel, "/var/run/interface/%s.fault", name() );
     return (access(sentinel, F_OK) == 0);
 }
 
-/**
- * Here it is private if it starts with "priv" or if it is a
- * sync link.  In the future I want to look up platform info.
- */
-bool Network::Interface::is_private() const {
-    bool is_priv = ( ( _name[0] == 'p' ) &&
-                     ( _name[1] == 'r' ) &&
-                     ( _name[2] == 'i' ) &&
-                     ( _name[3] == 'v' ) );
-
-    return (is_priv || is_sync() );
-}
-
-/**
- * Here it is business link if it starts with "ibiz". 
- */
-bool Network::Interface::is_business() const {
-    if ( _name[0] != 'i' ) return false;
-    if ( _name[1] != 'b' ) return false;
-    if ( _name[2] != 'i' ) return false;
-    if ( _name[3] != 'z' ) return false;
-    return true;
-}
-
-/**
- * Here it is a sync link if it starts with "sync".
- */
-bool Network::Interface::is_sync() const {
-    if ( _name[0] != 's' ) return false;
-    if ( _name[1] != 'y' ) return false;
-    if ( _name[2] != 'n' ) return false;
-    if ( _name[3] != 'c' ) return false;
-    return true;
-}
-
 /**
  */
 bool Network::Interface::is_named_ethN() const {
     if ( _name[0] != 'e' ) return false;
     if ( _name[1] != 't' ) return false;
     if ( _name[2] != 'h' ) return false;
-    return true;
-}
-
-/**
- */
-bool Network::Interface::is_named_bizN() const {
-    if ( _name[0] != 'b' ) return false;
-    if ( _name[1] != 'i' ) return false;
-    if ( _name[2] != 'z' ) return false;
     return true;
 }
 

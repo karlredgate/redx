@@ -60,9 +60,6 @@ namespace Network {
     class Peer;
     class NeighborIterator;
 
-    /**
-     * \todo add ethtool requests
-     */
     class Interface {
     private:
         Tcl_Interp *interp;
@@ -110,6 +107,8 @@ namespace Network {
         int advertise_errors;
 
 	bool _removed;
+
+        void platform_init();
 
     public:
         Interface( Tcl_Interp * );
@@ -177,12 +176,8 @@ namespace Network {
         bool is_full_duplex() const;
         bool is_bridge() const;
         bool is_captured() const;
-        bool is_private() const;
-        bool is_business() const;
-        bool is_sync() const;
         bool is_tunnelled() const;
         bool is_named_ethN() const;
-        bool is_named_bizN() const;
         bool is_named_netN() const;
         bool is_named_tunN() const;
         bool is_named_vifN() const;
@@ -194,12 +189,10 @@ namespace Network {
         inline bool not_full_duplex() const { return not is_full_duplex(); }
         inline bool not_bridge()      const { return not is_bridge(); }
         inline bool not_captured()    const { return not is_captured(); }
-        inline bool not_private()     const { return not is_private(); }
 	inline bool not_business()    const { return not is_business(); }
         inline bool not_sync()        const { return not is_sync(); }
         inline bool not_tunnelled()   const { return not is_tunnelled(); }
         inline bool not_named_ethN()  const { return not is_named_ethN(); }
-	inline bool not_named_bizN()  const { return not is_named_bizN(); }
 	inline bool not_named_netN()  const { return not is_named_netN(); }
         inline bool not_named_tunN()  const { return not is_named_tunN(); }
         inline bool not_named_vifN()  const { return not is_named_vifN(); }
