@@ -80,9 +80,11 @@ namespace Network {
         unsigned int type; // ARPHRD_*
         int link;
         char *_name;
+
         int16_t _speed;
         uint8_t _duplex;
         uint8_t _port;
+
         bool unknown_carrier;
         bool current_carrier;
         bool previous_carrier;
