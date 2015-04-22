@@ -503,4 +503,53 @@ bool Network::Interface::loopback()            const { return (last_flags & IFF_
 bool Network::Interface::running()             const { return (last_flags & IFF_RUNNING) != 0; }
 bool Network::Interface::multicast()           const { return (last_flags & IFF_MULTICAST) != 0; }
 
+/**
+ */
+bool Network::Interface::is_listening_to( const char *protocol, u_int16_t port ) const {
+    bool result = false;
+
+    char path[80];
+    char rest[512];
+    sprintf( path, "/proc/net/%s", protocol );
+    // check if present
+
+    int index;
+    char local_address[64], remote_address[64];
+    int local_port, remote_port;
+    int state, timer_run, timeout, uid;
+    unsigned long transmitQ, receiveQ, time_length, retransmits, inode;
+    struct in6_addr in6;
+
+    FILE *f = fopen(path, "r");
+    if ( f == NULL ) {
+        log_err( "could not open '%s'", path );
+        return false;
+    }
+    fgets( rest, sizeof rest, f );
+    while ( not feof(f) ) {
+        int n = fscanf( f, "%d: %64[0-9A-Fa-f]:%X %64[0-9A-Fa-f]:%X %X %lX:%lX %X:%lX %lX %d %d %ld %512[^\n]\n",
+                       &index, local_address, &local_port, remote_address, &remote_port,
+                       &state, &transmitQ, &receiveQ, &timer_run, &time_length, 
+                       &retransmits, &uid, &timeout, &inode, rest );
+        switch (n) {
+        case  0: log_warn( "could not parse %s state", protocol ); continue;
+        case 15: break;
+        default: log_warn( "only parsed %d fields from %s", n, protocol ); continue;
+        }
+        if ( local_port != port ) continue;
+        if ( strlen(local_address) < 9 ) continue; // IPv4
+        sscanf( local_address, "%08X%08X%08X%08X",
+                               &in6.s6_addr32[0], &in6.s6_addr32[1],
+                               &in6.s6_addr32[2], &in6.s6_addr32[3]);
+        if ( in6.s6_addr32[0] != primary_address.s6_addr32[0] ) continue;
+        if ( in6.s6_addr32[1] != primary_address.s6_addr32[1] ) continue;
+        if ( in6.s6_addr32[2] != primary_address.s6_addr32[2] ) continue;
+        if ( in6.s6_addr32[3] != primary_address.s6_addr32[3] ) continue;
+        result = true;
+        break;
+    }
+    fclose( f );
+    return result;
+}
+
 /* vim: set autoindent expandtab sw=4: */
