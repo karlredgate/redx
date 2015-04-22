@@ -21,70 +21,54 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-/** \file LinuxKernelEvent.cc
+/** \file DarwinKernelEvent.cc
  * \brief 
  *
  */
 
 #include <unistd.h>
 
-#include <netinet/in.h>
-#include <netinet/ip6.h>
-
-#include <sys/param.h>
-#include <sys/socket.h>
-// #include <net/if.h>
-#include <linux/if.h>
-#include <net/if_arp.h>
-#include <linux/if_bridge.h>
-#include <linux/sockios.h>
-
-// Do I need these?
-#include <sys/time.h>
-#include <sys/ioctl.h>
-
 #include <stdio.h>  // for sys_errlist
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <glob.h>
 
 #include "logger.h"
-#include "Bridge.h"
-#include "Interface.h"
 #include "tcl_util.h"
 #include "AppInit.h"
+
+#include "KernelEvent.h"
 
 namespace { int debug = 0; }
 
 /**
  */
-Kernel::Event() {
+Kernel::Event::Event() {
 }
 
 /**
  */
-Kernel::~Event() {
+Kernel::Event::~Event() {
 }
 /**
  * \todo need the interface object for the bridge ...
  */
-Kernel::NetworkLinkDownEvent() {
+Kernel::NetworkLinkDownEvent::NetworkLinkDownEvent() {
 }
 
 /**
  */
-Kernel::~NetworkLinkDownEvent() {
+Kernel::NetworkLinkDownEvent::~NetworkLinkDownEvent() {
 }
 
 /**
  */
-Kernel::NetworkLinkUpEvent() {
+Kernel::NetworkLinkUpEvent::NetworkLinkUpEvent() {
 }
 
 /**
  */
-Kernel::~NetworkLinkUpEvent() {
+Kernel::NetworkLinkUpEvent::~NetworkLinkUpEvent() {
 }
 
 /* vim: set autoindent expandtab sw=4 : */
