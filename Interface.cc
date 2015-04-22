@@ -115,7 +115,7 @@ Network::Interface::Interface( Tcl_Interp *interp, char *initname )
   previous_carrier(false),
   last_sendto(0), last_no_peer_report(0), table_warning_reported(false),
   table_error_reported(false),
-  advertise_errors(0), initiated_tunnel(false), _removed(false)
+  advertise_errors(0), _removed(false)
 {
 
     _name = strdup(initname);
@@ -148,7 +148,7 @@ Network::Interface::Interface( Tcl_Interp *interp )
   bounce_attempts(0), last_bounce_reattempt(0),
   last_negotiation(0), table_warning_reported(false),
   table_error_reported(false),
-  advertise_errors(0), initiated_tunnel(false), _removed(false) {
+  advertise_errors(0), _removed(false) {
 
 #if 0
 // All of these need to come from a kernel generic arg

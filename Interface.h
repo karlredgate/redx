@@ -109,8 +109,6 @@ namespace Network {
 
         int advertise_errors;
 
-	bool initiated_tunnel;
-
 	bool _removed;
 
     public:
@@ -245,13 +243,6 @@ namespace Network {
         void gso_offload( int ) const;
 
         Bridge *bridge() const;
-
-/* "initiated_tunnel" keeps track of whether this node initiated the tunnel
-   or whether the other node did so.  Should be in the "Tunnel" class. */
-
-        inline bool has_initiated_tunnel() const { return initiated_tunnel; }
-        inline void set_initiated_tunnel() { initiated_tunnel = true; }
-        inline void clear_initiated_tunnel() { initiated_tunnel = false; }
 
         void remove() { _removed = true; }
 	bool removed() { return _removed; }
