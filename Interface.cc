@@ -551,12 +551,14 @@ int Network::Interface::sendto( void *message, size_t length, int flags, const s
  */
 bool Network::Interface::advertise() {
     if ( _icmp_socket == 0 ) return false;
+#if 0
     if ( not_private() ) {
         if ( debug > 1 ) {
             log_notice( "%s(%d) not advertising non-private interface", _name, _index );
         }
         return true; // so that caller doesn't report an error
     }
+#endif
     if ( _icmp_socket->not_bound() ) {
         if ( debug > 1 ) {
             log_notice( "advertise: binding ICMP socket for interface '%s'", _name );
@@ -598,6 +600,7 @@ bool Network::Interface::advertise() {
         long delta = ::time(0) - last_no_peer_report;
         if ( delta > 120 ) {
             log_warn( "no peers found on %s", _name );
+#if 0
             if ( is_private() and not_quiesced() and (last_no_peer_report != 0) ) {
 	      if (has_fault_injected()) {
 		log_warn( "WARNING: sentinel file, detected skip attempt to recover %s", _name );
@@ -607,6 +610,7 @@ bool Network::Interface::advertise() {
 		  // bring_link_up();
 	      }
             }
+#endif
             ::time( &last_no_peer_report );
         }
     }
@@ -804,12 +808,14 @@ Network::Interface::intern_neighbor( struct in6_addr& address ) {
     }
     pthread_mutex_unlock( &neighbor_table_lock );
 
+#if 0
     if ( ( result != NULL ) && new_entry && is_private() ) {
         result->make_partner();
         char buffer[80];
         const char *address_string = inet_ntop(AF_INET6, &address, buffer, sizeof buffer);
         log_notice( "%s(%d) neighbor %s is partner", name(), index(), address_string );
     }
+#endif
 
     return result;
 }
