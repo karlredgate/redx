@@ -36,12 +36,11 @@
 #include <linux/netlink.h>
 #include <linux/rtnetlink.h>
 
-#include <net/if.h>
+// cannot include this - does not provide access to the linux specific defines
+// #include <net/if.h>
 // for stats struct below (want this private to the object)
-#if 0
 #include <linux/if.h>
 #include <linux/netdevice.h>
-#endif
 
 #include <unistd.h>
 #include <stdint.h>

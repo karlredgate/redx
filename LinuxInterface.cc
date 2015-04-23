@@ -34,9 +34,15 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/ioctl.h>
-#include <net/if.h>
+#include <sys/socket.h>
+// #include <net/if.h>
 
 #include <linux/ethtool.h>
+#include <linux/sockios.h>
+#include <linux/netdevice.h>
+// #include <linux/if.h>
+
+#include <netinet/in.h>
 
 #include <stdio.h>
 #include <unistd.h>
