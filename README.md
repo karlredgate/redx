@@ -91,4 +91,49 @@ Check dustmite ( https://github.com/CyberShadow/DustMite/wiki )
  * codesign -- Create and manipulate code signatures
  * csreq(1), xcodebuild(1), `codesign_allocate(1)`
 
+## OSX Notes
+
+sysctl is in man3.
+What is the real system call that is made?
+
+ * Add sysctl command set.
+
+### OSX Bridges
+
+```
+$ ifconfig bridge0 create
+$ ifconfig bridge0 up addm en0 addm en1
+```
+
+last command line add en0 (ethernet) and en1 (wifi) to the bridge interface (bridge0)
+  
+This way i get a new interface in my network manager called "bridge Configuration".
+This seems like something is planned by mac os.
+Still, it doesnt work (pings from devices on the wifi network to 192.168.1.1 which is the main router get no return).
+
+Setting up the bridge is only half the battle.
+By default the OS isn't going to pass traffic across it,
+nor do devices on either side of the bridge know to use the bridge link.
+At the very least you need to configure ARP so that the Mac responds
+to requests for devices on the other side of the bridge - i.e. when
+the device on WiFi sends out an ARP request for the router, the Mac
+responds, even though it isn't the gateway machine.
+
+You could use proxyall to have the Mac proxy all ARP traffic across
+the bridge, or add specific ARP entries to the ARP table.
+
+```
+sudo sysctl -w net.link.ether.inet.proxyall=1
+```
+
+You might also need to enable IP Forwarding:
+
+```
+sudo sysctl -w net.inet.ip.forwarding=1
+```
+
+With the usual caveats that sysctl changes like this are transient
+and lost at reboot - add them to `/etc/sysctl.conf` to apply them at
+boot.
+
 <!-- vim: set autoindent expandtab sw=4 syntax=markdown: -->
