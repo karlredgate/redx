@@ -58,23 +58,6 @@
 namespace { int debug = 0; }
 
 /**
- * \todo need the interface object for the bridge ...
- *
- * other constructors:
- * - With Interface arg to create new bridge ?
- * - 
- */
-Network::Bridge::Bridge( const char *bridge_name ) {
-    _name = strdup(bridge_name);
-}
-
-/**
- */
-Network::Bridge::~Bridge() {
-    if ( _name != NULL ) free(_name);
-}
-
-/**
  */
 const char *
 Network::Bridge::create() {
