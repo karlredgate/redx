@@ -136,4 +136,17 @@ With the usual caveats that sysctl changes like this are transient
 and lost at reboot - add them to `/etc/sysctl.conf` to apply them at
 boot.
 
+### OSX Bond
+
+```
+networksetup -h | grep -i bond
+networksetup -isBondSupported <hardwareport>
+networksetup -createBond <bondname> <hardwareport1> <hardwareport2> <...>
+networksetup -deleteBond <bonddevicename>
+networksetup -addDeviceToBond <hardwareport> <bonddevicename>
+networksetup -removeDeviceFromBond <hardwareport> <bonddevicename>
+networksetup -listBonds
+networksetup -showBondStatus <bonddevicename>
+```
+
 <!-- vim: set autoindent expandtab sw=4 syntax=markdown: -->
