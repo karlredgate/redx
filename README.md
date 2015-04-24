@@ -149,4 +149,10 @@ networksetup -listBonds
 networksetup -showBondStatus <bonddevicename>
 ```
 
+## Windows notes
+
+### Bridge notes
+
+( http://stackoverflow.com/questions/17588957/programmatically-create-destroy-network-bridges-with-net-on-windows-7 )
+
 <!-- vim: set autoindent expandtab sw=4 syntax=markdown: -->
