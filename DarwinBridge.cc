@@ -21,7 +21,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-/** \file LinuxBridge.cc
+/** \file DarwinBridge.cc
  * \brief 
  *
  * including linux/if.h not net/if.h -- even though brutils uses net/if.h
