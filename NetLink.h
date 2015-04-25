@@ -250,20 +250,25 @@ namespace NetLink {
     public:
         AddressMessage( uint16_t );
         AddressMessage( struct nlmsghdr * );
+
         virtual ~AddressMessage() {}
         virtual void send( Socket& );
+
         void append( int, const void *, int );
 
         unsigned char family() const;
-        void family( unsigned char );
         unsigned char prefix() const;
-        void prefix( unsigned char );
         unsigned char flags() const;
-        void flags( unsigned char );
         unsigned char scope() const;
+
+        void family( unsigned char );
+        void prefix( unsigned char );
+        void flags( unsigned char );
         void scope( unsigned char );
+
         int index() const;
         void index( int );
+
         struct in6_addr *in6_addr();
     };
 
@@ -466,12 +471,6 @@ namespace NetLink {
         virtual ~RouteSocket();
         void receive( RouteReceiveCallbackInterface * );
     };
-
-    /**
-     * Create TCL commands for creating/managing NetLink route sockets
-     * and messages.
-     */
-    bool Initialize( Tcl_Interp * );
 
 }
 
