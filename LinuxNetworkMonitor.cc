@@ -523,7 +523,6 @@ int NetLink::Monitor::each_node( NodeIterator& callback ) {
 /** Return the Bridge Interface for a physical Interface that
  *  has been captured in a Bridge.
  */
-
 Network::Interface *
 NetLink::Monitor::find_bridge_interface( Interface *interface ) {
     if ( interface->not_physical() ) return NULL;
@@ -554,43 +553,6 @@ NetLink::Monitor::find_bridge_interface( Interface *interface ) {
     }
 
     log_notice( "Unable to find bridge interface for %s", interface->name() );
-    return NULL;
-}
-
-/** Return the physical Interface for a Bridge Interface.
- */
-
-Network::Interface *
-NetLink::Monitor::find_physical_interface( Interface *interface ) {
-    if ( interface->not_bridge() ) return NULL;
-
-    char path[1024];
-    sprintf( path, "/sys/class/net/%s/brif/*", interface->name() );
-
-    glob_t paths;
-    memset(&paths, 0, sizeof(paths));
-
-    glob( path, GLOB_NOSORT, NULL, &paths );
-    for ( size_t i = 0 ; i < paths.gl_pathc ; i++ ) {
-        std::map<int, Interface *>::const_iterator iter = interfaces.begin();
-        while ( iter != interfaces.end() ) {
-            Network::Interface *interface2 = iter->second;
-            if ( ( interface2 != NULL ) && interface2->is_physical() ) {
-                if ( strcmp( interface2->name(), basename( paths.gl_pathv[i]) ) == 0 ) {
-                    globfree( &paths );
-                    return interface2;
-                }
-            }
-            iter++;
-        }
-    }
-
-    globfree( &paths );
-
-// Note:  This happens when the interface has been temporarily removed from the
-// bridge by the tunnel code when the tunnel is set up to use the peer's interface.
-
-    if ( debug > 0 ) log_notice( "Unable to find physical interface for %s", interface->name() );
     return NULL;
 }
 
@@ -990,22 +952,22 @@ NetLink::Monitor::update_hosts() {
  * 
  * ZeroConf specific interfaces
  */
-void NetLink::Monitor::run() {
-
-// Disable neighbor and route messages from being reported
-// because we do not process them and we can get 100's of them
-// every second.  This causes -ENOBUFS and we can miss Link events.
-//
-//    uint32_t groups = RTMGRP_LINK | RTMGRP_NOTIFY | RTNLGRP_NEIGH |
-//                      RTMGRP_IPV4_IFADDR | RTMGRP_IPV4_ROUTE |
-//                      RTMGRP_IPV6_IFADDR | RTMGRP_IPV6_ROUTE |
-//                      RTMGRP_IPV6_IFINFO | RTMGRP_IPV6_PREFIX ;
+void
+NetLink::Monitor::run() {
 
     load_cache();
 
+    /*
+     * Disable neighbor and route messages from being reported
+     * because we do not process them and we can get 100's of them
+     * every second.  This causes -ENOBUFS and we can miss Link events.
+     */
     uint32_t groups = RTMGRP_LINK | RTMGRP_NOTIFY |
-                      RTMGRP_IPV4_IFADDR |
-                      RTMGRP_IPV6_IFADDR |
+                      RTMGRP_IPV4_IFADDR | RTMGRP_IPV6_IFADDR |
+#if 0
+                      RTMGRP_IPV4_ROUTE | RTMGRP_IPV6_ROUTE |
+                      RTNLGRP_NEIGH |
+#endif
                       RTMGRP_IPV6_IFINFO | RTMGRP_IPV6_PREFIX ;
 
     route_socket = new NetLink::RouteSocket(groups);

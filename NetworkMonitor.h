@@ -90,7 +90,7 @@ namespace Network {
      * Monitor thread for watching network events and performing actions
      * when they occur.
      */
-    class Monitor : public Thread, NetLink::RouteReceiveCallbackInterface {
+    class Monitor : public Thread {
     private:
         Tcl_Interp *interp;
         NetLink::RouteSocket *route_socket;
@@ -113,23 +113,13 @@ namespace Network {
     public:
         Monitor( Tcl_Interp *, ListenerInterfaceFactory );
         virtual ~Monitor() {}
-        virtual void run();
-        virtual void probe();
-        virtual void receive( NetLink::NewLink* );
-        virtual void receive( NetLink::DelLink* );
-        virtual void receive( NetLink::NewRoute* );
-        virtual void receive( NetLink::DelRoute* );
-        virtual void receive( NetLink::NewAddress* );
-        virtual void receive( NetLink::DelAddress* );
-        virtual void receive( NetLink::NewNeighbor* );
-        virtual void receive( NetLink::DelNeighbor* );
-        virtual void receive( NetLink::RouteMessage* );
-        virtual void receive( NetLink::RouteError* );
+
+        void run():
+
         int sendto( void *, size_t, int, const struct sockaddr_in6 * );
         int advertise();
         int each_interface( InterfaceIterator& );
         Interface *find_bridge_interface( Interface* );
-        Interface *find_physical_interface( Interface* );
 
         /**
          * The node list is a list of known supernova nodes that have been
@@ -161,8 +151,6 @@ namespace Network {
         virtual ~EventReceiver() {}
         virtual void operator() ( Event& ) = 0;
     };
-
-    bool Initialize( Tcl_Interp * );
 
 }
 

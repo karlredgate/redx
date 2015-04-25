@@ -61,60 +61,18 @@ namespace Network {
 
 namespace NetLink {
 
-    class Monitor;
-
-    /**
-     * This is an interface that is used when an Interface is discovered.
-     * An implementation of this interface is expected to take a socket
-     * from the Interface and listen on it for some protocol.
-     *
-     * The Monitor reference is used to commuicate state information from
-     * the listener back to the monitor object that created it.  The Interface
-     * reference is used to update interface state.
-     *
-     * For a specific implementation of this interface, see the Diastole
-     * object in "pulse".
-     */
-    class ListenerInterface {
-    public:
-        ListenerInterface() {}
-        virtual ~ListenerInterface() {}
-        virtual Thread* thread() = 0;
-    };
-    typedef ListenerInterface *(*ListenerInterfaceFactory)( Tcl_Interp *, Monitor *, Network::Interface * );
-
-    class Manager;
-
     /**
      * Monitor thread for watching network events and performing actions
      * when they occur.
      */
-    class Monitor : public Thread, NetLink::RouteReceiveCallbackInterface {
+    class Monitor : public NetLink::RouteReceiveCallbackInterface {
     private:
-        Tcl_Interp *interp;
         NetLink::RouteSocket *route_socket;
-        ListenerInterfaceFactory factory;
-        std::map <int, Network::Interface*> interfaces;
-
-        pthread_mutex_t node_table_lock;
-        static const int NODE_TABLE_SIZE = 4096;
-        Network::Node *node_table;
-        bool table_warning_reported;
-	bool table_error_reported;
-
-        Network::Manager *_manager;
-
-        void persist_interface_configuration();
-        void capture( Network::Interface * );
-        void bring_up( Network::Interface * );
-
-        void load_cache();
-        void save_cache();
 
     public:
-        Monitor( Tcl_Interp *, ListenerInterfaceFactory, Network::Manager * );
+        Monitor();
         virtual ~Monitor() {}
-        virtual void run();
+        virtual void process_one_event();
         virtual void probe();
         virtual void receive( NetLink::NewLink* );
         virtual void receive( NetLink::DelLink* );
@@ -126,24 +84,6 @@ namespace NetLink {
         virtual void receive( NetLink::DelNeighbor* );
         virtual void receive( NetLink::RouteMessage* );
         virtual void receive( NetLink::RouteError* );
-        int sendto( void *, size_t, int, const struct sockaddr_in6 * );
-        int advertise();
-        int each_interface( InterfaceIterator& );
-        Network::Interface *find_bridge_interface( Network::Interface* );
-        Network::Interface *find_physical_interface( Network::Interface* );
-        void topology_changed();
-
-        /**
-         * The node list is a list of known supernova nodes that have been
-         * seen on any/all interfaces.  Each node that has been seen on a
-         * specific interface is added to the peer list on that interface.
-         */
-        Network::Node* intern_node( UUID & );
-        bool remove_node( UUID * );
-        Network::Node* find_node( UUID * );
-        int each_node( Network::NodeIterator& );
-
-        void update_hosts();
     };
 
 }
