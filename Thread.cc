@@ -40,6 +40,8 @@
 namespace { Tcl_Interp *interpreter = NULL; }
 Tcl_Interp *Thread::global_interp() { return interpreter; }
 
+/**
+ */
 int
 thread_cmd( ClientData data, Tcl_Interp *interp,
             int objc, Tcl_Obj * CONST *objv )
@@ -67,6 +69,8 @@ thread_cmd( ClientData data, Tcl_Interp *interp,
     
 }
 
+/**
+ */
 void register_thread( Thread *thread ) {
     if ( thread->thread_name() == NULL )  return;
     char buffer[80];
@@ -129,6 +133,8 @@ receive( const SIGSELECT *segsel ) {
 }
 #endif
 
+/**
+ */
 static void *boot( void *data ) {
     Thread *thread = (Thread *)data;
     pthread_setspecific( CurrentThread, thread );
@@ -140,6 +146,8 @@ static void *boot( void *data ) {
     return NULL;
 }
 
+/**
+ */
 bool Thread::start() {
     if ( pthread_create(&id, NULL, boot, this) ) {
         return false;
@@ -147,6 +155,8 @@ bool Thread::start() {
     return true;
 }
 
+/**
+ */
 bool Thread::stop() {
     if ( pthread_cancel(id) != 0 ) {
         return false;
@@ -154,6 +164,8 @@ bool Thread::stop() {
     return true;
 }
 
+/**
+ */
 Thread::Thread( const char *_name ) : _thread_name(NULL) {
     thread_name( _name );
     status = "stop ready";
@@ -171,6 +183,8 @@ void Thread::thread_name( const char *_name ) {
     _thread_name = strdup(_name);
 }
 
+/**
+ */
 int
 Thread::TclCommand( ClientData data, Tcl_Interp *interp,
                     int objc, Tcl_Obj * CONST *objv )
@@ -203,6 +217,8 @@ Thread::TclCommand( ClientData data, Tcl_Interp *interp,
     
 }
 
+/**
+ */
 static bool
 Thread_Module( Tcl_Interp *interp ) {
     return true;
