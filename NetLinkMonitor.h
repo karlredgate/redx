@@ -71,7 +71,7 @@ namespace NetLink {
 
     public:
         Monitor();
-        virtual ~Monitor() {}
+        virtual ~Monitor();
         virtual void process_one_event();
         virtual void probe();
         virtual void receive( NetLink::NewLink* );
