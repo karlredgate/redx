@@ -103,8 +103,6 @@ namespace Network {
         bool table_warning_reported;
 	bool table_error_reported;
 
-        Network::Manager *_manager;
-
         void persist_interface_configuration();
         void capture( Interface * );
         void bring_up( Interface * );

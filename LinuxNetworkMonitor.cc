@@ -1040,18 +1040,26 @@ void NetLink::Monitor::probe() {
  * for network events.  (?? also how to handle ASTs for handlers)
  */
 NetLink::Monitor::Monitor( Tcl_Interp *interp, Network::ListenerInterfaceFactory factory )
-: Thread("netlink.monitor"), interp(interp), route_socket(NULL), factory(factory),
-  table_warning_reported(false), table_error_reported(false) {
+: Thread("netlink.monitor"),
+  interp(interp),
+  route_socket(NULL),
+  factory(factory),
+  table_warning_reported(false),
+  table_error_reported(false)
+{
     pthread_mutex_init( &node_table_lock, NULL );
     size_t size = sizeof(Node) * NODE_TABLE_SIZE;
     node_table = (Node *)mmap( 0, size, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, 0, 0 );
+
     if ( node_table == MAP_FAILED ) {
         log_err( "node table alloc failed" );
         exit( errno );
     }
+
     for ( int i = 0 ; i < NODE_TABLE_SIZE ; i++ ) {
         node_table[i].invalidate();
     }
+
     if ( debug > 0 ) log_err( "node table is at %p (%zu)", node_table, size );
 }
 
