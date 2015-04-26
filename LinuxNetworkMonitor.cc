@@ -50,12 +50,52 @@
 #include "util.h"
 #include "host_table.h"
 #include "NetLink.h"
-#include "NetLinkMonitor.h"
 #include "Neighbor.h"
 #include "Interface.h"
+#include "NetworkMonitor.h"
+#include "NetLinkMonitor.h"
 #include "LinuxNetworkMonitor.h"
 
 namespace { int debug = 0; }
+
+/**
+ * The network monitor needs to probe the current system for network
+ * devices and keep a list of devices that are being monitored.
+ *
+ * The discover interface bit here -- creates a RouteSocket, send
+ * a GetLink request, and process each response by calling the monitor
+ * object's receive callback interface.  This callback will popoulate the
+ * Interface table.
+ *
+ * Tcl_Interp arg to the constructor is for handlers that are registered
+ * for network events.  (?? also how to handle ASTs for handlers)
+ */
+Network::LinuxNetworkMonitor::LinuxNetworkMonitor( Tcl_Interp *interp, Network::ListenerInterfaceFactory factory )
+: Network::Monitor(interp, factory),
+  NetLink::Monitor(),
+  table_warning_reported(false),
+  table_error_reported(false)
+{
+    pthread_mutex_init( &node_table_lock, NULL );
+    size_t size = sizeof(Node) * NODE_TABLE_SIZE;
+    node_table = (Node *)mmap( 0, size, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, 0, 0 );
+
+    if ( node_table == MAP_FAILED ) {
+        log_err( "node table alloc failed" );
+        exit( errno );
+    }
+
+    for ( int i = 0 ; i < NODE_TABLE_SIZE ; i++ ) {
+        node_table[i].invalidate();
+    }
+
+    if ( debug > 0 ) log_err( "node table is at %p (%zu)", node_table, size );
+}
+
+/**
+ */
+Network::LinuxNetworkMonitor::~LinuxNetworkMonitor() {
+}
 
 /**
  * Used to iterate through the node list and clear the partner
@@ -898,47 +938,6 @@ Network::LinuxNetworkMonitor::run() {
         process_one_event();
         sleep( 1 );
     }
-}
-
-/**
- * The network monitor needs to probe the current system for network
- * devices and keep a list of devices that are being monitored.
- *
- * The discover interface bit here -- creates a RouteSocket, send
- * a GetLink request, and process each response by calling the monitor
- * object's receive callback interface.  This callback will popoulate the
- * Interface table.
- *
- * Tcl_Interp arg to the constructor is for handlers that are registered
- * for network events.  (?? also how to handle ASTs for handlers)
- */
-Network::LinuxNetworkMonitor::LinuxNetworkMonitor( Tcl_Interp *interp, Network::ListenerInterfaceFactory factory )
-: Thread("network.monitor"),
-  NetLink::Monitor(),
-  interp(interp),
-  factory(factory),
-  table_warning_reported(false),
-  table_error_reported(false)
-{
-    pthread_mutex_init( &node_table_lock, NULL );
-    size_t size = sizeof(Node) * NODE_TABLE_SIZE;
-    node_table = (Node *)mmap( 0, size, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, 0, 0 );
-
-    if ( node_table == MAP_FAILED ) {
-        log_err( "node table alloc failed" );
-        exit( errno );
-    }
-
-    for ( int i = 0 ; i < NODE_TABLE_SIZE ; i++ ) {
-        node_table[i].invalidate();
-    }
-
-    if ( debug > 0 ) log_err( "node table is at %p (%zu)", node_table, size );
-}
-
-/**
- */
-Network::LinuxNetworkMonitor::~LinuxNetworkMonitor() {
 }
 
 /* vim: set autoindent expandtab sw=4 : */

@@ -447,7 +447,6 @@ NetLink::Monitor::update_hosts() {
  */
 Network::Monitor::Monitor( Tcl_Interp *interp, Network::ListenerInterfaceFactory factory )
 : Thread("network.monitor"),
-  NetLink::Monitor(),
   interp(interp),
   factory(factory),
   table_warning_reported(false),

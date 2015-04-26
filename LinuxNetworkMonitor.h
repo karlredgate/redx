@@ -89,12 +89,13 @@ namespace Network {
      * Monitor thread for watching network events and performing actions
      * when they occur.
      */
-    class LinuxNetworkMonitor : public Thread, Network::Monitor, NetLink::Monitor {
+    class LinuxNetworkMonitor : public Network::Monitor, NetLink::Monitor {
     private:
     public:
         // Need to pass these to the which subclasses
         LinuxNetworkMonitor( Tcl_Interp *, ListenerInterfaceFactory, Network::Manager * );
         virtual ~LinuxNetworkMonitor() {}
+
         virtual void run();
 
         /**

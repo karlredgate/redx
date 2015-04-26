@@ -113,7 +113,7 @@ namespace Network {
         Monitor( Tcl_Interp *, ListenerInterfaceFactory );
         virtual ~Monitor() {}
 
-        void run():
+        virtual void run();
 
         int sendto( void *, size_t, int, const struct sockaddr_in6 * );
         int advertise();
