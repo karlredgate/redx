@@ -88,7 +88,8 @@ NetLink::Monitor::process_one_event() {
     rs.receive( this );
 }
 
-void NetLink::Monitor::probe() {
+void
+NetLink::Monitor::probe() {
     if ( debug > 0 ) log_notice( "Monitor: sending probe" );
     NetLink::RouteSocket &rs = *route_socket;
     NetLink::GetLink getlink;
@@ -119,6 +120,100 @@ NetLink::Monitor::Monitor( Tcl_Interp *interp, Network::ListenerInterfaceFactory
  */
 NetLink::Monitor::~Monitor() {
     // Need to close the route socket
+}
+
+/** When a NewLink message is received, create/update interface object.
+ *
+ * 
+ */
+void
+NetLink::Monitor::receive( NetLink::NewLink *message ) {
+}
+
+/**
+ */
+void
+Network::Monitor::receive( NetLink::DelLink *message ) {
+}
+
+/**
+ */
+void
+NetLink::Monitor::receive( NetLink::NewRoute *message ) {
+    if ( debug > 1 ) {
+        log_info( "NetLink::Monitor => process NewRoute -->  scope %d, family %d\n",
+                message->scope(),
+                message->family()
+        );
+    }
+}
+
+/**
+ */
+void
+NetLink::Monitor::receive( NetLink::DelRoute *message ) {
+    if ( debug > 1 ) {
+        log_info( "NetLink::Monitor => process DelRoute -->  scope %d, family %d\n",
+                message->scope(),
+                message->family()
+        );
+    }
+}
+
+/**
+ */
+void
+NetLink::Monitor::receive( NetLink::NewAddress *message ) {
+    if ( debug > 1 ) {
+        log_info( "NetLink::Monitor => process NewAddress \n" );
+    }
+}
+
+/**
+ */
+void
+NetLink::Monitor::receive( NetLink::DelAddress *message ) {
+    if ( debug > 1 ) {
+        log_info( "NetLink::Monitor => process DelAddress \n" );
+    }
+}
+
+/**
+ */
+void
+NetLink::Monitor::receive( NetLink::NewNeighbor *message ) {
+    if ( debug > 1 ) {
+        log_info( "NetLink::Monitor => process NewNeighbor \n" );
+    }
+}
+
+/**
+ */
+void
+NetLink::Monitor::receive( NetLink::DelNeighbor *message ) {
+    if ( debug > 1 ) {
+        log_info( "NetLink::Monitor => process DelNeighbor\n");
+    }
+}
+
+/**
+ */
+void
+NetLink::Monitor::receive( NetLink::RouteMessage *message ) {
+    if ( debug > 1 ) {
+        log_info( "NetLink::Monitor unknown RouteMessage (%d) -- skipping\n", message->type_code() );
+    }
+}
+
+/**
+ * \todo should have some internal state that tells us the last message
+ * we received was an error, and what the error was.
+ */
+void
+NetLink::Monitor::receive( NetLink::RouteError *message ) {
+    if ( debug > 1 ) {
+        log_info( "NetLink::Monitor RouteError %d\n", message->error() );
+    }
 }
 
 /* vim: set autoindent expandtab sw=4 : */
