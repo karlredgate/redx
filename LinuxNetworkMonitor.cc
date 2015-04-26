@@ -441,39 +441,6 @@ Network::LinuxNetworkMonitor::advertise() {
     return 0;
 }
 
-/** Iterate and call a callback for each Network::Interface.
- */
-int
-Network::LinuxNetworkMonitor::each_interface( Network::InterfaceIterator& callback ) {
-    int result = 0;
-
-    std::map<int, Network::Interface *>::const_iterator iter = interfaces.begin();
-    while ( iter != interfaces.end() ) {
-        Network::Interface *interface = iter->second;
-        if ( interface != NULL )  result += callback( interface );
-        iter++;
-    }
-
-    return result;
-}
-
-/** Iterate and call a callback for each Node.
- */
-int
-Network::LinuxNetworkMonitor::each_node( NodeIterator& callback ) {
-    int result = 0;
-
-    pthread_mutex_lock( &node_table_lock );
-    for ( int i = 0 ; i < NODE_TABLE_SIZE ; ++i ) {
-        Network::Node& node = node_table[i];
-        if ( node.is_invalid() ) continue;
-        result += callback( node );
-    }
-    pthread_mutex_unlock( &node_table_lock );
-
-    return result;
-}
-
 /** Return the Bridge Interface for a physical Interface that
  *  has been captured in a Bridge.
  */
