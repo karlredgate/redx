@@ -71,6 +71,8 @@ namespace Network {
      */
     class LinuxNetworkMonitor : public Network::Monitor, NetLink::Monitor {
     private:
+        void persist_interface_configuration();
+
     public:
         // Need to pass these to the which subclasses
         LinuxNetworkMonitor( Tcl_Interp *, ListenerInterfaceFactory );

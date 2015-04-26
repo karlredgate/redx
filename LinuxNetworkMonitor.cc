@@ -401,30 +401,6 @@ Network::LinuxNetworkMonitor::sendto( void *message, size_t length, int flags, c
     return 0;
 }
 
-/** Send ICMPv6 neighbor advertisements for each interface.
- * 
- * Iterate through each known priv/biz network and send neighbor
- * advertisements out of this interface.  This will keep the peer's
- * neighbor table up to date for this host.
- *
- * When looking at the peer's * neighbor table (ip -6 neighbor ls) you
- * should see "REACHABLE" for this hosts addresses if this node is up and
- * running netmgr.
- *
- * See the Interface.cc advertise code for how this is done.
- */
-int
-Network::LinuxNetworkMonitor::advertise() {
-    std::map<int, Network::Interface *>::const_iterator iter = interfaces.begin();
-    while ( iter != interfaces.end() ) {
-        Network::Interface *interface = iter->second;
-        if ( interface != NULL )  interface->advertise();
-        iter++;
-    }
-
-    return 0;
-}
-
 /** Return the Bridge Interface for a physical Interface that
  *  has been captured in a Bridge.
  */
@@ -601,7 +577,7 @@ public:
         entry.flags.partner = 0;
         entry.node.ordinal = gethostid();
         entry.flags.is_private = interface->is_private();
-        entry.interface->ordinal = interface->ordinal();
+        entry.interface.ordinal = interface->ordinal();
         interface->lladdr( &entry.primary_address );
 
         unsigned char *mac = interface->mac();
@@ -612,7 +588,7 @@ public:
         entry.mac[4] = mac[4];
         entry.mac[5] = mac[5];
 
-        if ( interface->not_bridge() and interface->not_private() ) {
+        if ( interface->not_bridge() /* and interface->not_private() */ ) {
             return 0;
         }
         if ( debug > 1 ) log_notice( "write host entry for %s", interface->name() );

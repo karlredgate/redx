@@ -94,14 +94,13 @@ namespace Network {
     // I want to change this so there are accessors instead
     protected:
         Tcl_Interp *interp;
-        std::map <int, Interface*> interfaces;
+        std::map <int, Network::Interface*> interfaces;
 
         void load_cache();
         void save_cache();
 
-        void bring_up( Interface * );
-        void capture( Interface * );
-        void persist_interface_configuration();
+        void bring_up( Network::Interface * );
+        void capture( Network::Interface * );
 
     private:
         ListenerInterfaceFactory factory;
