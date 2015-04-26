@@ -72,9 +72,7 @@ namespace { int debug = 0; }
  */
 Network::LinuxNetworkMonitor::LinuxNetworkMonitor( Tcl_Interp *interp, Network::ListenerInterfaceFactory factory )
 : Network::Monitor(interp, factory),
-  NetLink::Monitor(),
-  table_warning_reported(false),
-  table_error_reported(false)
+  NetLink::Monitor()
 {
     pthread_mutex_init( &node_table_lock, NULL );
     size_t size = sizeof(Node) * NODE_TABLE_SIZE;

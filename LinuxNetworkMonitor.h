@@ -66,26 +66,6 @@ namespace Network {
     class Manager;
 
     /**
-     * This is an interface that is used when an Interface is discovered.
-     * An implementation of this interface is expected to take a socket
-     * from the Interface and listen on it for some protocol.
-     *
-     * The Monitor reference is used to commuicate state information from
-     * the listener back to the monitor object that created it.  The Interface
-     * reference is used to update interface state.
-     *
-     * For a specific implementation of this interface, see the Diastole
-     * object in "pulse".
-     */
-    class ListenerInterface {
-    public:
-        ListenerInterface() {}
-        virtual ~ListenerInterface() {}
-        virtual Thread* thread() = 0;
-    };
-    typedef ListenerInterface *(*ListenerInterfaceFactory)( Tcl_Interp *, NetLink::Monitor *, Network::Interface * );
-
-    /**
      * Monitor thread for watching network events and performing actions
      * when they occur.
      */
@@ -93,8 +73,8 @@ namespace Network {
     private:
     public:
         // Need to pass these to the which subclasses
-        LinuxNetworkMonitor( Tcl_Interp *, ListenerInterfaceFactory, Network::Manager * );
-        virtual ~LinuxNetworkMonitor() {}
+        LinuxNetworkMonitor( Tcl_Interp *, ListenerInterfaceFactory );
+        virtual ~LinuxNetworkMonitor();
 
         virtual void run();
 
