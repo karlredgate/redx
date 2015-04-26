@@ -88,6 +88,7 @@ namespace Network {
         void update_hosts();
         virtual void capture( Network::Interface * );
         virtual void bring_up( Network::Interface * );
+        virtual Interface *find_bridge_interface( Network::Interface* );
     };
 
 }

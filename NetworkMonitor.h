@@ -94,6 +94,7 @@ namespace Network {
     // I want to change this so there are accessors instead
     protected:
         Tcl_Interp *interp;
+        ListenerInterfaceFactory factory;
         std::map <int, Network::Interface*> interfaces;
 
         void load_cache();
@@ -103,8 +104,6 @@ namespace Network {
         virtual void capture( Network::Interface * );
 
     private:
-        ListenerInterfaceFactory factory;
-
         pthread_mutex_t node_table_lock;
         static const int NODE_TABLE_SIZE = 4096;
         Node *node_table;
@@ -120,7 +119,7 @@ namespace Network {
         int sendto( void *, size_t, int, const struct sockaddr_in6 * );
         int advertise();
         int each_interface( InterfaceIterator& );
-        Interface *find_bridge_interface( Interface* );
+        virtual Interface *find_bridge_interface( Network::Interface* );
 
         /**
          * The node list is a list of known supernova nodes that have been

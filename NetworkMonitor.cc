@@ -123,7 +123,7 @@ Network::Monitor::advertise() {
 void
 Network::NetworkMonitor::capture( Network::Interface *interface ) {
     fprintf( stderr, "UNIMPLEMENTED capture\n" );
-    exit( 1 );
+    abort();
 }
 
 /**
@@ -131,7 +131,15 @@ Network::NetworkMonitor::capture( Network::Interface *interface ) {
 void
 Network::NetworkMonitor::bring_up( Network::Interface *interface ) {
     fprintf( stderr, "UNIMPLEMENTED bring_up\n" );
-    exit( 1 );
+    abort();
+}
+
+/**
+ */
+Network::Interface *
+Network::NetworkMonitor::find_bridge_interface( Network::Interface *interface ) {
+    fprintf( stderr, "UNIMPLEMENTED find_bridge_interface\n" );
+    abort();
 }
 
 /** Iterate and call a callback for each Network::Interface.
