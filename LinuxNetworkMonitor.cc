@@ -111,10 +111,11 @@ Network::LinuxNetworkMonitor::receive( NetLink::NewLink *message ) {
         if ( debug > 0 ) {
             log_notice( "adding %s(%d) to interface list", message->name(), message->index() );
         }
-        interface = new Network::Interface( interp, message );
+        // interface = new Network::Interface( interp, message );
+        interface = new Network::Interface( interp, message->index() );
         interfaces[ message->index() ] = interface;
 
-        interface->update( message );
+        // interface->update( message );
 
         if ( interface->is_physical() ) {
 //            if ( interface->not_private() ) {
@@ -158,15 +159,14 @@ Network::LinuxNetworkMonitor::receive( NetLink::NewLink *message ) {
             log_notice( "brought up interface %s(%d)", message->name(), message->index() );
         }
 
-        if ( interface->is_up() and interface->is_private() and
-             interface->not_sync() and interface->not_listening_to("udp6", 123) ) { // NTP
+        if ( interface->is_up() and interface->not_listening_to("udp6", 123) ) { // NTP
             log_notice( "%s is not listening to port 123 on its primary address, restart ntpd",
                                 interface->name() );
             system( "/usr/bin/config_ntpd --restart" );
         }
 
     } else { // if we do have it ... look for state changes
-        interface->update( message );
+        // interface->update( message );
 
         bool report_required = false;
         const char *link_message = "";
@@ -180,8 +180,7 @@ Network::LinuxNetworkMonitor::receive( NetLink::NewLink *message ) {
                 interface->linkUp( &event );
                 link_message = ", link up";
 
-                if ( interface->is_up() and interface->is_private() and
-                     interface->not_sync() and interface->not_listening_to("udp6", 123) ) { // NTP
+                if ( interface->is_up() and interface->not_listening_to("udp6", 123) ) { // NTP
                     log_notice( "%s is not listening to port 123 on its primary address, restart ntpd",
                                         interface->name() );
                     system( "/usr/bin/config_ntpd --restart" );
@@ -197,7 +196,7 @@ Network::LinuxNetworkMonitor::receive( NetLink::NewLink *message ) {
         }
 
         if ( ( interface->has_link() == false ) and interface->bounce_expired() ) {
-            if ( interface->is_physical() and ( interface->not_private() or interface->is_sync() ) ) {
+            if ( interface->is_physical() ) {
                 link_requires_repair = true;
             }
         }
@@ -258,7 +257,7 @@ void Network::LinuxNetworkMonitor::receive( NetLink::DelLink *message ) {
         return;
     }
 
-    interface->update( message );
+    // interface->update( message );
 
     bool report_required = false;  // Change this to false
     const char *link_message = "";
@@ -348,8 +347,7 @@ Network::LinuxNetworkMonitor::receive( NetLink::NewAddress *message ) {
 
     if (  interface->is_primary( message->in6_addr() )  ) {
         log_notice( "primary ipv6 address added to '%s'", interface->name() );
-        if ( interface->is_private() and interface->not_sync() and
-             interface->not_listening_to("udp6", 123) ) { // NTP
+        if ( interface->not_listening_to("udp6", 123) ) { // NTP
             log_notice( "%s is not listening to port 123 on its primary address, restart ntpd",
                                 interface->name() );
             system( "/usr/bin/config_ntpd --restart" );
