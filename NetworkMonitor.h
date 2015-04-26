@@ -99,6 +99,10 @@ namespace Network {
         void load_cache();
         void save_cache();
 
+        void bring_up( Interface * );
+        void capture( Interface * );
+        void persist_interface_configuration();
+
     private:
         ListenerInterfaceFactory factory;
 
@@ -107,10 +111,6 @@ namespace Network {
         Node *node_table;
         bool table_warning_reported;
 	bool table_error_reported;
-
-        void persist_interface_configuration();
-        void capture( Interface * );
-        void bring_up( Interface * );
 
     public:
         Monitor( Tcl_Interp *, ListenerInterfaceFactory );

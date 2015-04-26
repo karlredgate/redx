@@ -605,7 +605,7 @@ Network::LinuxNetworkMonitor::bring_up( Network::Interface *interface ) {
  *
  */
 Network::Node*
-NetLink::LinuxNetworkMonitor::intern_node( UUID& uuid ) {
+Network::LinuxNetworkMonitor::intern_node( UUID& uuid ) {
     int in_use_count = 0;
     Network::Node *result = NULL;
     Network::Node *available = NULL;
@@ -658,7 +658,7 @@ NetLink::LinuxNetworkMonitor::intern_node( UUID& uuid ) {
  *
  */
 bool
-NetLink::LinuxNetworkMonitor::remove_node( UUID *uuid ) {
+Network::LinuxNetworkMonitor::remove_node( UUID *uuid ) {
     pthread_mutex_lock( &node_table_lock );
     for ( int i = 0 ; i < NODE_TABLE_SIZE ; ++i ) {
         Network::Node& node = node_table[i];
@@ -675,7 +675,7 @@ NetLink::LinuxNetworkMonitor::remove_node( UUID *uuid ) {
  *
  */
 Network::Node*
-NetLink::LinuxNetworkMonitor::find_node( UUID *uuid ) {
+Network::LinuxNetworkMonitor::find_node( UUID *uuid ) {
     using namespace Network;
     Node *result = NULL;
 
@@ -696,7 +696,7 @@ NetLink::LinuxNetworkMonitor::find_node( UUID *uuid ) {
  * priv0 is down and we cannot discover the node id dynamically.
  */
 void
-NetLink::LinuxNetworkMonitor::save_cache() {
+Network::LinuxNetworkMonitor::save_cache() {
     FILE *f = fopen( "partner-cache", "w" );
     if ( f == NULL ) {
         log_notice( "could not save partner cache" );
@@ -728,7 +728,7 @@ NetLink::LinuxNetworkMonitor::save_cache() {
 /**
  */
 void
-NetLink::LinuxNetworkMonitor::clear_partners() {
+Network::LinuxNetworkMonitor::clear_partners() {
     ClearNodePartner callback;
     int partner_count = each_node( callback );
     if ( partner_count > 0 ) {
@@ -743,7 +743,7 @@ NetLink::LinuxNetworkMonitor::clear_partners() {
  * discovered a partner node on priv0.
  */
 void
-NetLink::LinuxNetworkMonitor::load_cache() {
+Network::LinuxNetworkMonitor::load_cache() {
     char buffer[80];
     FILE *f = fopen( "partner-cache", "r" );
 
@@ -860,7 +860,7 @@ public:
  * node0.ip6.ibiz0    fe80::XXXX
  */
 void
-NetLink::LinuxNetworkMonitor::update_hosts() {
+Network::LinuxNetworkMonitor::update_hosts() {
     if ( mkfile(const_cast<char*>("hosts.tmp"), HOST_TABLE_SIZE) == 0 ) {
         log_err( "could not create the tmp hosts table" );
         return;
