@@ -100,8 +100,24 @@ static bool mac_is_zero( unsigned char *address ) {
 }
 
 /**
+ * This constructor is used by the TCL interpreter to create a command
+ * that can be used to control the interface.  It is used specifically
+ * in the hotplug_vif house script.
  */
-Network::Interface::~Interface() {
+Network::Interface::Interface( Tcl_Interp *interp, int index )
+: interp(interp), _index(index), 
+  last_sendto(0),
+  last_no_peer_report(0),
+  table_warning_reported(false),
+  table_error_reported(false),
+  advertise_errors(0),
+  _removed(false)
+{
+    _name = NULL;
+    platform_init();
+    get_settings();
+    pthread_mutex_init( &neighbor_table_lock, NULL );
+    neighbors = NULL;
 }
 
 /**
@@ -111,17 +127,13 @@ Network::Interface::~Interface() {
  */
 Network::Interface::Interface( Tcl_Interp *interp, char *initname )
 : interp(interp), _index(-1), 
-  netlink_flags(0),        /* current state of flags reported by netlink */
-  netlink_change(0),       /* netlink thinks flags have changed */
-  last_flags(0),           /* Last set of flags EKG saw */
-  last_processed_flags(0), /* Last set of flags EKG processed */
-  changed(0),              /* Ekg has detected flags Have Changed */
   type(0), 
-  unknown_carrier(true),
-  previous_carrier(false),
-  last_sendto(0), last_no_peer_report(0), table_warning_reported(false),
+  last_sendto(0),
+  last_no_peer_report(0),
+  table_warning_reported(false),
   table_error_reported(false),
-  advertise_errors(0), _removed(false)
+  advertise_errors(0),
+  _removed(false)
 {
     _name = strdup(initname);
     platform_init();
@@ -205,6 +217,11 @@ Network::Interface::Interface( Tcl_Interp *interp )
     neighbors = NULL;
 }
 
+/**
+ */
+Network::Interface::~Interface() {
+}
+
 void Network::Interface::linkUp( Kernel::NetworkLinkUpEvent *message ) {
     char cmd[128];
     int status = 1;

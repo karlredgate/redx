@@ -113,6 +113,7 @@ namespace Network {
     public:
         Interface( Tcl_Interp * );
         Interface( Tcl_Interp *, char * );
+        Interface( Tcl_Interp *, int );
         // Interface( Tcl_Interp *, NetLink::NewLink * );
         virtual ~Interface();
 
