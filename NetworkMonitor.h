@@ -91,10 +91,16 @@ namespace Network {
      * when they occur.
      */
     class Monitor : public Thread {
-    private:
+    // I want to change this so there are accessors instead
+    protected:
         Tcl_Interp *interp;
-        ListenerInterfaceFactory factory;
         std::map <int, Interface*> interfaces;
+
+        void load_cache();
+        void save_cache();
+
+    private:
+        ListenerInterfaceFactory factory;
 
         pthread_mutex_t node_table_lock;
         static const int NODE_TABLE_SIZE = 4096;
@@ -105,9 +111,6 @@ namespace Network {
         void persist_interface_configuration();
         void capture( Interface * );
         void bring_up( Interface * );
-
-        void load_cache();
-        void save_cache();
 
     public:
         Monitor( Tcl_Interp *, ListenerInterfaceFactory );
