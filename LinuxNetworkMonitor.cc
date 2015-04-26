@@ -51,6 +51,8 @@
 #include "host_table.h"
 #include "NetLink.h"
 #include "NetLinkMonitor.h"
+#include "Neighbor.h"
+#include "Interface.h"
 
 namespace { int debug = 0; }
 
@@ -74,9 +76,10 @@ public:
  *
  * 
  */
-void NetLink::Monitor::receive( NetLink::NewLink *message ) {
+void
+Network::Monitor::receive( NetLink::NewLink *message ) {
     bool link_requires_repair = false;
-    Interface *interface = interfaces[ message->index() ];
+    Network::Interface *interface = interfaces[ message->index() ];
 
     if ( interface == NULL ) {
 
@@ -217,7 +220,7 @@ void NetLink::Monitor::receive( NetLink::NewLink *message ) {
             const char *bridge_name = "UNKNOWN";
             int bridge_index = message->bridge_index();
             if ( bridge_index != 0 ) {
-                Interface *bridge = interfaces[ bridge_index ];
+                Network::Interface *bridge = interfaces[ bridge_index ];
                 if ( bridge != NULL )  bridge_name = bridge->name();
             }
             log_notice( "%s(%d): added to bridge '%s'",
@@ -236,14 +239,14 @@ void NetLink::Monitor::receive( NetLink::NewLink *message ) {
 
 /**
  */
-void NetLink::Monitor::receive( NetLink::DelLink *message ) {
+void Network::Monitor::receive( NetLink::DelLink *message ) {
 
     if ( message->index() == 0 ) {
         log_warn( "received a DelLink message for inteface index 0 (INVALID)" );
         return;
     }
 
-    Interface *interface = interfaces[ message->index() ];
+    Network::Interface *interface = interfaces[ message->index() ];
 
     if ( interface == NULL ) {
         const char *name = message->name();
@@ -295,7 +298,7 @@ void NetLink::Monitor::receive( NetLink::DelLink *message ) {
         const char *bridge_name = "UNKNOWN";
         int bridge_index = message->bridge_index();
         if ( bridge_index != 0 ) {
-            Interface *bridge = interfaces[ bridge_index ];
+            Network::Interface *bridge = interfaces[ bridge_index ];
             if ( bridge != NULL )  bridge_name = bridge->name();
         }
         if ( interface->is_captured() ) {
@@ -311,7 +314,7 @@ void NetLink::Monitor::receive( NetLink::DelLink *message ) {
     if ( message->change() == 0xFFFFFFFF ) {
         log_warn( "%s(%d): removed from system", interface->name(), interface->index() );
         // stop listener thread
-        //   need Interface to have a handle on its listener thread
+        //   need Network::Interface to have a handle on its listener thread
         interface->remove();
     }
 
@@ -343,7 +346,7 @@ void NetLink::Monitor::receive( NetLink::DelRoute *message ) {
  */
 void NetLink::Monitor::receive( NetLink::NewAddress *message ) {
 
-    Interface *interface = interfaces[ message->index() ];
+    Network::Interface *interface = interfaces[ message->index() ];
     if ( interface == NULL ) {
         // address was removed from an interface we do not
         // track (like a VIF)
@@ -381,7 +384,7 @@ void NetLink::Monitor::receive( NetLink::NewAddress *message ) {
  */
 void NetLink::Monitor::receive( NetLink::DelAddress *message ) {
 
-    Interface *interface = interfaces[ message->index() ];
+    Network::Interface *interface = interfaces[ message->index() ];
     if ( interface == NULL ) {
         // address was removed from an interface we do not
         // track (like a VIF)
@@ -451,11 +454,11 @@ void NetLink::Monitor::receive( NetLink::RouteError *message ) {
  * based on interface specific policy.  Currently, this means priv0
  * and bizN bridge interfaces.
  *
- * See Interface::sendto() method (in Interface.cc) for description
+ * See Network::Interface::sendto() method (in Interface.cc) for description
  * of how this is done.
  */
 int NetLink::Monitor::sendto( void *message, size_t length, int flags, const struct sockaddr_in6 *address) {
-    std::map<int, Interface *>::const_iterator iter = interfaces.begin();
+    std::map<int, Network::Interface *>::const_iterator iter = interfaces.begin();
     while ( iter != interfaces.end() ) {
         Network::Interface *interface = iter->second;
         if ( interface != NULL ) {
@@ -479,7 +482,7 @@ int NetLink::Monitor::sendto( void *message, size_t length, int flags, const str
  * See the Interface.cc advertise code for how this is done.
  */
 int NetLink::Monitor::advertise() {
-    std::map<int, Interface *>::const_iterator iter = interfaces.begin();
+    std::map<int, Network::Interface *>::const_iterator iter = interfaces.begin();
     while ( iter != interfaces.end() ) {
         Network::Interface *interface = iter->second;
         if ( interface != NULL )  interface->advertise();
@@ -489,12 +492,12 @@ int NetLink::Monitor::advertise() {
     return 0;
 }
 
-/** Iterate and call a callback for each Interface.
+/** Iterate and call a callback for each Network::Interface.
  */
-int NetLink::Monitor::each_interface( InterfaceIterator& callback ) {
+int NetLink::Monitor::each_interface( Network::InterfaceIterator& callback ) {
     int result = 0;
 
-    std::map<int, Interface *>::const_iterator iter = interfaces.begin();
+    std::map<int, Network::Interface *>::const_iterator iter = interfaces.begin();
     while ( iter != interfaces.end() ) {
         Network::Interface *interface = iter->second;
         if ( interface != NULL )  result += callback( interface );
@@ -524,11 +527,11 @@ int NetLink::Monitor::each_node( NodeIterator& callback ) {
  *  has been captured in a Bridge.
  */
 Network::Interface *
-NetLink::Monitor::find_bridge_interface( Interface *interface ) {
+NetLink::Monitor::find_bridge_interface( Network::Interface *interface ) {
     if ( interface->not_physical() ) return NULL;
     if ( interface->not_captured() ) return NULL;
 
-    std::map<int, Interface *>::const_iterator iter = interfaces.begin();
+    std::map<int, Network::Interface *>::const_iterator iter = interfaces.begin();
     while ( iter != interfaces.end() ) {
         Network::Interface *interface2 = iter->second;
         if ( ( interface2 != NULL ) && interface2->is_bridge() ) {
@@ -561,7 +564,7 @@ NetLink::Monitor::find_bridge_interface( Interface *interface ) {
 void NetLink::Monitor::persist_interface_configuration() {
     log_notice( "persisting the change in interface configuration" );
     FILE *f = fopen( "/etc/udev/rules.d/.tmp", "w" );
-    std::map<int, Interface *>::const_iterator iter = interfaces.begin();
+    std::map<int, Network::Interface *>::const_iterator iter = interfaces.begin();
     for ( ; iter != interfaces.end() ; iter++ ) {
         Network::Interface *interface = iter->second;
         if ( interface == NULL ) continue;
@@ -586,7 +589,7 @@ void NetLink::Monitor::persist_interface_configuration() {
  * The number is simply cloned from the backing interface to
  * the bridge name.
  */
-void NetLink::Monitor::capture( Interface *interface ) {
+void NetLink::Monitor::capture( Network::Interface *interface ) {
     if ( interface->has_fault_injected() ) {
         log_notice( "%s(%d) fault injected, not capturing in bridge", interface->name(), interface->index() );
         return;
@@ -627,7 +630,7 @@ void NetLink::Monitor::capture( Interface *interface ) {
 /** Bring up link and addresses for this interface
  *
  */
-void NetLink::Monitor::bring_up( Interface *interface ) {
+void NetLink::Monitor::bring_up( Network::Interface *interface ) {
     if ( debug > 0 ) log_notice( "bring up '%s'", interface->name() );
 
     if ( interface->has_fault_injected() ) {
