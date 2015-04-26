@@ -380,28 +380,6 @@ Network::LinuxNetworkMonitor::receive( NetLink::DelAddress *message ) {
     }
 }
 
-/** Send a packet to each interface.
- *
- * The interface code will prune which interfaces are valid to send to
- * based on interface specific policy.  Currently, this means priv0
- * and bizN bridge interfaces.
- *
- * See Network::Interface::sendto() method (in Interface.cc) for description
- * of how this is done.
- */
-int
-Network::LinuxNetworkMonitor::sendto( void *message, size_t length, int flags, const struct sockaddr_in6 *address) {
-    std::map<int, Network::Interface *>::const_iterator iter = interfaces.begin();
-    while ( iter != interfaces.end() ) {
-        Network::Interface *interface = iter->second;
-        if ( interface != NULL ) {
-            interface->sendto( message, length, flags, address );
-        }
-        iter++;
-    }
-    return 0;
-}
-
 /** Return the Bridge Interface for a physical Interface that
  *  has been captured in a Bridge.
  */
