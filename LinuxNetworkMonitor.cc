@@ -53,6 +53,7 @@
 #include "NetLinkMonitor.h"
 #include "Neighbor.h"
 #include "Interface.h"
+#include "LinuxNetworkMonitor.h"
 
 namespace { int debug = 0; }
 

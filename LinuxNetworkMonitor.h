@@ -53,6 +53,7 @@
 #include "InterfaceIterator.h"
 #include "NodeIterator.h"
 #include "NetLinkMonitor.h"
+#include "NetworkMonitor.h"
 
 namespace ICMPv6 { class Socket; }
 
@@ -105,6 +106,11 @@ namespace Network {
         bool remove_node( UUID * );
         Network::Node* find_node( UUID * );
         int each_node( Network::NodeIterator& );
+
+        virtual void receive( NetLink::NewLink* );
+        virtual void receive( NetLink::DelLink* );
+        virtual void receive( NetLink::NewAddress* );
+        virtual void receive( NetLink::DelAddress* );
 
         void update_hosts();
     };
