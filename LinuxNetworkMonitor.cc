@@ -554,7 +554,7 @@ public:
         entry.flags.partner = neighbor.is_partner();
         entry.node.ordinal = node->ordinal();
         entry.interface.ordinal = neighbor.ordinal();
-        entry.flags.is_private = neighbor.is_private();
+        entry.flags.is_private = 0 /* neighbor.is_private() */ ;
         neighbor.copy_address( &(entry.primary_address) );
 
         if ( debug > 1 ) log_notice( "write host entry for peer" );
@@ -581,7 +581,7 @@ public:
         entry.flags.valid = 1;
         entry.flags.partner = 0;
         entry.node.ordinal = gethostid();
-        entry.flags.is_private = interface->is_private();
+        entry.flags.is_private = 0 /* interface->is_private() */ ;
         entry.interface.ordinal = interface->ordinal();
         interface->lladdr( &entry.primary_address );
 
