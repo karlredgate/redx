@@ -663,11 +663,11 @@ public:
         entry.flags.valid = 1;
         entry.flags.partner = 0;
         entry.node.ordinal = gethostid();
-        entry.flags.is_private = interface.is_private();
-        entry.interface.ordinal = interface.ordinal();
-        interface.lladdr( &entry.primary_address );
+        entry.flags.is_private = interface->is_private();
+        entry.interface->ordinal = interface->ordinal();
+        interface->lladdr( &entry.primary_address );
 
-        unsigned char *mac = interface.mac();
+        unsigned char *mac = interface->mac();
         entry.mac[0] = mac[0];
         entry.mac[1] = mac[1];
         entry.mac[2] = mac[2];
@@ -675,10 +675,10 @@ public:
         entry.mac[4] = mac[4];
         entry.mac[5] = mac[5];
 
-        if ( interface.not_bridge() and interface.not_private() ) {
+        if ( interface->not_bridge() and interface->not_private() ) {
             return 0;
         }
-        if ( debug > 1 ) log_notice( "write host entry for %s", interface.name() );
+        if ( debug > 1 ) log_notice( "write host entry for %s", interface->name() );
         // populate entry for the interface itself
         ssize_t bytes = write( fd, &entry, sizeof(entry) );
         if ( (size_t)bytes < sizeof(entry) ) {
@@ -687,7 +687,7 @@ public:
 
         // call iterator for each neighbor
         WriteHostsForNeighbors callback(fd);
-        interface.each_neighbor( callback );
+        interface->each_neighbor( callback );
 
         return 0;
     }
