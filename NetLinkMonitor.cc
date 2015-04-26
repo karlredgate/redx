@@ -118,6 +118,7 @@ NetLink::Monitor::Monitor( Tcl_Interp *interp, Network::ListenerInterfaceFactory
 /**
  */
 NetLink::Monitor::~Monitor() {
+    // Need to close the route socket
 }
 
 /* vim: set autoindent expandtab sw=4 : */

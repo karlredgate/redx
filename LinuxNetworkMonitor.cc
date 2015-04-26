@@ -953,40 +953,16 @@ NetLink::Monitor::update_hosts() {
  * ZeroConf specific interfaces
  */
 void
-NetLink::Monitor::run() {
-
+Network::Monitor::run() {
     load_cache();
-
-    /*
-     * Disable neighbor and route messages from being reported
-     * because we do not process them and we can get 100's of them
-     * every second.  This causes -ENOBUFS and we can miss Link events.
-     */
-    uint32_t groups = RTMGRP_LINK | RTMGRP_NOTIFY |
-                      RTMGRP_IPV4_IFADDR | RTMGRP_IPV6_IFADDR |
-#if 0
-                      RTMGRP_IPV4_ROUTE | RTMGRP_IPV6_ROUTE |
-                      RTNLGRP_NEIGH |
-#endif
-                      RTMGRP_IPV6_IFINFO | RTMGRP_IPV6_PREFIX ;
-
-    route_socket = new NetLink::RouteSocket(groups);
-    NetLink::RouteSocket &rs = *route_socket;
-
     probe();
+
     if ( debug > 0 ) log_notice( "network monitor started" );
     for (;;) {
-        rs.receive( this );
+        // This should block - we should not need the sleep
+        process_one_event();
         sleep( 1 );
     }
-}
-
-void NetLink::Monitor::probe() {
-    if ( route_socket == NULL ) return;
-    if ( debug > 0 ) log_notice( "Monitor: sending probe" );
-    NetLink::RouteSocket &rs = *route_socket;
-    NetLink::GetLink getlink;
-    getlink.send( rs );
 }
 
 /**
@@ -1001,10 +977,10 @@ void NetLink::Monitor::probe() {
  * Tcl_Interp arg to the constructor is for handlers that are registered
  * for network events.  (?? also how to handle ASTs for handlers)
  */
-NetLink::Monitor::Monitor( Tcl_Interp *interp, Network::ListenerInterfaceFactory factory )
-: Thread("netlink.monitor"),
+Network::Monitor::Monitor( Tcl_Interp *interp, Network::ListenerInterfaceFactory factory )
+: Thread("network.monitor"),
+  NetLink::Monitor(),
   interp(interp),
-  route_socket(NULL),
   factory(factory),
   table_warning_reported(false),
   table_error_reported(false)
