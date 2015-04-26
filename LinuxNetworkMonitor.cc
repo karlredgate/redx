@@ -122,33 +122,11 @@ Network::LinuxNetworkMonitor::receive( NetLink::NewLink *message ) {
                 message->name(), message->index(), is_bridge ? "is BRIDGE" : "not BRIDGE",
                 is_physical ? "is PHYSICAL" : "not PHYSICAL" );
 
-// Temporary code to get around problem where NewLink message arrives
-// before /sysfs entries for the bridge are constructed.  Otherwise we
-// won't bring up the interface and the pulse code will not work.
-// Have to check for "net_<N>" names and "biz<N>" names as well due to upgrade.
-
         const char *name = message->name();
 
-        if ( ( ( ( name[0] == 'n' ) &&
-                 ( name[1] == 'e' ) &&
-                 ( name[2] == 't' ) ) ||
-               ( ( name[0] == 'b' ) &&
-                 ( name[1] == 'i' ) &&
-                 ( name[2] == 'z' ) ) ) &&
-             ( !is_bridge ) ) {
-            log_notice( "WARNING: interface %s(%d) does not appear to be a bridge, waiting up to 10 seconds",
+        if ( interface->not_bridge() ) {
+            log_notice( "WARNING: interface %s(%d) still does not appear to be a bridge, not bringing it up",
                     message->name(), message->index() );
-            for (int i = 0; i < 10; i++) {
-                sleep( 1 );
-                if ( interface->is_bridge() ) {
-                    is_bridge = true;
-                    break;
-                }
-            }
-            if ( interface->not_bridge() ) {
-                log_notice( "WARNING: interface %s(%d) still does not appear to be a bridge, not bringing it up",
-                        message->name(), message->index() );
-            }
         }
 
         if ( is_bridge or is_physical ) {
