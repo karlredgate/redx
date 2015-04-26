@@ -78,16 +78,6 @@ namespace Network {
 
         virtual void run();
 
-        /**
-         * The node list is a list of known supernova nodes that have been
-         * seen on any/all interfaces.  Each node that has been seen on a
-         * specific interface is added to the peer list on that interface.
-         */
-        Network::Node* intern_node( UUID & );
-        bool remove_node( UUID * );
-        Network::Node* find_node( UUID * );
-        int each_node( Network::NodeIterator& );
-
         virtual void receive( NetLink::NewLink* );
         virtual void receive( NetLink::DelLink* );
         virtual void receive( NetLink::NewAddress* );
