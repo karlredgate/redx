@@ -81,22 +81,6 @@ Network::LinuxNetworkMonitor::LinuxNetworkMonitor( Tcl_Interp *interp, Network::
 Network::LinuxNetworkMonitor::~LinuxNetworkMonitor() {
 }
 
-/**
- * Used to iterate through the node list and clear the partner
- * bit in all entries.
- */
-class ClearNodePartner : public Network::NodeIterator {
-public:
-    ClearNodePartner() {}
-    virtual ~ClearNodePartner() {}
-    virtual int operator() ( Network::Node& node ) {
-        if ( node.not_partner() ) return 0;
-        log_notice( "clear partner [%s]", node.uuid().to_s() );
-        node.clear_partner();
-        return 1;
-    }
-};
-
 /** When a NewLink message is received, create/update interface object.
  *
  * 
@@ -564,53 +548,6 @@ Network::LinuxNetworkMonitor::bring_up( Network::Interface *interface ) {
     interface->create_sockets();
     Network::ListenerInterface *listener = factory( interp, this, interface );
     listener->thread()->start();
-}
-
-/**
- */
-void
-Network::LinuxNetworkMonitor::clear_partners() {
-    ClearNodePartner callback;
-    int partner_count = each_node( callback );
-    if ( partner_count > 0 ) {
-        log_notice( "cleared %d partners", partner_count );
-    }
-}
-
-/**
- * This is called when netmgr starts.  It simply loads the previous saved
- * value of the partner node id and creates an entry in the node table
- * marked as a partner.  This value was written the last time netmgr
- * discovered a partner node on priv0.
- */
-void
-Network::LinuxNetworkMonitor::load_cache() {
-    char buffer[80];
-    FILE *f = fopen( "partner-cache", "r" );
-
-    if ( f == NULL ) {
-        log_notice( "partner cache not present" );
-        return;
-    }
-
-    fscanf( f, "%s\n", buffer );
-    fclose( f );
-
-    log_notice( "loaded partner as [%s]", buffer );
-
-    /*
-     * This should not be necessary - when netmgr starts it should
-     * not have any partner node table entries.
-     */
-    ClearNodePartner callback;
-    int partner_count = each_node( callback );
-    if ( partner_count > 0 ) {
-        log_notice( "cleared %d partners", partner_count );
-    }
-
-    UUID uuid(buffer);
-    Network::Node *node = intern_node( uuid );
-    node->make_partner();
 }
 
 /**
