@@ -99,7 +99,7 @@ namespace Network {
         void load_cache();
         void save_cache();
 
-        void bring_up( Network::Interface * );
+        virtual void bring_up( Network::Interface * );
         virtual void capture( Network::Interface * );
 
     private:

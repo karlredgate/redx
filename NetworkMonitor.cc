@@ -126,6 +126,14 @@ Network::NetworkMonitor::capture( Network::Interface *interface ) {
     exit( 1 );
 }
 
+/**
+ */
+void
+Network::NetworkMonitor::bring_up( Network::Interface *interface ) {
+    fprintf( stderr, "UNIMPLEMENTED bring_up\n" );
+    exit( 1 );
+}
+
 /** Iterate and call a callback for each Network::Interface.
  */
 int
