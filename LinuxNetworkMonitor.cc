@@ -77,7 +77,7 @@ public:
  * 
  */
 void
-Network::Monitor::receive( NetLink::NewLink *message ) {
+Network::LinuxNetworkMonitor::receive( NetLink::NewLink *message ) {
     bool link_requires_repair = false;
     Network::Interface *interface = interfaces[ message->index() ];
 
@@ -239,7 +239,7 @@ Network::Monitor::receive( NetLink::NewLink *message ) {
 
 /**
  */
-void Network::Monitor::receive( NetLink::DelLink *message ) {
+void Network::LinuxNetworkMonitor::receive( NetLink::DelLink *message ) {
 
     if ( message->index() == 0 ) {
         log_warn( "received a DelLink message for inteface index 0 (INVALID)" );
@@ -322,29 +322,8 @@ void Network::Monitor::receive( NetLink::DelLink *message ) {
 
 /**
  */
-void NetLink::Monitor::receive( NetLink::NewRoute *message ) {
-    if ( debug > 1 ) {
-        log_info( "NetLink::Monitor => process NewRoute -->  scope %d, family %d\n",
-                message->scope(),
-                message->family()
-        );
-    }
-}
-
-/**
- */
-void NetLink::Monitor::receive( NetLink::DelRoute *message ) {
-    if ( debug > 1 ) {
-        log_info( "NetLink::Monitor => process DelRoute -->  scope %d, family %d\n",
-                message->scope(),
-                message->family()
-        );
-    }
-}
-
-/**
- */
-void NetLink::Monitor::receive( NetLink::NewAddress *message ) {
+void
+Network::LinuxNetworkMonitor::receive( NetLink::NewAddress *message ) {
 
     Network::Interface *interface = interfaces[ message->index() ];
     if ( interface == NULL ) {
@@ -382,7 +361,8 @@ void NetLink::Monitor::receive( NetLink::NewAddress *message ) {
 
 /**
  */
-void NetLink::Monitor::receive( NetLink::DelAddress *message ) {
+void
+Network::LinuxNetworkMonitor::receive( NetLink::DelAddress *message ) {
 
     Network::Interface *interface = interfaces[ message->index() ];
     if ( interface == NULL ) {
@@ -414,40 +394,6 @@ void NetLink::Monitor::receive( NetLink::DelAddress *message ) {
     }
 }
 
-/**
- */
-void NetLink::Monitor::receive( NetLink::NewNeighbor *message ) {
-    if ( debug > 1 ) {
-        log_info( "NetLink::Monitor => process NewNeighbor \n" );
-    }
-}
-
-/**
- */
-void NetLink::Monitor::receive( NetLink::DelNeighbor *message ) {
-    if ( debug > 1 ) {
-        log_info( "NetLink::Monitor => process DelNeighbor\n");
-    }
-}
-
-/**
- */
-void NetLink::Monitor::receive( NetLink::RouteMessage *message ) {
-    if ( debug > 1 ) {
-        log_info( "NetLink::Monitor unknown RouteMessage (%d) -- skipping\n", message->type_code() );
-    }
-}
-
-/**
- * \todo should have some internal state that tells us the last message
- * we received was an error, and what the error was.
- */
-void NetLink::Monitor::receive( NetLink::RouteError *message ) {
-    if ( debug > 1 ) {
-        log_info( "NetLink::Monitor RouteError %d\n", message->error() );
-    }
-}
-
 /** Send a packet to each interface.
  *
  * The interface code will prune which interfaces are valid to send to
@@ -457,7 +403,8 @@ void NetLink::Monitor::receive( NetLink::RouteError *message ) {
  * See Network::Interface::sendto() method (in Interface.cc) for description
  * of how this is done.
  */
-int NetLink::Monitor::sendto( void *message, size_t length, int flags, const struct sockaddr_in6 *address) {
+int
+Network::LinuxNetworkMonitor::sendto( void *message, size_t length, int flags, const struct sockaddr_in6 *address) {
     std::map<int, Network::Interface *>::const_iterator iter = interfaces.begin();
     while ( iter != interfaces.end() ) {
         Network::Interface *interface = iter->second;
@@ -481,7 +428,8 @@ int NetLink::Monitor::sendto( void *message, size_t length, int flags, const str
  *
  * See the Interface.cc advertise code for how this is done.
  */
-int NetLink::Monitor::advertise() {
+int
+Network::LinuxNetworkMonitor::advertise() {
     std::map<int, Network::Interface *>::const_iterator iter = interfaces.begin();
     while ( iter != interfaces.end() ) {
         Network::Interface *interface = iter->second;
@@ -494,7 +442,8 @@ int NetLink::Monitor::advertise() {
 
 /** Iterate and call a callback for each Network::Interface.
  */
-int NetLink::Monitor::each_interface( Network::InterfaceIterator& callback ) {
+int
+Network::LinuxNetworkMonitor::each_interface( Network::InterfaceIterator& callback ) {
     int result = 0;
 
     std::map<int, Network::Interface *>::const_iterator iter = interfaces.begin();
@@ -509,7 +458,8 @@ int NetLink::Monitor::each_interface( Network::InterfaceIterator& callback ) {
 
 /** Iterate and call a callback for each Node.
  */
-int NetLink::Monitor::each_node( NodeIterator& callback ) {
+int
+Network::LinuxNetworkMonitor::each_node( NodeIterator& callback ) {
     int result = 0;
 
     pthread_mutex_lock( &node_table_lock );
@@ -527,7 +477,7 @@ int NetLink::Monitor::each_node( NodeIterator& callback ) {
  *  has been captured in a Bridge.
  */
 Network::Interface *
-NetLink::Monitor::find_bridge_interface( Network::Interface *interface ) {
+Network::LinuxNetworkMonitor::find_bridge_interface( Network::Interface *interface ) {
     if ( interface->not_physical() ) return NULL;
     if ( interface->not_captured() ) return NULL;
 
@@ -561,7 +511,8 @@ NetLink::Monitor::find_bridge_interface( Network::Interface *interface ) {
 
 /** Persist the current interface config.
  */
-void NetLink::Monitor::persist_interface_configuration() {
+void
+Network::LinuxNetworkMonitor::persist_interface_configuration() {
     log_notice( "persisting the change in interface configuration" );
     FILE *f = fopen( "/etc/udev/rules.d/.tmp", "w" );
     std::map<int, Network::Interface *>::const_iterator iter = interfaces.begin();
@@ -589,7 +540,8 @@ void NetLink::Monitor::persist_interface_configuration() {
  * The number is simply cloned from the backing interface to
  * the bridge name.
  */
-void NetLink::Monitor::capture( Network::Interface *interface ) {
+void
+Network::LinuxNetworkMonitor::capture( Network::Interface *interface ) {
     if ( interface->has_fault_injected() ) {
         log_notice( "%s(%d) fault injected, not capturing in bridge", interface->name(), interface->index() );
         return;
@@ -630,7 +582,8 @@ void NetLink::Monitor::capture( Network::Interface *interface ) {
 /** Bring up link and addresses for this interface
  *
  */
-void NetLink::Monitor::bring_up( Network::Interface *interface ) {
+void
+Network::LinuxNetworkMonitor::bring_up( Network::Interface *interface ) {
     if ( debug > 0 ) log_notice( "bring up '%s'", interface->name() );
 
     if ( interface->has_fault_injected() ) {
@@ -649,7 +602,7 @@ void NetLink::Monitor::bring_up( Network::Interface *interface ) {
  *
  */
 Network::Node*
-NetLink::Monitor::intern_node( UUID& uuid ) {
+NetLink::LinuxNetworkMonitor::intern_node( UUID& uuid ) {
     int in_use_count = 0;
     Network::Node *result = NULL;
     Network::Node *available = NULL;
@@ -702,7 +655,7 @@ NetLink::Monitor::intern_node( UUID& uuid ) {
  *
  */
 bool
-NetLink::Monitor::remove_node( UUID *uuid ) {
+NetLink::LinuxNetworkMonitor::remove_node( UUID *uuid ) {
     pthread_mutex_lock( &node_table_lock );
     for ( int i = 0 ; i < NODE_TABLE_SIZE ; ++i ) {
         Network::Node& node = node_table[i];
@@ -719,7 +672,7 @@ NetLink::Monitor::remove_node( UUID *uuid ) {
  *
  */
 Network::Node*
-NetLink::Monitor::find_node( UUID *uuid ) {
+NetLink::LinuxNetworkMonitor::find_node( UUID *uuid ) {
     using namespace Network;
     Node *result = NULL;
 
@@ -740,7 +693,7 @@ NetLink::Monitor::find_node( UUID *uuid ) {
  * priv0 is down and we cannot discover the node id dynamically.
  */
 void
-NetLink::Monitor::save_cache() {
+NetLink::LinuxNetworkMonitor::save_cache() {
     FILE *f = fopen( "partner-cache", "w" );
     if ( f == NULL ) {
         log_notice( "could not save partner cache" );
@@ -772,7 +725,7 @@ NetLink::Monitor::save_cache() {
 /**
  */
 void
-NetLink::Monitor::clear_partners() {
+NetLink::LinuxNetworkMonitor::clear_partners() {
     ClearNodePartner callback;
     int partner_count = each_node( callback );
     if ( partner_count > 0 ) {
@@ -787,7 +740,7 @@ NetLink::Monitor::clear_partners() {
  * discovered a partner node on priv0.
  */
 void
-NetLink::Monitor::load_cache() {
+NetLink::LinuxNetworkMonitor::load_cache() {
     char buffer[80];
     FILE *f = fopen( "partner-cache", "r" );
 
@@ -904,7 +857,7 @@ public:
  * node0.ip6.ibiz0    fe80::XXXX
  */
 void
-NetLink::Monitor::update_hosts() {
+NetLink::LinuxNetworkMonitor::update_hosts() {
     if ( mkfile(const_cast<char*>("hosts.tmp"), HOST_TABLE_SIZE) == 0 ) {
         log_err( "could not create the tmp hosts table" );
         return;
@@ -956,7 +909,7 @@ NetLink::Monitor::update_hosts() {
  * ZeroConf specific interfaces
  */
 void
-Network::Monitor::run() {
+Network::LinuxNetworkMonitor::run() {
     load_cache();
     probe();
 
@@ -980,7 +933,7 @@ Network::Monitor::run() {
  * Tcl_Interp arg to the constructor is for handlers that are registered
  * for network events.  (?? also how to handle ASTs for handlers)
  */
-Network::Monitor::Monitor( Tcl_Interp *interp, Network::ListenerInterfaceFactory factory )
+Network::LinuxNetworkMonitor::LinuxNetworkMonitor( Tcl_Interp *interp, Network::ListenerInterfaceFactory factory )
 : Thread("network.monitor"),
   NetLink::Monitor(),
   interp(interp),
@@ -1002,6 +955,11 @@ Network::Monitor::Monitor( Tcl_Interp *interp, Network::ListenerInterfaceFactory
     }
 
     if ( debug > 0 ) log_err( "node table is at %p (%zu)", node_table, size );
+}
+
+/**
+ */
+Network::LinuxNetworkMonitor::~LinuxNetworkMonitor() {
 }
 
 /* vim: set autoindent expandtab sw=4 : */

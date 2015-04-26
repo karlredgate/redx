@@ -93,7 +93,6 @@ namespace Network {
     class Monitor : public Thread {
     private:
         Tcl_Interp *interp;
-        NetLink::RouteSocket *route_socket;
         ListenerInterfaceFactory factory;
         std::map <int, Interface*> interfaces;
 
