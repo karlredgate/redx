@@ -100,7 +100,7 @@ namespace Network {
         void save_cache();
 
         void bring_up( Network::Interface * );
-        void capture( Network::Interface * );
+        virtual void capture( Network::Interface * );
 
     private:
         ListenerInterfaceFactory factory;

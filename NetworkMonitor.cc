@@ -118,6 +118,14 @@ Network::Monitor::advertise() {
     return 0;
 }
 
+/**
+ */
+void
+Network::NetworkMonitor::capture( Network::Interface *interface ) {
+    fprintf( stderr, "UNIMPLEMENTED capture\n" );
+    exit( 1 );
+}
+
 /** Iterate and call a callback for each Network::Interface.
  */
 int

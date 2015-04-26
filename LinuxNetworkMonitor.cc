@@ -52,6 +52,7 @@
 #include "NetLink.h"
 #include "Neighbor.h"
 #include "Interface.h"
+#include "Bridge.h"
 #include "NetworkMonitor.h"
 #include "NetLinkMonitor.h"
 #include "LinuxNetworkMonitor.h"
@@ -467,6 +468,10 @@ Network::LinuxNetworkMonitor::persist_interface_configuration() {
  * Bridges are numbered based on the backing ibizN number.
  * The number is simply cloned from the backing interface to
  * the bridge name.
+ *
+ * TODO
+ * This is bogus - it assumes ibiz and biz - need to remove
+ * maybe change so there is a second arg for the bridge? or bridge name
  */
 void
 Network::LinuxNetworkMonitor::capture( Network::Interface *interface ) {

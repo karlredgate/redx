@@ -86,6 +86,7 @@ namespace Network {
         virtual void receive( NetLink::DelAddress* );
 
         void update_hosts();
+        virtual void capture( Network::Interface * );
     };
 
 }
