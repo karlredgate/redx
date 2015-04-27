@@ -63,10 +63,10 @@ class ClearNodePartner : public Network::NodeIterator {
 public:
     ClearNodePartner() {}
     virtual ~ClearNodePartner() {}
-    virtual int operator() ( Network::Node& node ) {
-        if ( node.not_partner() ) return 0;
-        log_notice( "clear partner [%s]", node.uuid().to_s() );
-        node.clear_partner();
+    virtual int operator() ( Network::Node * node ) {
+        if ( node->not_partner() ) return 0;
+        log_notice( "clear partner [%s]", node->uuid().to_s() );
+        node->clear_partner();
         return 1;
     }
 };
@@ -120,7 +120,7 @@ Network::Monitor::advertise() {
 /**
  */
 void
-Network::NetworkMonitor::capture( Network::Interface *interface ) {
+Network::Monitor::capture( Network::Interface *interface ) {
     fprintf( stderr, "UNIMPLEMENTED capture\n" );
     abort();
 }
@@ -128,7 +128,7 @@ Network::NetworkMonitor::capture( Network::Interface *interface ) {
 /**
  */
 void
-Network::NetworkMonitor::bring_up( Network::Interface *interface ) {
+Network::Monitor::bring_up( Network::Interface *interface ) {
     fprintf( stderr, "UNIMPLEMENTED bring_up\n" );
     abort();
 }
@@ -136,7 +136,7 @@ Network::NetworkMonitor::bring_up( Network::Interface *interface ) {
 /**
  */
 Network::Interface *
-Network::NetworkMonitor::find_bridge_interface( Network::Interface *interface ) {
+Network::Monitor::find_bridge_interface( Network::Interface *interface ) {
     fprintf( stderr, "UNIMPLEMENTED find_bridge_interface\n" );
     abort();
 }
@@ -167,7 +167,7 @@ Network::Monitor::each_node( NodeIterator& callback ) {
     for ( int i = 0 ; i < NODE_TABLE_SIZE ; ++i ) {
         Network::Node& node = node_table[i];
         if ( node.is_invalid() ) continue;
-        result += callback( node );
+        result += callback( &node );
     }
     pthread_mutex_unlock( &node_table_lock );
 

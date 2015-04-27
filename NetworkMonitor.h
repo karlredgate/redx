@@ -132,6 +132,7 @@ namespace Network {
         int each_node( NodeIterator& );
 
         void update_hosts();
+        void clear_partners();
     };
 
     class Event {
