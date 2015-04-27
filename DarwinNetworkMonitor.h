@@ -72,6 +72,7 @@ namespace Network {
         virtual ~DarwinNetworkMonitor();
 
         virtual void run();
+        virtual void probe();
 
         void update_hosts();
         virtual void capture( Network::Interface * );

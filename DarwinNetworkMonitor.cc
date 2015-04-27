@@ -26,7 +26,7 @@
  *
  */
 
-#include <asm/types.h>
+#include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/mman.h>
 #include <sys/socket.h>
@@ -40,6 +40,8 @@
 #include <string.h>
 #include <glob.h>
 #include <errno.h>
+
+#include <libgen.h> // for basename()
 
 #include <tcl.h>
 #include "tcl_util.h"
@@ -68,8 +70,7 @@ namespace { int debug = 0; }
  * for network events.  (?? also how to handle ASTs for handlers)
  */
 Network::DarwinNetworkMonitor::DarwinNetworkMonitor( Tcl_Interp *interp, Network::ListenerInterfaceFactory factory )
-: Network::Monitor(interp, factory),
-  NetLink::Monitor()
+: Network::Monitor(interp, factory)
 {
 }
 
@@ -134,9 +135,12 @@ Network::DarwinNetworkMonitor::persist_interface_configuration() {
                     mac[0], mac[1], mac[2], mac[3], mac[4], mac[5], interface->name() );
     }
     int fd = fileno(f);
+#if 0
+    // not present in darwin - alternative?
     if ( fdatasync(fd) < 0 ) {
         log_err( "IO error saving persistent device names" );
     }
+#endif
     fclose( f );
     rename( "/etc/udev/rules.d/.tmp", "/etc/udev/rules.d/58-net-rename.rules" );
 }
@@ -340,6 +344,13 @@ Network::DarwinNetworkMonitor::run() {
         process_one_event();
         sleep( 1 );
     }
+}
+
+/**
+ * send message to cause creation events to start
+ */
+void
+Network::DarwinNetworkMonitor::probe() {
 }
 
 /* vim: set autoindent expandtab sw=4 : */
