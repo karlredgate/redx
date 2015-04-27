@@ -20,6 +20,7 @@ OBJS += AppInit.o
 OBJS += Thread.o
 OBJS += SMBIOSStringList.o
 OBJS += UUID.o
+OBJS += Neighbor.o
 OBJS += ICMPv6.o
 OBJS += xuid.o
 OBJS += string_util.o
