@@ -32,10 +32,6 @@
 #include <stdint.h>
 #include <sys/socket.h>
 #include <sys/time.h>
-#include <linux/netlink.h>
-#include <linux/rtnetlink.h>
-#include <linux/if.h>
-#include <linux/netdevice.h>
 #include <netinet/in.h>
 #include <netinet/ip6.h>
 #include <unistd.h>
@@ -46,7 +42,6 @@
 
 #include "UUID.h"
 #include "Thread.h"
-#include "NetLink.h"
 #include "InterfaceIterator.h"
 #include "NodeIterator.h"
 

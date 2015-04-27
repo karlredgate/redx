@@ -26,15 +26,14 @@
  *
  */
 
-#include <asm/types.h>
+#include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/mman.h>
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <sys/wait.h>
 #include <arpa/inet.h>
-#include <linux/netlink.h>
-#include <linux/rtnetlink.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <signal.h>
 #include <fcntl.h>
@@ -52,6 +51,7 @@
 #include "NetworkMonitor.h"
 #include "Neighbor.h"
 #include "Interface.h"
+#include "PlatformCompat.h"
 
 namespace { int debug = 0; }
 
