@@ -340,8 +340,9 @@ Network::DarwinNetworkMonitor::run() {
 
     if ( debug > 0 ) log_notice( "network monitor started" );
     for (;;) {
+        // what should this be for darwin
+        // process_one_event();
         // This should block - we should not need the sleep
-        process_one_event();
         sleep( 1 );
     }
 }
