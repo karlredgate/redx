@@ -49,8 +49,7 @@
 #include "logger.h"
 #include "util.h"
 #include "host_table.h"
-#include "NetLink.h"
-#include "NetLinkMonitor.h"
+#include "NetworkMonitor.h"
 #include "Neighbor.h"
 #include "Interface.h"
 
@@ -179,7 +178,7 @@ Network::Monitor::each_node( NodeIterator& callback ) {
  *
  */
 Network::Node*
-NetLink::Monitor::intern_node( UUID& uuid ) {
+Network::Monitor::intern_node( UUID& uuid ) {
     int in_use_count = 0;
     Network::Node *result = NULL;
     Network::Node *available = NULL;
@@ -232,7 +231,7 @@ NetLink::Monitor::intern_node( UUID& uuid ) {
  *
  */
 bool
-NetLink::Monitor::remove_node( UUID *uuid ) {
+Network::Monitor::remove_node( UUID *uuid ) {
     pthread_mutex_lock( &node_table_lock );
     for ( int i = 0 ; i < NODE_TABLE_SIZE ; ++i ) {
         Network::Node& node = node_table[i];
@@ -249,7 +248,7 @@ NetLink::Monitor::remove_node( UUID *uuid ) {
  *
  */
 Network::Node*
-NetLink::Monitor::find_node( UUID *uuid ) {
+Network::Monitor::find_node( UUID *uuid ) {
     using namespace Network;
     Node *result = NULL;
 
@@ -270,7 +269,7 @@ NetLink::Monitor::find_node( UUID *uuid ) {
  * priv0 is down and we cannot discover the node id dynamically.
  */
 void
-NetLink::Monitor::save_cache() {
+Network::Monitor::save_cache() {
     FILE *f = fopen( "partner-cache", "w" );
     if ( f == NULL ) {
         log_notice( "could not save partner cache" );
@@ -302,7 +301,7 @@ NetLink::Monitor::save_cache() {
 /**
  */
 void
-NetLink::Monitor::clear_partners() {
+Network::Monitor::clear_partners() {
     ClearNodePartner callback;
     int partner_count = each_node( callback );
     if ( partner_count > 0 ) {
@@ -317,7 +316,7 @@ NetLink::Monitor::clear_partners() {
  * discovered a partner node on priv0.
  */
 void
-NetLink::Monitor::load_cache() {
+Network::Monitor::load_cache() {
     char buffer[80];
     FILE *f = fopen( "partner-cache", "r" );
 
@@ -396,11 +395,11 @@ public:
         entry.flags.valid = 1;
         entry.flags.partner = 0;
         entry.node.ordinal = gethostid();
-        entry.flags.is_private = interface.is_private();
-        entry.interface.ordinal = interface.ordinal();
-        interface.lladdr( &entry.primary_address );
+        entry.flags.is_private = 0 /* interface->is_private() */ ;
+        entry.interface.ordinal = interface->ordinal();
+        interface->lladdr( &entry.primary_address );
 
-        unsigned char *mac = interface.mac();
+        unsigned char *mac = interface->mac();
         entry.mac[0] = mac[0];
         entry.mac[1] = mac[1];
         entry.mac[2] = mac[2];
@@ -408,10 +407,10 @@ public:
         entry.mac[4] = mac[4];
         entry.mac[5] = mac[5];
 
-        if ( interface.not_bridge() and interface.not_private() ) {
+        if ( interface->not_bridge() /* and interface->not_private() */ ) {
             return 0;
         }
-        if ( debug > 1 ) log_notice( "write host entry for %s", interface.name() );
+        if ( debug > 1 ) log_notice( "write host entry for %s", interface->name() );
         // populate entry for the interface itself
         ssize_t bytes = write( fd, &entry, sizeof(entry) );
         if ( (size_t)bytes < sizeof(entry) ) {
@@ -420,7 +419,7 @@ public:
 
         // call iterator for each neighbor
         WriteHostsForNeighbors callback(fd);
-        interface.each_neighbor( callback );
+        interface->each_neighbor( callback );
 
         return 0;
     }
@@ -434,7 +433,7 @@ public:
  * node0.ip6.ibiz0    fe80::XXXX
  */
 void
-NetLink::Monitor::update_hosts() {
+Network::Monitor::update_hosts() {
     if ( mkfile(const_cast<char*>("hosts.tmp"), HOST_TABLE_SIZE) == 0 ) {
         log_err( "could not create the tmp hosts table" );
         return;

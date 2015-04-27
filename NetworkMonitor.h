@@ -112,7 +112,7 @@ namespace Network {
 
     public:
         Monitor( Tcl_Interp *, ListenerInterfaceFactory );
-        virtual ~Monitor() {}
+        virtual ~Monitor();
 
         virtual void run();
 
