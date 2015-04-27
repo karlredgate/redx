@@ -45,9 +45,6 @@ namespace ICMPv6 { class Socket; }
  */
 namespace Network {
 
-    class Monitor;
-    class Interface;
-
     class Node {
     private:
         UUID _uuid;
