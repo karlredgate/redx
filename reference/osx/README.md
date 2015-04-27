@@ -12,3 +12,12 @@
 
 Also note the header file
 `/usr/include/mach/mach_host.h`
+
+The `proc_info` system call (`#336`) is used to get at process data.
+
+###
+
+ * [Instruments]( http://en.wikipedia.org/wiki/Instruments_(application) )
+ * [Dashcode]( http://en.wikipedia.org/wiki/Dashcode )
+ * [Shark]( http://en.wikipedia.org/wiki/Apple_Developer_Tools#Shark )
+
