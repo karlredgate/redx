@@ -46,7 +46,7 @@
 #include "tcl_util.h"
 
 #include "logger.h"
-#include "util.h"
+// #include "util.h"
 #include "host_table.h"
 #include "NetworkMonitor.h"
 #include "Neighbor.h"
@@ -389,6 +389,7 @@ public:
         return 0;
     }
 };
+
 /**
  */
 class WriteHostsForInterface : public Network::InterfaceIterator {
@@ -432,6 +433,43 @@ public:
         return 0;
     }
 };
+
+/**
+ */
+static int
+mkfile( char *path, size_t size ) {
+    int result = 0;
+    void *addr;
+    int fd;
+
+    fd = open("/dev/zero", O_RDWR);
+    if ( fd < 0 ) {
+        log_err( "[mkfile] could not map /dev/zero" );
+        return 0;
+    }
+    addr = mmap( 0, size, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0 );
+    close( fd );
+
+    fd = open( path, O_CREAT | O_WRONLY | O_TRUNC, 0644 );
+    for (;;) {
+        if ( fd < 0 ) {
+            log_err( "[mkfile] open failed creating %s", path );
+            break;
+        }
+        ssize_t bytes = write(fd, addr, size);
+        if ( (size_t)bytes == size ) {
+            result = 1;
+        } else {
+            log_err( "write failed creating %s", path );
+        }
+        close( fd );
+        break;
+    }
+
+done:
+    munmap( addr, size );
+    return result;
+}
 
 /** Update hosts file with partner addresses
  *
