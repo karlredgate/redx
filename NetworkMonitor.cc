@@ -141,6 +141,14 @@ Network::Monitor::find_bridge_interface( Network::Interface *interface ) {
     abort();
 }
 
+/**
+ */
+void
+Network::Monitor::run() {
+    fprintf( stderr, "UNIMPLEMENTED run\n" );
+    abort();
+}
+
 /** Iterate and call a callback for each Network::Interface.
  */
 int
