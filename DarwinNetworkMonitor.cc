@@ -292,38 +292,6 @@ public:
         return 0;
     }
 };
-
-/** Update hosts file with partner addresses
- *
- * For each interface, check each neighbor, if it is a partner
- * then add a host file entry for that name/uuid and interface
- *
- * node0.ip6.ibiz0    fe80::XXXX
- */
-void
-Network::DarwinNetworkMonitor::update_hosts() {
-    if ( mkfile(const_cast<char*>("hosts.tmp"), HOST_TABLE_SIZE) == 0 ) {
-        log_err( "could not create the tmp hosts table" );
-        return;
-    }
-
-    int fd = open("hosts.tmp", O_RDWR);
-    if ( fd < 0 ) {
-        if ( debug > 0 ) log_err( "could not open the hosts table for writing" );
-        return;
-    }
-
-    WriteHostsForInterface callback(fd);
-    each_interface( callback );
-
-    fsync( fd );
-    close( fd );
-
-    unlink( "hosts.1" );
-    link( "hosts", "hosts.1" );
-    rename( "hosts.tmp", "hosts" );
-}
-
 
 /**
  * When an event occurs, this needs to trigger some other action.
