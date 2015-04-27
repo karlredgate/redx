@@ -22,6 +22,7 @@ OBJS += SMBIOSStringList.o
 OBJS += UUID.o
 OBJS += Neighbor.o
 OBJS += ICMPv6.o
+OBJS += NetworkMonitor.o
 OBJS += xuid.o
 OBJS += string_util.o
 OBJS += tcl_util.o
