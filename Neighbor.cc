@@ -306,18 +306,4 @@ construct_remote_interface_name( Network::Peer *neighbor, char *name, int size )
     }
 }
 
-/**
- */
-void
-Network::Peer::topology_changed( Network::Monitor *monitor, Network::Interface *interface ) {
-    char node_ordinal = (node() == NULL) ? '?' : ('0' + node()->ordinal());
-    char remote_interface_name[32];
-    construct_remote_interface_name( this, remote_interface_name,
-                                     sizeof(remote_interface_name) );
-    log_notice( "Topology change: node%c:%s seen on %s",
-                        node_ordinal, remote_interface_name, interface->name() );
-
-    _spine_notified = true;
-}
-
 /* vim: set autoindent expandtab sw=4 : */

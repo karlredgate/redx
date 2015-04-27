@@ -95,7 +95,6 @@ namespace Network {
         bool valid;
         bool partner;
         bool _is_private;
-        bool _spine_notified;
     public:
         Peer() {}
         Peer( Node *, struct in6_addr * );
@@ -136,7 +135,6 @@ namespace Network {
 
         bool has_notified_spine() const { return _spine_notified; }
         bool has_not_notified_spine() const { return _spine_notified == false; }
-        void topology_changed( Network::Monitor *, Interface * );
 
         bool reported;
     };
