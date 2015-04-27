@@ -105,7 +105,6 @@ namespace Network {
         void invalidate() {
             valid = false; partner = false; reported = false;
             _node = 0;
-            _spine_notified = false;
         }
         void make_partner() { partner = true; }
         void set_interface( bool, uint8_t );
@@ -132,9 +131,6 @@ namespace Network {
         bool has_address( struct in6_addr * );
         const struct timeval * last_updated()    const { return &neighbor_updated; }
         const struct timeval * last_advertised() const { return &neighbor_advertised; }
-
-        bool has_notified_spine() const { return _spine_notified; }
-        bool has_not_notified_spine() const { return _spine_notified == false; }
 
         bool reported;
     };
