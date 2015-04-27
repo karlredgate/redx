@@ -79,6 +79,7 @@ namespace Network {
         virtual ~LinuxNetworkMonitor();
 
         virtual void run();
+        virtual void probe();
 
         virtual void receive( NetLink::NewLink* );
         virtual void receive( NetLink::DelLink* );
