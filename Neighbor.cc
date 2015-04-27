@@ -283,43 +283,6 @@ Network::Peer::has_address( struct in6_addr *address ) {
 }
 
 /**
- * DEPRECATED
- */
-bool
-Network::Peer::send_topology_event( Network::Interface *interface ) {
-    char node_ordinal = (node() == NULL) ? '?' : ('0' + node()->ordinal());
-    log_notice( "sending event to spine for node%c:%s%d seen on %s",
-                        node_ordinal,
-                        is_private() ? "priv" : "biz", ordinal(),
-                        interface->name() );
-
-    char *event_name = const_cast<char*>("SuperNova::NetTopologyUpdate");
-    pid_t child = fork();
-
-    if ( child < 0 ) {
-        log_err( "failed to send %s event - couldn't fork", event_name );
-        return false;
-    }
-
-    _spine_notified = true;
-    if ( child > 0 ) {
-        int status;
-        waitpid( child, &status, 0);
-        return true;
-    }
-
-    char *argv[] = { const_cast<char*>("genevent"), event_name, 0 };
-    char *envp[] = { 0 };
-    if ( execve("/usr/lib/spine/bin/genevent", argv, envp) < 0 ) {
-        log_err( "failed to send %s event - couldn't execve", event_name );
-        _exit( 0 );
-    }
-
-    // NOT REACHED
-    return true;
-}
-
-/**
  */
 static void
 construct_remote_interface_name( Network::Peer *neighbor, char *name, int size ) {

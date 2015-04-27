@@ -136,7 +136,6 @@ namespace Network {
 
         bool has_notified_spine() const { return _spine_notified; }
         bool has_not_notified_spine() const { return _spine_notified == false; }
-        bool send_topology_event( Interface * );
         void topology_changed( Network::Monitor *, Interface * );
 
         bool reported;
