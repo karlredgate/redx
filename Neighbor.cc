@@ -47,6 +47,7 @@
 #include "logger.h"
 #include "util.h"
 #include "Neighbor.h"
+#include "NodeIterator.h"
 #include "Interface.h"
 
 /*
@@ -317,7 +318,6 @@ Network::Peer::topology_changed( Network::Monitor *monitor, Network::Interface *
                         node_ordinal, remote_interface_name, interface->name() );
 
     _spine_notified = true;
-    monitor->topology_changed();
 }
 
 /* vim: set autoindent expandtab sw=4 : */
