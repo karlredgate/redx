@@ -9,6 +9,8 @@ PLATFORM_OBJS += LinuxInterface.o
 PLATFORM_OBJS += LinuxBridge.o
 PLATFORM_OBJS += LinuxKernelEvent.o
 PLATFORM_OBJS += LinuxNetworkMonitor.o
+PLATFORM_OBJS += NetLink.o
+PLATFORM_OBJS += NetLinkMonitor.o
 PLATFORM_OBJS += TCL_NetLink.o
 
 NetLink.o :: NetLink.h
