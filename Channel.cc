@@ -39,7 +39,7 @@
 #include <syslog.h>
 #include <glob.h>
 
-#include "util.h"
+#include "string_util.h"
 #include "Channel.h"
 #include "Service.h"
 
