@@ -39,10 +39,6 @@
 #include <syslog.h>
 #include <glob.h>
 
-#include <tcl.h>
-#include "TCL_Fixup.h"
-#include <valgrind/memcheck.h>
-
 #include "util.h"
 #include "Channel.h"
 #include "Service.h"
@@ -250,6 +246,7 @@ ChannelClient::receive( char *buffer, int length, time_t time_limit ) {
             return request.error;
         }
 
+#if 0 // where is valgrind on OSX
         /**
          * We only want this error correction when we are not running under
          * valgrind, since valgrind changes the name of the program that is
@@ -259,6 +256,7 @@ ChannelClient::receive( char *buffer, int length, time_t time_limit ) {
         if ( RUNNING_ON_VALGRIND == 0 ) {
             if ( is_alive(service) == false ) return MESSAGE_EXCEPTION;
         }
+#endif
         nanosleep( &delay, NULL );
     } while ( ++elapsed < time_limit );
 
