@@ -22,6 +22,7 @@ OBJS += SMBIOSStringList.o
 OBJS += UUID.o
 OBJS += Neighbor.o
 OBJS += ICMPv6.o
+OBJS += Channel.o
 OBJS += NetworkMonitor.o
 OBJS += xuid.o
 OBJS += string_util.o
@@ -30,6 +31,13 @@ OBJS += traps.o
 OBJS += TCL_Bridge.o
 OBJS += TCL_Interface.o
 OBJS += TCL_ICMPv6.o
+OBJS += TCL_NetworkMonitor.o
+OBJS += TCL_Channel.o
+# OBJS += TCL_SMBIOS.o
+# OBJS += TCL_SharedNetwork.o
+# OBJS += TCL_Thread.o
+# TCL_Hypercall.o
+# TCL_XenStore.o
 OBJS += Interface.o
 OBJS += Bridge.o
 OBJS += UUID_Module.o
