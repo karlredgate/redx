@@ -40,14 +40,17 @@
 #include <glob.h>
 
 #include <tcl.h>
-#include "TCL_Fixup.h"
-#include <valgrind/memcheck.h>
+#include "tcl_util.h"
 
 #include "util.h"
 #include "Channel.h"
 #include "Service.h"
 
-#include "app_init.h"
+#include "AppInit.h"
+
+namespace {
+    int debug = 0;
+}
 
 /**
  */
