@@ -26,15 +26,13 @@
  *
  */
 
-#include <asm/types.h>
+#include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/mman.h>
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <sys/wait.h>
 #include <arpa/inet.h>
-#include <linux/netlink.h>
-#include <linux/rtnetlink.h>
 #include <stdlib.h>
 #include <signal.h>
 #include <fcntl.h>
@@ -48,8 +46,8 @@
 
 #include "logger.h"
 #include "util.h"
-#include "NetLink.h"
 #include "NetworkMonitor.h"
+#include "AppInit.h"
 
 namespace { int debug = 0; }
 
@@ -59,7 +57,7 @@ static int
 Monitor_obj( ClientData data, Tcl_Interp *interp,
              int objc, Tcl_Obj * CONST *objv )
 {
-    NetLink::Monitor *monitor = (NetLink::Monitor *)data;
+    Network::Monitor *monitor = (Network::Monitor *)data;
 
     if ( objc == 1 ) {
         Tcl_SetObjResult( interp, Tcl_NewLongObj((long)(monitor)) );
@@ -117,7 +115,7 @@ Monitor_obj( ClientData data, Tcl_Interp *interp,
  */
 static void
 Monitor_delete( ClientData data ) {
-    NetLink::Monitor *message = (NetLink::Monitor *)data;
+    Network::Monitor *message = (Network::Monitor *)data;
     delete message;
 }
 
@@ -140,7 +138,7 @@ Monitor_cmd( ClientData data, Tcl_Interp *interp,
         return TCL_ERROR;
     }
     char *name = Tcl_GetStringFromObj( objv[1], NULL );
-    NetLink::Monitor *object = new NetLink::Monitor( interp, factory, NULL );
+    Network::Monitor *object = new Network::Monitor( interp, factory );
     Tcl_CreateObjCommand( interp, name, Monitor_obj, (ClientData)object, Monitor_delete );
     Svc_SetResult( interp, name, TCL_VOLATILE );
     return TCL_OK;
@@ -154,6 +152,7 @@ static int
 Probe_cmd( ClientData data, Tcl_Interp *interp,
              int objc, Tcl_Obj * CONST *objv )
 {
+#if 0 // Commenting out for now - netlink code should be external to this func
     // Yes, this is intentional, it may get removed later
     pid_t pid  __attribute((unused))  = getpid();
 
@@ -284,16 +283,13 @@ finish:
     // and for each object create a command
     // the bridge commands should remain in the Network namespace
     //    -- maybe no -- create in whichever namespace you need
-
+#endif
     return TCL_OK;
 }
 
 /**
- * need some way to find these objects...
- * use TCL ..hmmm
  */
-bool NetLinkMonitor_Module( Tcl_Interp *interp ) {
-
+bool NetworkMonitor_Module( Tcl_Interp *interp ) {
     Tcl_Command command;
 
     Tcl_Namespace *ns = Tcl_CreateNamespace(interp, "Network", (ClientData)0, NULL);
@@ -320,5 +316,7 @@ bool NetLinkMonitor_Module( Tcl_Interp *interp ) {
 
     return true;
 }
+
+app_init( NetworkMonitor_Module );
 
 /* vim: set autoindent expandtab sw=4 : */
