@@ -28,10 +28,6 @@
 
 #include <stdint.h>
 #include <sys/socket.h>
-#if 0
-### IS this really necessary for linux - use net/
-#include <linux/if_arp.h>  // for ARPHRD_*
-#endif
 #include <net/if_arp.h>  // for ARPHRD_*
 #include <unistd.h>
 #include <stdlib.h>
@@ -316,66 +312,6 @@ ICMPv6::EchoRequest::Factory( struct icmp6_hdr *hdr ) {
 
 /**
  */
-static int
-EchoRequest_obj( ClientData data, Tcl_Interp *interp,
-             int objc, Tcl_Obj * CONST *objv )
-{
-    using namespace ICMPv6;
-    EchoRequest *object = (EchoRequest *)data;
-
-    if ( objc == 1 ) {
-        Tcl_SetObjResult( interp, Tcl_NewLongObj((long)(object)) );
-        return TCL_OK;
-    }
-
-    char *command = Tcl_GetStringFromObj( objv[1], NULL );
-    if ( Tcl_StringMatch(command, "type") ) {
-      Tcl_SetResult( interp, (char *)"ICMPv6::EchoRequest", TCL_STATIC );
-        return TCL_OK;
-    }
-
-    if ( Tcl_StringMatch(command, "send") ) {
-      Tcl_SetResult( interp, (char *)"send not implemented", TCL_STATIC );
-        return TCL_ERROR;
-
-        Tcl_ResetResult( interp );
-        return TCL_OK;
-    }
-    Tcl_SetResult( interp, (char *)"Unknown command for EchoRequest object", TCL_STATIC );
-    return TCL_ERROR;
-}
-
-/**
- */
-static void
-EchoRequest_delete( ClientData data ) {
-    using namespace ICMPv6;
-    EchoRequest *message = (EchoRequest *)data;
-    delete message;
-}
-
-/**
- */
-static int
-EchoRequest_cmd( ClientData data, Tcl_Interp *interp,
-             int objc, Tcl_Obj * CONST *objv )
-{
-    if ( objc != 2 ) {
-        Tcl_ResetResult( interp );
-        Tcl_WrongNumArgs( interp, 1, objv, "name" );
-        return TCL_ERROR; 
-    }
-
-    char *name = Tcl_GetStringFromObj( objv[1], NULL );
-    using namespace ICMPv6;
-    EchoRequest *object = new EchoRequest();
-    Tcl_CreateObjCommand( interp, name, EchoRequest_obj, (ClientData)object, EchoRequest_delete );
-    Tcl_SetResult( interp, name, TCL_VOLATILE );
-    return TCL_OK;
-}
-
-/**
- */
 ICMPv6::EchoReply::EchoReply() : PDU(ICMP6_ECHO_REPLY) {
 }
 
@@ -407,66 +343,6 @@ ICMPv6::EchoReply::Factory( struct icmp6_hdr *hdr ) {
     PDU *message = new EchoReply();
     // populate with hdr info... and RTAs
     return message;
-}
-
-/**
- */
-static int
-EchoReply_obj( ClientData data, Tcl_Interp *interp,
-             int objc, Tcl_Obj * CONST *objv )
-{
-    using namespace ICMPv6;
-    EchoReply *object = (EchoReply *)data;
-
-    if ( objc == 1 ) {
-        Tcl_SetObjResult( interp, Tcl_NewLongObj((long)(object)) );
-        return TCL_OK;
-    }
-
-    char *command = Tcl_GetStringFromObj( objv[1], NULL );
-    if ( Tcl_StringMatch(command, "type") ) {
-      Tcl_SetResult( interp, (char *)"ICMPv6::EchoReply", TCL_STATIC );
-        return TCL_OK;
-    }
-
-    if ( Tcl_StringMatch(command, "send") ) {
-      Tcl_SetResult( interp, (char *)"send not implemented", TCL_STATIC );
-        return TCL_ERROR;
-
-        Tcl_ResetResult( interp );
-        return TCL_OK;
-    }
-    Tcl_SetResult( interp, (char *)"Unknown command for EchoReply object", TCL_STATIC );
-    return TCL_ERROR;
-}
-
-/**
- */
-static void
-EchoReply_delete( ClientData data ) {
-    using namespace ICMPv6;
-    EchoReply *message = (EchoReply *)data;
-    delete message;
-}
-
-/**
- */
-static int
-EchoReply_cmd( ClientData data, Tcl_Interp *interp,
-             int objc, Tcl_Obj * CONST *objv )
-{
-    if ( objc != 2 ) {
-        Tcl_ResetResult( interp );
-        Tcl_WrongNumArgs( interp, 1, objv, "name" );
-        return TCL_ERROR; 
-    }
-
-    char *name = Tcl_GetStringFromObj( objv[1], NULL );
-    using namespace ICMPv6;
-    EchoReply *object = new EchoReply();
-    Tcl_CreateObjCommand( interp, name, EchoReply_obj, (ClientData)object, EchoReply_delete );
-    Tcl_SetResult( interp, name, TCL_VOLATILE );
-    return TCL_OK;
 }
 
 /**
@@ -515,66 +391,6 @@ ICMPv6::NeighborSolicitation::Factory( struct icmp6_hdr *hdr ) {
     PDU *message = new NeighborSolicitation( hdr );
     // populate with hdr info... and RTAs
     return message;
-}
-
-/**
- */
-static int
-NeighborSolicitation_obj( ClientData data, Tcl_Interp *interp,
-             int objc, Tcl_Obj * CONST *objv )
-{
-    using namespace ICMPv6;
-    NeighborSolicitation *object = (NeighborSolicitation *)data;
-
-    if ( objc == 1 ) {
-        Tcl_SetObjResult( interp, Tcl_NewLongObj((long)(object)) );
-        return TCL_OK;
-    }
-
-    char *command = Tcl_GetStringFromObj( objv[1], NULL );
-    if ( Tcl_StringMatch(command, "type") ) {
-        Tcl_SetResult( interp, (char *)"ICMPv6::NeighborSolicitation", TCL_STATIC );
-        return TCL_OK;
-    }
-
-    if ( Tcl_StringMatch(command, "send") ) {
-        Tcl_SetResult( interp, (char *)"send not implemented", TCL_STATIC );
-        return TCL_ERROR;
-
-        Tcl_ResetResult( interp );
-        return TCL_OK;
-    }
-    Tcl_SetResult( interp, (char *)"Unknown command for NeighborSolicitation object", TCL_STATIC );
-    return TCL_ERROR;
-}
-
-/**
- */
-static void
-NeighborSolicitation_delete( ClientData data ) {
-    using namespace ICMPv6;
-    NeighborSolicitation *message = (NeighborSolicitation *)data;
-    delete message;
-}
-
-/**
- */
-static int
-NeighborSolicitation_cmd( ClientData data, Tcl_Interp *interp,
-             int objc, Tcl_Obj * CONST *objv )
-{
-    if ( objc != 2 ) {
-        Tcl_ResetResult( interp );
-        Tcl_WrongNumArgs( interp, 1, objv, "name" );
-        return TCL_ERROR; 
-    }
-
-    char *name = Tcl_GetStringFromObj( objv[1], NULL );
-    using namespace ICMPv6;
-    NeighborSolicitation *object = new NeighborSolicitation();
-    Tcl_CreateObjCommand( interp, name, NeighborSolicitation_obj, (ClientData)object, NeighborSolicitation_delete );
-    Tcl_SetResult( interp, name, TCL_VOLATILE );
-    return TCL_OK;
 }
 
 /**
@@ -639,181 +455,12 @@ ICMPv6::NeighborAdvertisement::Factory( struct icmp6_hdr *hdr ) {
     // populate with hdr info... and RTAs
     return message;
 }
-
-/**
- */
-static int
-NeighborAdvertisement_obj( ClientData data, Tcl_Interp *interp,
-             int objc, Tcl_Obj * CONST *objv )
-{
-    using namespace ICMPv6;
-    NeighborAdvertisement *object = (NeighborAdvertisement *)data;
-
-    if ( objc == 1 ) {
-        Tcl_SetObjResult( interp, Tcl_NewLongObj((long)(object)) );
-        return TCL_OK;
-    }
-
-    char *command = Tcl_GetStringFromObj( objv[1], NULL );
-    if ( Tcl_StringMatch(command, "type") ) {
-        Tcl_SetResult( interp, (char *)"ICMPv6::NeighborAdvertisement", TCL_STATIC );
-        return TCL_OK;
-    }
-
-    if ( Tcl_StringMatch(command, "send") ) {
-        Tcl_SetResult( interp, (char *)"send not implemented", TCL_STATIC );
-        return TCL_ERROR;
-
-        Tcl_ResetResult( interp );
-        return TCL_OK;
-    }
-
-    if ( Tcl_StringMatch(command, "target") ) {
-        if ( objc == 2 ) {
-            // return target
-            char s[80];
-            const char *target = inet_ntop(AF_INET6, object->target(), s, sizeof s);
-            Tcl_SetResult( interp, (char *)target, TCL_VOLATILE );
-            return TCL_OK;
-        }
-        if ( objc > 3 ) {
-            Tcl_ResetResult( interp );
-            Tcl_WrongNumArgs( interp, 1, objv, "target [address]" );
-            return TCL_ERROR; 
-        }
-        char *address_string = Tcl_GetStringFromObj( objv[2], NULL );
-        struct in6_addr address;
-        inet_pton( AF_INET6, address_string, &address );
-        object->target( &address );
-        Tcl_SetObjResult( interp, objv[2] );
-        return TCL_OK;
-    }
-
-    Tcl_SetResult( interp, (char *)"Unknown command for NeighborAdvertisement object", TCL_STATIC );
-    return TCL_ERROR;
-}
-
-/**
- */
-static void
-NeighborAdvertisement_delete( ClientData data ) {
-    using namespace ICMPv6;
-    NeighborAdvertisement *message = (NeighborAdvertisement *)data;
-    delete message;
-}
-
-/**
- */
-static int
-NeighborAdvertisement_cmd( ClientData data, Tcl_Interp *interp,
-             int objc, Tcl_Obj * CONST *objv )
-{
-    if ( objc != 3 ) {
-        Tcl_ResetResult( interp );
-        Tcl_WrongNumArgs( interp, 1, objv, "name address" );
-        return TCL_ERROR; 
-    }
-
-    char *name = Tcl_GetStringFromObj( objv[1], NULL );
-    char *address_string = Tcl_GetStringFromObj( objv[2], NULL );
-    struct in6_addr address;
-    inet_pton( AF_INET6, address_string, &address );
-
-    /// \todo add MAC address to TCL command for NA msg creation
-    unsigned char mac[6];
-
-    using namespace ICMPv6;
-    NeighborAdvertisement *object = new NeighborAdvertisement( &address, mac );
-    Tcl_CreateObjCommand( interp, name, NeighborAdvertisement_obj, (ClientData)object, NeighborAdvertisement_delete );
-    Tcl_SetResult( interp, name, TCL_VOLATILE );
-    return TCL_OK;
-}
-
-/**
- * \todo add a "bind" sommand to the socket -- accepting either an int or a string
- */
-static int
-Socket_obj( ClientData data, Tcl_Interp *interp,
-             int objc, Tcl_Obj * CONST *objv )
-{
-    using namespace ICMPv6;
-    Socket *socket = (Socket *)data;
-
-    if ( objc == 1 ) {
-        Tcl_SetObjResult( interp, Tcl_NewLongObj((long)(socket)) );
-        return TCL_OK;
-    }
-    char *command = Tcl_GetStringFromObj( objv[1], NULL );
-    if ( Tcl_StringMatch(command, "type") ) {
-        Tcl_SetResult( interp, (char *)"ICMPv6::Socket", TCL_STATIC );
-        return TCL_OK;
-    }
-
-    /**
-     * Arguement is a message
-     */
-    if ( Tcl_StringMatch(command, "send") ) {
-        if ( objc != 3 ) {
-            Tcl_ResetResult( interp );
-            Tcl_WrongNumArgs( interp, 1, objv, "send message recipient" );
-            return TCL_ERROR;
-        }
-
-        PDU *pdu;
-        void *p = (void *)&(pdu);
-        if ( Tcl_GetLongFromObj(interp,objv[2],(long*)p) != TCL_OK ) {
-            return TCL_ERROR;
-        }
-
-        char *address_string = Tcl_GetStringFromObj( objv[3], NULL );
-        struct in6_addr address;
-        inet_pton( AF_INET6, address_string, &address );
-
-        pdu->send( *socket, &address );
-        Tcl_ResetResult( interp );
-        return TCL_OK;
-    }
-    Tcl_SetResult( interp, (char *)"Unknown command for Socket object", TCL_STATIC );
-    return TCL_ERROR;
-}
-
-/**
- */
-static void
-Socket_delete( ClientData data ) {
-    using namespace ICMPv6;
-    Socket *socket = (Socket *)data;
-    delete socket;
-}
-
-/**
- */
-static int
-Socket_cmd( ClientData data, Tcl_Interp *interp,
-             int objc, Tcl_Obj * CONST *objv )
-{
-    if ( objc != 2 ) {
-        Tcl_ResetResult( interp );
-        Tcl_WrongNumArgs( interp, 1, objv, "name" );
-        return TCL_ERROR;
-    }
-
-    char *name = Tcl_GetStringFromObj( objv[1], NULL );
-
-    using namespace ICMPv6;
-    Socket *object = new Socket();
-    // should have a delete proc also
-    Tcl_CreateObjCommand( interp, name, Socket_obj, (ClientData)object, Socket_delete );
-    Tcl_SetResult( interp, name, TCL_VOLATILE );
-    return TCL_OK;
-}
 
 /**
  */
-static bool
-ICMPv6_Module( Tcl_Interp *interp ) {
-    Tcl_Command command;
-
+static void
+__attribute__ ((constructor))
+init_factories( Tcl_Interp *interp ) {
     for ( int i = 0 ; i < MAX_FACTORY ; i++ ) {
         // This should be a generic route factory, not a simple netlink message
         factories[i] = ICMPv6::PDU::Factory;
@@ -823,50 +470,6 @@ ICMPv6_Module( Tcl_Interp *interp ) {
     factories[ICMP6_ECHO_REPLY]    = ICMPv6::EchoReply::Factory;
     factories[ND_NEIGHBOR_SOLICIT] = ICMPv6::NeighborSolicitation::Factory;
     factories[ND_NEIGHBOR_ADVERT]  = ICMPv6::NeighborAdvertisement::Factory;
-
-    Tcl_Namespace *ns = Tcl_CreateNamespace(interp, "ICMPv6", (ClientData)0, NULL);
-    if ( ns == NULL ) {
-        return false;
-    }
-
-    if ( Tcl_LinkVar(interp, "ICMPv6::debug", (char *)&debug, TCL_LINK_INT) != TCL_OK ) {
-        log_err( "failed to link ICMPv6::debug" );
-        exit( 1 );
-    }
-
-    command = Tcl_CreateObjCommand(interp, "ICMPv6::EchoRequest", EchoRequest_cmd, (ClientData)0, NULL);
-    if ( command == NULL ) {
-        // logger ?? want to report TCL Error
-        return false;
-    }
-
-    command = Tcl_CreateObjCommand(interp, "ICMPv6::EchoReply", EchoReply_cmd, (ClientData)0, NULL);
-    if ( command == NULL ) {
-        // logger ?? want to report TCL Error
-        return false;
-    }
-
-    command = Tcl_CreateObjCommand(interp, "ICMPv6::NeighborSolicitation", NeighborSolicitation_cmd, (ClientData)0, NULL);
-    if ( command == NULL ) {
-        // logger ?? want to report TCL Error
-        return false;
-    }
-
-    command = Tcl_CreateObjCommand(interp, "ICMPv6::NeighborAdvertisement", NeighborAdvertisement_cmd, (ClientData)0, NULL);
-    if ( command == NULL ) {
-        // logger ?? want to report TCL Error
-        return false;
-    }
-
-    command = Tcl_CreateObjCommand(interp, "ICMPv6::Socket", Socket_cmd, (ClientData)0, NULL);
-    if ( command == NULL ) {
-        // logger ?? want to report TCL Error
-        return false;
-    }
-
-    return true;
 }
-
-app_init( ICMPv6_Module );
 
 /* vim: set autoindent expandtab sw=4 : */
