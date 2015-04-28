@@ -29,6 +29,7 @@ OBJS += tcl_util.o
 OBJS += traps.o
 OBJS += TCL_Bridge.o
 OBJS += TCL_Interface.o
+OBJS += TCL_ICMPv6.o
 OBJS += Interface.o
 OBJS += Bridge.o
 OBJS += UUID_Module.o
