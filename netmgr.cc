@@ -339,7 +339,7 @@ public:
     virtual ~DumpNode() {}
 
     // called for each node
-    virtual int operator() ( Network::Node& node ) {
+    virtual int operator () ( Network::Node& node ) {
 
         log_notice( "Node %s ordinal %d %s", node.uuid().to_s(),
                 node.ordinal(), node.is_partner() ? "[partner]" : "" );
@@ -353,7 +353,7 @@ public:
     virtual ~DumpInterface() {}
 
     // called for each interface known to netmgr
-    virtual int operator() ( Network::Interface& interface ) {
+    virtual int operator () ( Network::Interface& interface ) {
 
         unsigned char *mac = interface.mac();
 
@@ -377,7 +377,7 @@ public:
     virtual ~DumpNeighbor() {}
 
     // called for each neighbor on interface
-    virtual int operator() ( Network::Peer& neighbor ) {
+    virtual int operator () ( Network::Peer& neighbor ) {
 
         char remote_interface_name[32];
         construct_remote_interface_name( &neighbor, remote_interface_name,
@@ -404,7 +404,7 @@ public:
     virtual ~DumpInterfaceNeighbors() {}
 
     // called for each interface known to netmgr
-    virtual int operator() ( Network::Interface& interface ) {
+    virtual int operator () ( Network::Interface& interface ) {
 
         log_notice( "Interface %s neighbors:", interface.name() );
         DumpNeighbor callback( &interface );
