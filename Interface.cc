@@ -89,7 +89,8 @@ namespace {
 
 /**
  */
-static bool mac_is_zero( unsigned char *address ) {
+static bool
+mac_is_zero( unsigned char *address ) {
     if ( address[0] != 0 ) return false;
     if ( address[1] != 0 ) return false;
     if ( address[2] != 0 ) return false;
@@ -222,7 +223,10 @@ Network::Interface::Interface( Tcl_Interp *interp )
 Network::Interface::~Interface() {
 }
 
-void Network::Interface::linkUp( Kernel::NetworkLinkUpEvent *message ) {
+/**
+ */
+void
+Network::Interface::linkUp( Kernel::NetworkLinkUpEvent *message ) {
     char cmd[128];
     int status = 1;
 
@@ -231,7 +235,10 @@ void Network::Interface::linkUp( Kernel::NetworkLinkUpEvent *message ) {
     unknown_carrier = false;
 }
 
-void Network::Interface::linkDown( Kernel::NetworkLinkDownEvent *message ) {
+/**
+ */
+void
+Network::Interface::linkDown( Kernel::NetworkLinkDownEvent *message ) {
     char cmd[128];
     int status = 1;
 
@@ -290,7 +297,8 @@ void Network::Interface::update( NetLink::LinkMessage *message ) {
  * Could generate a NullResponseHandler object??
  *
  */
-void Network::Interface::configure_addresses() {
+void
+Network::Interface::configure_addresses() {
     int error = set_interface_address( index(), &primary_address );
 
     /**
@@ -323,7 +331,8 @@ void Network::Interface::configure_addresses() {
 
 /**
  */
-void Network::Interface::create_sockets() {
+void
+Network::Interface::create_sockets() {
     // create the sending multicast socket
     outbound = ::socket( AF_INET6, SOCK_DGRAM, 0 );
     if ( outbound == -1 ) {
@@ -442,7 +451,8 @@ Network::Interface::repair_link_speed() {
 /**
  * These need to change to NewLink commands
  */
-void Network::Interface::bring_link_down() {
+void
+Network::Interface::bring_link_down() {
     if ( debug > 0 )  log_notice( "bring link down for '%s'", name() );
     char buffer[128];
     sprintf( buffer, "/sbin/ip link set %s down", name() );
@@ -451,7 +461,8 @@ void Network::Interface::bring_link_down() {
 
 /**
  */
-void Network::Interface::bring_link_up() {
+void
+Network::Interface::bring_link_up() {
     if ( debug > 0 )  log_notice( "bring link up for '%s'", name() );
     char buffer[128];
     sprintf( buffer, "/sbin/ip link set %s up", name() );
@@ -460,7 +471,8 @@ void Network::Interface::bring_link_up() {
 
 /**
  */
-void Network::Interface::bounce_link() {
+void
+Network::Interface::bounce_link() {
     if ( is_quiesced() ) {
         log_notice( "%s(%d): is quiesced, not bouncing", name(), index() );
         return;
@@ -475,7 +487,8 @@ void Network::Interface::bounce_link() {
 
 /**
  */
-void Network::Interface::repair_link() {
+void
+Network::Interface::repair_link() {
     if ( debug > 0 ) log_notice( "%s(%d): attempt to repair link", name(), index() );
     bounce_link();
 }
@@ -504,7 +517,8 @@ void Network::Interface::repair_link() {
  * BRIDGE=biz0
  * LINKDELAY=5
  */
-void Network::Interface::save_sysconfig() {
+void
+Network::Interface::save_sysconfig() {
 #if SAVE_SYSCONFIG
     // open file
     char filename[80];
@@ -522,7 +536,8 @@ void Network::Interface::save_sysconfig() {
  * Interfaces will only have an open socket if they are private or are
  * a bridge interface to a biz network.
  */
-int Network::Interface::sendto( void *message, size_t length, int flags, const struct sockaddr_in6 *address) {
+int
+Network::Interface::sendto( void *message, size_t length, int flags, const struct sockaddr_in6 *address) {
     if ( debug > 5 ) {
         log_notice( "%s(%d) sendto message length %d", _name, _index, length );
     }
@@ -572,7 +587,8 @@ int Network::Interface::sendto( void *message, size_t length, int flags, const s
  * directly.  More packets (grumble), but more directed, since most
  * of the time there will be only one.
  */
-bool Network::Interface::advertise() {
+bool
+Network::Interface::advertise() {
     if ( _icmp_socket == 0 ) return false;
 #if 0
     if ( not_private() ) {
@@ -643,7 +659,8 @@ bool Network::Interface::advertise() {
 
 /**
  */
-int Network::Interface::inbound_socket( char *address, uint16_t port ) {
+int
+Network::Interface::inbound_socket( char *address, uint16_t port ) {
     struct sockaddr_in6 binding;
     int inbound;
 
@@ -847,7 +864,8 @@ Network::Interface::intern_neighbor( struct in6_addr& address ) {
  * Remove all Peer objects from this interface's neighbor list
  * whose address matches the argument.
  */
-bool Network::Interface::remove_neighbor( struct in6_addr& address ) {
+bool
+Network::Interface::remove_neighbor( struct in6_addr& address ) {
     pthread_mutex_lock( &neighbor_table_lock );
     if ( neighbors != NULL ) {
         for ( int i = 0 ; i < NEIGHBOR_TABLE_SIZE ; ++i ) {
@@ -888,7 +906,8 @@ Network::Interface::find_neighbor( struct in6_addr& address ) {
 
 /** Iterate and call a callback for each neighbor.
  */
-int Network::Interface::each_neighbor( NeighborIterator& callback ) {
+int
+Network::Interface::each_neighbor( NeighborIterator& callback ) {
     int result = 0;
 
     pthread_mutex_lock( &neighbor_table_lock );
@@ -938,7 +957,8 @@ Network::Interface::accept_ra( bool value ) {
 
 /**
  */
-bool Network::Interface::exists() const {
+bool
+Network::Interface::exists() const {
     char path[1024];
     struct stat stat;
 
@@ -951,7 +971,8 @@ bool Network::Interface::exists() const {
 
 /**
  */
-bool Network::Interface::is_primary( struct in6_addr *address ) {
+bool
+Network::Interface::is_primary( struct in6_addr *address ) {
     if ( address == NULL ) return false;
     if ( address->s6_addr[ 0] != primary_address.s6_addr[ 0] ) return false;
     if ( address->s6_addr[ 1] != primary_address.s6_addr[ 1] ) return false;
@@ -983,7 +1004,8 @@ bool Network::Interface::is_primary( struct in6_addr *address ) {
 
 /**
  */
-bool Network::Interface::is_quiesced() const {
+bool
+Network::Interface::is_quiesced() const {
     char sentinel[128];
     sprintf( sentinel, "/tmp/%s.quiesce", name() );
     return (access(sentinel, F_OK) == 0);
@@ -991,7 +1013,8 @@ bool Network::Interface::is_quiesced() const {
 
 /**
  */
-bool Network::Interface::has_fault_injected() const {
+bool
+Network::Interface::has_fault_injected() const {
     char sentinel[128];
     sprintf( sentinel, "/var/run/interface/%s.fault", name() );
     return (access(sentinel, F_OK) == 0);
@@ -999,7 +1022,8 @@ bool Network::Interface::has_fault_injected() const {
 
 /**
  */
-bool Network::Interface::is_named_ethN() const {
+bool
+Network::Interface::is_named_ethN() const {
     if ( _name[0] != 'e' ) return false;
     if ( _name[1] != 't' ) return false;
     if ( _name[2] != 'h' ) return false;
@@ -1008,7 +1032,8 @@ bool Network::Interface::is_named_ethN() const {
 
 /**
  */
-bool Network::Interface::is_named_vifN() const {
+bool
+Network::Interface::is_named_vifN() const {
     if ( _name[0] != 'v' ) return false;
     if ( _name[1] != 'i' ) return false;
     if ( _name[2] != 'f' ) return false;
@@ -1017,15 +1042,18 @@ bool Network::Interface::is_named_vifN() const {
 
 /**
  */
-bool Network::Interface::is_named_netN() const {
+bool
+Network::Interface::is_named_netN() const {
     if ( _name[0] != 'n' ) return false;
     if ( _name[1] != 'e' ) return false;
     if ( _name[2] != 't' ) return false;
     return true;
 }
+
 /**
  */
-bool Network::Interface::is_named_tunN() const {
+bool
+Network::Interface::is_named_tunN() const {
     if ( _name[0] != 't' ) return false;
     if ( _name[1] != 'u' ) return false;
     if ( _name[2] != 'n' ) return false;
@@ -1040,7 +1068,8 @@ char * Network::Interface::name()         const { return _name; }
 
 /**
  */
-void Network::Interface::eui64( uint8_t *buffer ) const {
+void
+Network::Interface::eui64( uint8_t *buffer ) const {
     buffer[ 0] = MAC[0] | 0x02;
     buffer[ 1] = MAC[1];
     buffer[ 2] = MAC[2];
@@ -1053,7 +1082,8 @@ void Network::Interface::eui64( uint8_t *buffer ) const {
 
 /**
  */
-void Network::Interface::lladdr( struct in6_addr *buffer ) {
+void
+Network::Interface::lladdr( struct in6_addr *buffer ) {
     buffer->s6_addr[0] = 0xfe;
     buffer->s6_addr[1] = 0x80;
     buffer->s6_addr[2] = 0x00;
