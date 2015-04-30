@@ -24,6 +24,13 @@
 /** \file Channel.cc
  * \brief 
  *
+ * The problem with SYSV message queues for bidirectional messages, is that
+ * if the message is read it is deleted.  If the process reading the message
+ * fails in some manner, then the message is not processed and the sender
+ * does not get a response and requires mitigation.
+ *
+ * Consider new method where the message is read and consumed as separate
+ * steps.  Perhaps a message can be peeked with SYS MQ.
  */
 
 #include <sys/stat.h>
