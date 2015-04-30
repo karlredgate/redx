@@ -331,7 +331,8 @@ Network::Interface::negotiate() {
  * \todo check lstat errno -- because there may be some cases where this 
  * really is a physical device
  */
-bool Network::Interface::is_physical() const {
+bool
+Network::Interface::is_physical() const {
     char path[1024];
     struct stat stat;
 
@@ -345,14 +346,16 @@ bool Network::Interface::is_physical() const {
 
 /**
  */
-bool Network::Interface::is_full_duplex() const {
+bool
+Network::Interface::is_full_duplex() const {
     return (_duplex & DUPLEX_FULL) != 0;
 }
 
 /**
  * On Linux this is determined through sysfs
  */
-bool Network::Interface::is_bridge() const {
+bool
+Network::Interface::is_bridge() const {
     char path[1024];
     struct stat stat;
 
@@ -365,7 +368,8 @@ bool Network::Interface::is_bridge() const {
 
 /**
  */
-bool Network::Interface::is_captured() const {
+bool
+Network::Interface::is_captured() const {
     char path[1024];
     struct stat stat;
 
@@ -382,7 +386,8 @@ bool Network::Interface::is_captured() const {
     // for each net/*/brport if its bridge is my bridge interface
     // glob /sys/class/net/*/brport/bridge
     // if realname of link is /sys/class/net/<myname> ...
-bool Network::Interface::is_tunnelled() const {
+bool
+Network::Interface::is_tunnelled() const {
     bool result = false;
 
     log_notice( "check if '%s' is tunnelled", name() );
@@ -519,7 +524,8 @@ bool Network::Interface::multicast()           const { return (last_flags & IFF_
 
 /**
  */
-bool Network::Interface::is_listening_to( const char *protocol, u_int16_t port ) const {
+bool
+Network::Interface::is_listening_to( const char *protocol, u_int16_t port ) const {
     bool result = false;
 
     char path[80];

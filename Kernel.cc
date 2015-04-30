@@ -573,7 +573,8 @@ ipmitool_cmd( ClientData data, Tcl_Interp *interp,
 
 /**
  */
-bool Kernel_Module( Tcl_Interp *interp ) {
+bool
+Kernel_Module( Tcl_Interp *interp ) {
     Tcl_Command command;
 
     Tcl_Namespace *ns = Tcl_CreateNamespace(interp, "Kernel", (ClientData)0, NULL);

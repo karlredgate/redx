@@ -92,7 +92,8 @@ Xen::Hypercall::~Hypercall() {
 /**
  * Call this hypercall with no arguments
  */
-bool Xen::Hypercall::send() {
+bool
+Xen::Hypercall::send() {
     char buffer[80];
     // open file
     int fd = open("/proc/xen/privcmd", O_RDWR);
@@ -152,7 +153,8 @@ Xen::SysControl::~SysControl() {
 
 /**
  */
-bool Xen::SysControl::lock() {
+bool
+Xen::SysControl::lock() {
     if ( mlock(request, sizeof(*request)) == -1 ) {
         perror( "mlock SysControl" );
         exit( 1 );
@@ -162,7 +164,8 @@ bool Xen::SysControl::lock() {
 
 /**
  */
-bool Xen::SysControl::unlock() {
+bool
+Xen::SysControl::unlock() {
     if ( munlock(request, sizeof(*request)) == -1 ) {
         perror( "munlock SysControl" );
         exit( 1 );
@@ -197,13 +200,15 @@ Xen::DomControl::~DomControl() {
 
 /**
  */
-bool Xen::DomControl::lock() {
+bool
+Xen::DomControl::lock() {
     return mlock(request, sizeof(*request)) != -1;
 }
 
 /**
  */
-bool Xen::DomControl::unlock() {
+bool
+Xen::DomControl::unlock() {
     return munlock(request, sizeof(*request)) != -1;
 }
 
@@ -262,7 +267,8 @@ Xen::GetDomainInfoList::~GetDomainInfoList() {
 
 /**
  */
-int Xen::GetDomainInfoList::operator() ( xen_domctl_getdomaininfo_t *domains, int size ) {
+int
+Xen::GetDomainInfoList::operator() ( xen_domctl_getdomaininfo_t *domains, int size ) {
     request->u.getdomaininfolist.first_domain = 0;
     request->u.getdomaininfolist.max_domains = size;
     set_xen_guest_handle( request->u.getdomaininfolist.buffer, domains );
@@ -281,7 +287,8 @@ Xen::VcpuInfo::VcpuInfo( struct xen_domctl_getvcpuinfo *info ) {
 
 /**
  */
-void Xen::VcpuInfo::update( struct xen_domctl_getvcpuinfo *info ) {
+void
+Xen::VcpuInfo::update( struct xen_domctl_getvcpuinfo *info ) {
     _vcpu     = info->vcpu;
     _cpu_time = info->cpu_time;
     _cpu      = info->cpu;
@@ -304,7 +311,8 @@ Xen::GetVcpuInfo::~GetVcpuInfo() {
 
 /**
  */
-Xen::VcpuInfo* Xen::GetVcpuInfo::operator() ( int vcpu ) {
+Xen::VcpuInfo*
+Xen::GetVcpuInfo::operator() ( int vcpu ) {
     request->u.getvcpuinfo.vcpu = vcpu;
     if ( Xen::DomControl::send() == false ) {
         log_err( "GetVcpuInfo failed" );
@@ -315,7 +323,8 @@ Xen::VcpuInfo* Xen::GetVcpuInfo::operator() ( int vcpu ) {
 
 /**
  */
-Xen::VcpuInfo* Xen::GetVcpuInfo::operator() ( VcpuInfo *info ) {
+Xen::VcpuInfo*
+Xen::GetVcpuInfo::operator() ( VcpuInfo *info ) {
     request->u.getvcpuinfo.vcpu = info->vcpu();
     if ( Xen::DomControl::send() == false ) {
         log_err( "GetVcpuInfo failed" );
@@ -339,7 +348,8 @@ Xen::DomainCommand::~DomainCommand() {
 /**
  * Should determine errors here.
  */
-bool Xen::DomainCommand::operator() () {
+bool
+Xen::DomainCommand::operator() () {
     if ( Xen::DomControl::send() == false ) {
         log_err( "DomainCommand failed" );
     }
@@ -381,7 +391,8 @@ Xen::DomainInfo::~DomainInfo() {
 /**
  * for each vcpu ID get the VCPU info
  */
-void Xen::DomainInfo::probe_vcpus() {
+void
+Xen::DomainInfo::probe_vcpus() {
     Xen::GetVcpuInfo request(domain);
     for ( int i = 0 ; i < _vcpu_count ; i++ ) {
         if ( vcpu[i] == NULL ) {
@@ -397,7 +408,8 @@ void Xen::DomainInfo::probe_vcpus() {
 
 /**
  */
-void Xen::DomainInfo::update( struct xen_domctl_getdomaininfo *info ) {
+void
+Xen::DomainInfo::update( struct xen_domctl_getdomaininfo *info ) {
     flags           = info->flags;
     tot_pages       = info->tot_pages;
     max_pages       = info->max_pages;
@@ -418,7 +430,8 @@ void Xen::DomainInfo::update( struct xen_domctl_getdomaininfo *info ) {
 
 /**
  */
-uint64_t Xen::DomainInfo::vcpu_time( uint32_t id ) const {
+uint64_t
+Xen::DomainInfo::vcpu_time( uint32_t id ) const {
     if ( id > max_vcpu_id ) return 0;
     return vcpu[id]->cpu_time();
 }
@@ -431,7 +444,8 @@ Xen::DomControl::DomControl(domain, XEN_DOMCTL_getdomaininfo) {
 
 /**
  */
-Xen::DomainInfo* Xen::GetDomainInfo::operator() ( domid_t domain ) {
+Xen::DomainInfo *
+Xen::GetDomainInfo::operator() ( domid_t domain ) {
     request->u.getdomaininfo.domain = domain;
     if ( Xen::DomControl::send() == false ) {
         log_err( "GetDomainInfo failed" );

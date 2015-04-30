@@ -299,7 +299,8 @@ Network::Bridge::forward_delay( unsigned long value ) {
     // for each net/*/brport if its bridge is my brdige interface
     // glob /sys/class/net/*/brport/bridge
     // if realname of link is /sys/class/net/<myname> ...
-bool Network::Bridge::is_tunnelled() const {
+bool
+Network::Bridge::is_tunnelled() const {
     bool result = false;
 
     // log_notice( "check if '%s' is tunnelled", name() );
