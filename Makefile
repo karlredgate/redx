@@ -33,9 +33,9 @@ OBJS += TCL_Interface.o
 OBJS += TCL_ICMPv6.o
 OBJS += TCL_NetworkMonitor.o
 OBJS += TCL_Channel.o
+OBJS += TCL_Thread.o
 # OBJS += TCL_SMBIOS.o
 # OBJS += TCL_SharedNetwork.o
-# OBJS += TCL_Thread.o
 # TCL_Hypercall.o
 # TCL_XenStore.o
 OBJS += Interface.o

@@ -37,46 +37,16 @@
 #include "PlatformThread.h"
 #include "AppInit.h"
 
-namespace { Tcl_Interp *interpreter = NULL; }
-Tcl_Interp *Thread::global_interp() { return interpreter; }
+ThreadCallback *thread_create_hook;
 
 /**
  */
-int
-thread_cmd( ClientData data, Tcl_Interp *interp,
-            int objc, Tcl_Obj * CONST *objv )
-{
-    Thread *thread = (Thread *)data;
-    if ( objc < 2 ) {
-        Tcl_ResetResult( interp );
-        Tcl_WrongNumArgs( interp, 1, objv, "command ..." );
-        return TCL_ERROR;
-    }
-    char *command = Tcl_GetStringFromObj( objv[1], NULL );
-    if ( Tcl_StringMatch(command, "pid") ) {
-        Tcl_Obj *result = Tcl_NewIntObj( thread->getpid() );
-        Tcl_SetObjResult( interp, result );
-        return TCL_OK;
-    }
-    if ( Tcl_StringMatch(command, "status") ) {
-        Tcl_Obj *result = Tcl_NewStringObj( thread->status, -1 );
-        Tcl_SetObjResult( interp, result );
-        return TCL_OK;
-    }
-    
-    Svc_SetResult( interp, "Unknown command for thread object", TCL_STATIC );
-    return TCL_ERROR;
-    
+ThreadCallback::ThreadCallback() {
 }
 
 /**
  */
-void register_thread( Thread *thread ) {
-    if ( thread->thread_name() == NULL )  return;
-    char buffer[80];
-    snprintf( buffer, sizeof(buffer), "Thread::%s", thread->thread_name() );
-    Tcl_EvalEx( interpreter, "namespace eval Thread {}", -1, TCL_EVAL_GLOBAL );
-    Tcl_CreateObjCommand( interpreter, buffer, thread_cmd, (ClientData)thread, NULL );
+ThreadCallback::~ThreadCallback() {
 }
 
 /**
@@ -102,12 +72,15 @@ class ThreadList {
     ThreadList *next;
 public:
     ThreadList() {
-        interpreter = Tcl_CreateInterp();
         pthread_key_create( &CurrentThread, NULL );
         thread = new MainThread;
         next = 0;
         pthread_setspecific( CurrentThread, thread );
-        register_thread( thread );
+
+        if ( thread_create_hook != NULL ) {
+            ThreadCallback& callback = *thread_create_hook;
+            callback( thread );
+        }
     }
     ~ThreadList() {
         delete next;
@@ -115,7 +88,10 @@ public:
     }
     ThreadList( Thread *thread, ThreadList *next )
     : thread(thread), next(next) {
-        register_thread( thread );
+        if ( thread_create_hook != NULL ) {
+            ThreadCallback& callback = *thread_create_hook;
+            callback( thread );
+        }
     }
     void add( Thread *that ) {
         ThreadList *entry = new ThreadList( that, next );
@@ -123,15 +99,6 @@ public:
     }
 };
 ThreadList threads;
-
-#if 0
-union SIGNAL *
-receive( const SIGSELECT *segsel ) {
-    Thread *self = (Thread *)pthread_getspecific(CurrentThread);
-    // cycle through SignalQueue looking for the first
-    // that matches the SIGSELECTLIST
-}
-#endif
 
 /**
  */
@@ -182,48 +149,5 @@ void Thread::thread_name( const char *_name ) {
     // if ( _thread_name != NULL ) free(_thread_name);
     _thread_name = strdup(_name);
 }
-
-/**
- */
-int
-Thread::TclCommand( ClientData data, Tcl_Interp *interp,
-                    int objc, Tcl_Obj * CONST *objv )
-{
-    Thread *thread = (Thread *)data;
-    if ( objc < 2 ) {
-        Tcl_ResetResult( interp );
-        Tcl_WrongNumArgs( interp, 1, objv, "command ..." );
-        return TCL_ERROR;
-    }
-    char *command = Tcl_GetStringFromObj( objv[1], NULL );
-    if ( Tcl_StringMatch(command, "start") ) {
-        thread->start();
-        Tcl_ResetResult( interp );
-        return TCL_OK;
-    }
-    if ( Tcl_StringMatch(command, "pid") ) {
-        Tcl_Obj *result = Tcl_NewIntObj( thread->getpid() );
-        Tcl_SetObjResult( interp, result );
-        return TCL_OK;
-    }
-    if ( Tcl_StringMatch(command, "status") ) {
-        Tcl_Obj *result = Tcl_NewStringObj( thread->status, -1 );
-        Tcl_SetObjResult( interp, result );
-        return TCL_OK;
-    }
-    
-    Svc_SetResult( interp, "Unknown command for thread object", TCL_STATIC );
-    return TCL_ERROR;
-    
-}
-
-/**
- */
-static bool
-Thread_Module( Tcl_Interp *interp ) {
-    return true;
-}
-
-app_init( Thread_Module );
 
 /* vim: set autoindent expandtab sw=4 : */

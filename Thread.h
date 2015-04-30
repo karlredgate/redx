@@ -40,6 +40,17 @@
 extern pthread_key_t CurrentThread;
 extern void InitializeThreads();
 
+class Thread;
+
+class ThreadCallback {
+public:
+    ThreadCallback();
+    virtual ~ThreadCallback();
+    virtual bool operator () ( Thread * ) = 0;
+};
+
+extern ThreadCallback *thread_create_hook;
+
 /**
  * A class to wrap thread management.  It also connects the TCL interpreter
  * to an instance of the class for managing its state.
