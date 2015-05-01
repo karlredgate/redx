@@ -21,12 +21,12 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-/** \file StringList.h
+/** \file SMBIOSStringList.h
  * \brief 
  */
 
-#ifndef _STRINGLIST_H_
-#define _STRINGLIST_H_
+#ifndef _SMBIOS_STRINGLIST_H_
+#define _SMBIOS_STRINGLIST_H_
 
 namespace SMBIOS {
 

@@ -26,7 +26,6 @@
  */
 
 #include <stdlib.h>
-#include <tcl.h>
 #include "SMBIOSStringList.h"
 
 /**
