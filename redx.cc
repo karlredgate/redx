@@ -145,37 +145,6 @@ Syslog_cmd( ClientData data, Tcl_Interp *interp,
 
 /**
  */
-static int
-devno_cmd( ClientData data, Tcl_Interp *interp,
-             int objc, Tcl_Obj * CONST *objv )
-{
-    if ( objc != 2 ) {
-        Tcl_ResetResult( interp );
-        Tcl_WrongNumArgs( interp, 1, objv, "filename" );
-        return TCL_ERROR; 
-    }
-
-    char *filename = Tcl_GetStringFromObj( objv[1], NULL );
-    struct stat s;
-    if ( stat(filename, &s) < 0 ) {
-        // would be better if these were errno messages
-        Tcl_StaticSetResult( interp, "failed to stat file" );
-        return TCL_ERROR;
-    }
-    if ( (S_ISCHR(s.st_mode) || S_ISBLK(s.st_mode)) == false ) {
-        Tcl_StaticSetResult( interp, "file is not a device" );
-        return TCL_ERROR;
-    }
-
-    Tcl_Obj *list = Tcl_NewListObj( 0, 0 );
-    Tcl_ListObjAppendElement( interp, list, Tcl_NewIntObj( s.st_rdev >> 8 ) );
-    Tcl_ListObjAppendElement( interp, list, Tcl_NewIntObj( s.st_rdev & 0xFF ) );
-    Tcl_SetObjResult( interp, list );
-    return TCL_OK;
-}
-
-/**
- */
 int RedX_Init( Tcl_Interp *interp ) {
     int interactive = 1;
     Tcl_Obj *interactive_obj;
@@ -235,11 +204,6 @@ int RedX_Init( Tcl_Interp *interp ) {
     }
     if ( interactive ) printf( "Network initialized\n" );
 #endif
-
-    command = Tcl_CreateObjCommand(interp, "devno", devno_cmd, (ClientData)0, NULL);
-    if ( command == NULL ) {
-        return false;
-    }
 
     if ( Tcl_CallAppInitChain(interp) == false ) {
         // this may want to be additive result

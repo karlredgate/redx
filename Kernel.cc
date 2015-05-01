@@ -570,6 +570,37 @@ ipmitool_cmd( ClientData data, Tcl_Interp *interp,
     return timeout( interp, determine_timeout(interp),
                     "/usr/bin/ipmitool", objc-1, objv+1 );
 }
+
+/**
+ */
+static int
+devno_cmd( ClientData data, Tcl_Interp *interp,
+             int objc, Tcl_Obj * CONST *objv )
+{
+    if ( objc != 2 ) {
+        Tcl_ResetResult( interp );
+        Tcl_WrongNumArgs( interp, 1, objv, "filename" );
+        return TCL_ERROR; 
+    }
+
+    char *filename = Tcl_GetStringFromObj( objv[1], NULL );
+    struct stat s;
+    if ( stat(filename, &s) < 0 ) {
+        // would be better if these were errno messages
+        Tcl_StaticSetResult( interp, "failed to stat file" );
+        return TCL_ERROR;
+    }
+    if ( (S_ISCHR(s.st_mode) || S_ISBLK(s.st_mode)) == false ) {
+        Tcl_StaticSetResult( interp, "file is not a device" );
+        return TCL_ERROR;
+    }
+
+    Tcl_Obj *list = Tcl_NewListObj( 0, 0 );
+    Tcl_ListObjAppendElement( interp, list, Tcl_NewIntObj( s.st_rdev >> 8 ) );
+    Tcl_ListObjAppendElement( interp, list, Tcl_NewIntObj( s.st_rdev & 0xFF ) );
+    Tcl_SetObjResult( interp, list );
+    return TCL_OK;
+}
 
 /**
  */
@@ -638,6 +669,11 @@ Kernel_Module( Tcl_Interp *interp ) {
     command = Tcl_CreateObjCommand(interp, "Kernel::ipmitool", ipmitool_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
         // logger ?? want to report TCL Error
+        return false;
+    }
+
+    command = Tcl_CreateObjCommand(interp, "Kernel::devno", devno_cmd, (ClientData)0, NULL);
+    if ( command == NULL ) {
         return false;
     }
 
