@@ -139,4 +139,20 @@ Syslog_cmd( ClientData data, Tcl_Interp *interp,
     return TCL_OK;
 }
 
+/**
+ */
+bool
+Syslog_Module( Tcl_Interp *interp ) {
+    Tcl_Command command;
+
+    command = Tcl_CreateObjCommand(interp, "Syslog", Syslog_cmd, (ClientData)0, NULL);
+    if ( command == NULL ) {
+        return false;
+    }
+
+    return true;
+}
+
+app_init( Syslog_Module );
+
 /* vim: set autoindent expandtab sw=4 : */
