@@ -98,8 +98,7 @@ NetLink::Monitor::probe() {
 
 /**
  */
-NetLink::Monitor::Monitor( Tcl_Interp *interp, Network::ListenerInterfaceFactory factory )
-{
+NetLink::Monitor::Monitor() {
     /*
      * Disable neighbor and route messages from being reported
      * because we do not process them and we can get 100's of them
@@ -133,7 +132,7 @@ NetLink::Monitor::receive( NetLink::NewLink *message ) {
 /**
  */
 void
-Network::Monitor::receive( NetLink::DelLink *message ) {
+NetLink::Monitor::receive( NetLink::DelLink *message ) {
 }
 
 /**
