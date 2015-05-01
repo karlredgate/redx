@@ -55,95 +55,6 @@
 #include "AppInit.h"
 
 /**
- * log level message
- */
-static int
-Syslog_obj( ClientData data, Tcl_Interp *interp,
-             int objc, Tcl_Obj * CONST *objv )
-{
-    if ( objc != 3 ) {
-        Tcl_ResetResult( interp );
-        Tcl_WrongNumArgs( interp, 1, objv, "level message" );
-        return TCL_ERROR; 
-    }
-
-    char *level_name = Tcl_GetStringFromObj( objv[1], NULL );
-    char *message = Tcl_GetStringFromObj( objv[2], NULL );
-
-    int level = -1;
-    if ( Tcl_StringMatch(level_name, "emerg")     )  level = LOG_EMERG;
-    if ( Tcl_StringMatch(level_name, "emergency") )  level = LOG_EMERG;
-    if ( Tcl_StringMatch(level_name, "alert")     )  level = LOG_ALERT;
-    if ( Tcl_StringMatch(level_name, "crit")      )  level = LOG_CRIT;
-    if ( Tcl_StringMatch(level_name, "critical")  )  level = LOG_CRIT;
-    if ( Tcl_StringMatch(level_name, "err")       )  level = LOG_ERR;
-    if ( Tcl_StringMatch(level_name, "error")     )  level = LOG_ERR;
-    if ( Tcl_StringMatch(level_name, "warn")      )  level = LOG_WARNING;
-    if ( Tcl_StringMatch(level_name, "warning")   )  level = LOG_WARNING;
-    if ( Tcl_StringMatch(level_name, "notice")    )  level = LOG_NOTICE;
-    if ( Tcl_StringMatch(level_name, "info")      )  level = LOG_INFO;
-    if ( Tcl_StringMatch(level_name, "debug")     )  level = LOG_DEBUG;
-    if ( level == -1 ) {
-        Tcl_StaticSetResult( interp, "invalid level" );
-        return TCL_ERROR;
-    }
-    syslog( level, "%s", message );
-
-    Tcl_ResetResult( interp );
-    return TCL_OK;
-}
-
-/**
- */
-static void
-Syslog_delete( ClientData data ) {
-    closelog();
-}
-
-/**
- * Syslog command_name daemon application_name
- */
-static int
-Syslog_cmd( ClientData data, Tcl_Interp *interp,
-             int objc, Tcl_Obj * CONST *objv )
-{
-    if ( objc != 4 ) {
-        Tcl_ResetResult( interp );
-        Tcl_WrongNumArgs( interp, 1, objv, "name facility application" );
-        return TCL_ERROR; 
-    }
-
-    char *name = Tcl_GetStringFromObj( objv[1], NULL );
-    char *facility_name = Tcl_GetStringFromObj( objv[2], NULL );
-    char *application = Tcl_GetStringFromObj( objv[3], NULL );
-
-    int facility = -1;
-    if ( Tcl_StringMatch(facility_name, "auth")     )  facility = LOG_AUTHPRIV;
-    if ( Tcl_StringMatch(facility_name, "authpriv") )  facility = LOG_AUTHPRIV;
-    if ( Tcl_StringMatch(facility_name, "daemon")   )  facility = LOG_DAEMON;
-    if ( Tcl_StringMatch(facility_name, "kernel")   )  facility = LOG_KERN;
-    if ( Tcl_StringMatch(facility_name, "local0")   )  facility = LOG_LOCAL0;
-    if ( Tcl_StringMatch(facility_name, "local1")   )  facility = LOG_LOCAL1;
-    if ( Tcl_StringMatch(facility_name, "local2")   )  facility = LOG_LOCAL2;
-    if ( Tcl_StringMatch(facility_name, "local3")   )  facility = LOG_LOCAL3;
-    if ( Tcl_StringMatch(facility_name, "local4")   )  facility = LOG_LOCAL4;
-    if ( Tcl_StringMatch(facility_name, "local5")   )  facility = LOG_LOCAL5;
-    if ( Tcl_StringMatch(facility_name, "local6")   )  facility = LOG_LOCAL6;
-    if ( Tcl_StringMatch(facility_name, "local7")   )  facility = LOG_LOCAL7;
-    if ( Tcl_StringMatch(facility_name, "user")     )  facility = LOG_USER;
-    if ( facility == -1 ) {
-        Tcl_StaticSetResult( interp, "invalid facility" );
-        return TCL_ERROR;
-    }
-    openlog( strdup(application), 0, facility );
-
-    int handle = 0;
-    Tcl_CreateObjCommand( interp, name, Syslog_obj, (ClientData)handle, Syslog_delete );
-    Tcl_SetResult( interp, name, TCL_VOLATILE );
-    return TCL_OK;
-}
-
-/**
  */
 int RedX_Init( Tcl_Interp *interp ) {
     int interactive = 1;
@@ -154,10 +65,6 @@ int RedX_Init( Tcl_Interp *interp ) {
     }
 
     Tcl_Command command;
-    command = Tcl_CreateObjCommand(interp, "Syslog", Syslog_cmd, (ClientData)0, NULL);
-    if ( command == NULL ) {
-        return false;
-    }
 
     if ( interactive ) printf( " ** RedX debug tool v1.0\n" );
     Tcl_SetVar(interp, "tcl_rcFileName", "~/.houserc", TCL_GLOBAL_ONLY);
@@ -198,11 +105,6 @@ int RedX_Init( Tcl_Interp *interp ) {
     }
     if ( interactive ) printf( "NetLink initialized\n" );
 
-    if ( Network::Initialize(interp) == false ) {
-        Tcl_StaticSetResult( interp, "Network::Initialize failed" );
-        return TCL_ERROR;
-    }
-    if ( interactive ) printf( "Network initialized\n" );
 #endif
 
     if ( Tcl_CallAppInitChain(interp) == false ) {
