@@ -34,6 +34,7 @@ OBJS += TCL_ICMPv6.o
 OBJS += TCL_NetworkMonitor.o
 OBJS += TCL_Channel.o
 OBJS += TCL_Thread.o
+OBJS += TCL_Syslog.o
 # OBJS += TCL_SMBIOS.o
 # OBJS += TCL_SharedNetwork.o
 # TCL_Hypercall.o
