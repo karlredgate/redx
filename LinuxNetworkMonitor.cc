@@ -661,14 +661,4 @@ Network::LinuxNetworkMonitor::run() {
     }
 }
 
-/**
- */
-void Network::Monitor::probe() {
-    if ( route_socket == NULL ) return;
-    if ( debug > 0 ) log_notice( "Monitor: sending probe" );
-    NetLink::RouteSocket &rs = *route_socket;
-    NetLink::GetLink getlink;
-    getlink.send( rs );
-}
-
 /* vim: set autoindent expandtab sw=4 : */
