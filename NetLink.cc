@@ -39,6 +39,7 @@
 #define NDA_RTA(r)  ((struct rtattr*)(((char*)(r)) + NLMSG_ALIGN(sizeof(struct ndmsg))))
 #endif
 
+#include <stdint.h>  // for intptr_t
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
@@ -611,9 +612,9 @@ NetLink::NewLink::MAC() const {
 
 /**
  */
-struct net_device_stats *
+struct rtnl_link_stats *
 NetLink::NewLink::stats() const {
-    return (struct net_device_stats *)RTA_DATA( attr[IFLA_STATS] );
+    return (struct rtnl_link_stats *)RTA_DATA( attr[IFLA_STATS] );
 }
 
 /**
@@ -944,10 +945,17 @@ NetLink::NewRoute::NewRoute( struct nlmsghdr *hdr )
         printf( " NR! remnant=%d\n", length );
     }
 
+    /*
+     * RTA_IIF and RTA_OIF are actually (int) - according to the man pages
+     * but on 64 bit machines this generates an error since RTA_DATA is
+     * returning a (void *)
+     * stdint.h defines a (intptr_t) which is an int large enough to hold
+     * a pointer, that avoids the problem.
+     */
     if ( debug > 1 ) {
         printf( "NewRoute: => type=%d scope=%d family=%d : iif=%d oif=%d\n",
                 rtm->rtm_type, rtm->rtm_scope, rtm->rtm_family,
-                (int)RTA_DATA( attr[RTA_IIF] ), (int)RTA_DATA( attr[RTA_OIF] )
+                (intptr_t)RTA_DATA( attr[RTA_IIF] ), (intptr_t)RTA_DATA( attr[RTA_OIF] )
         );
     }
 }
@@ -1036,7 +1044,7 @@ NetLink::DelRoute::DelRoute( struct nlmsghdr *hdr )
     if ( debug > 1 ) {
         printf( "DelRoute: => type=%d scope=%d family=%d : iif=%d oif=%d\n",
                 rtm->rtm_type, rtm->rtm_scope, rtm->rtm_family,
-                (int)RTA_DATA( attr[RTA_IIF] ), (int)RTA_DATA( attr[RTA_OIF] )
+                (intptr_t)RTA_DATA( attr[RTA_IIF] ), (intptr_t)RTA_DATA( attr[RTA_OIF] )
         );
     }
 

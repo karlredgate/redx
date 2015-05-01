@@ -187,7 +187,7 @@ namespace NetLink {
         virtual bool deliver( RouteReceiveCallbackInterface * );
         static RouteMessage * Factory( struct nlmsghdr * );
         unsigned char *MAC() const;
-        struct net_device_stats *stats() const;
+        struct rtnl_link_stats *stats() const;
 
         bool up_changed() const;
         bool running_changed() const;
