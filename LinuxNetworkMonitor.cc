@@ -175,7 +175,7 @@ Network::LinuxNetworkMonitor::receive( NetLink::NewLink *message ) {
                 Kernel::NetworkLinkDownEvent event;
                 interface->linkDown( &event );
                 link_message = ", link down";
-                interface->clean_topology();
+                // interface->clean_topology();
             }
             report_required = true;
         }

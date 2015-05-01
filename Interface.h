@@ -154,7 +154,6 @@ namespace Network {
 #endif
         void get_settings();
         time_t last_sent() const { return last_sendto; }
-        void clean_topology() const;
 
         /**
          * This peer list is updated from the real Peer list from the
