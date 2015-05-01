@@ -77,11 +77,13 @@ Syslog_obj( ClientData data, Tcl_Interp *interp,
     if ( Tcl_StringMatch(level_name, "notice")    )  level = LOG_NOTICE;
     if ( Tcl_StringMatch(level_name, "info")      )  level = LOG_INFO;
     if ( Tcl_StringMatch(level_name, "debug")     )  level = LOG_DEBUG;
+
     if ( level == -1 ) {
         Tcl_StaticSetResult( interp, "invalid level" );
         return TCL_ERROR;
     }
-    syslog( level, message );
+
+    syslog( level, "%s", message );
 
     Tcl_ResetResult( interp );
     return TCL_OK;
