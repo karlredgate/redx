@@ -1,4 +1,6 @@
 
+LDFLAGS += -rdynamic
+
 PLATFORM_OBJS  = DarwinThread.o
 PLATFORM_OBJS += DarwinKernelEvent.o
 PLATFORM_OBJS += DarwinInterface.o
