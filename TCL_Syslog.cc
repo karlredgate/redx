@@ -133,7 +133,7 @@ Syslog_cmd( ClientData data, Tcl_Interp *interp,
     }
     openlog( strdup(application), 0, facility );
 
-    int handle = 0;
+    void * handle = 0;
     Tcl_CreateObjCommand( interp, name, Syslog_obj, (ClientData)handle, Syslog_delete );
     Tcl_SetResult( interp, name, TCL_VOLATILE );
     return TCL_OK;
