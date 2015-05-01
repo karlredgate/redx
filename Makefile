@@ -12,8 +12,9 @@ include $(shell uname).mk
 INCLUDE_DIRS = -I../xen/vendor/dist/install/usr/include -I../libservice -I../network
 INCLUDE_DIRS = -Ixen -Ilibservice -Inetwork
 # CXXFLAGS += -g -O1 $(INCLUDE_DIRS) -Wall -rdynamic
-CXXFLAGS += -g -O1 $(INCLUDE_DIRS) -rdynamic
-CFLAGS += -g $(INCLUDE_DIRS) -Wall -rdynamic
+CXXFLAGS += -g -O1 $(INCLUDE_DIRS)
+CFLAGS += -g -O1 $(INCLUDE_DIRS) -Wall
+LDFLAGS += -g -O1
 
 OBJS = redx.o 
 OBJS += AppInit.o
@@ -47,7 +48,7 @@ OBJS += $(PLATFORM_OBJS)
 CLEANS += redx $(OBJS)
 redx: $(OBJS)
 	@: $(CXX) $(CXXFLAGS) -o $@ $^ -L../network -lnetmgr -L../network/netlib -lnetlib -L../network/netcfg -lnetcfg -L../libservice -lservice -lpthread -ltcl -lexpect5.44.1.15
-	$(CXX) $(CXXFLAGS) -o $@ $^ -lpthread -ltcl
+	$(CXX) $(LDFLAGS) -o $@ $^ -lpthread -ltcl
 
 CLEANS += system-uuid
 system-uuid: system-uuid.o
