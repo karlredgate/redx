@@ -26,8 +26,8 @@
  *
  */
 
-#ifndef _UTIL_CC_H_
-#define _UTIL_CC_H_
+#ifndef _TRAPS_H_
+#define _TRAPS_H_
 
 #include <stdint.h>
 #include <unistd.h>
