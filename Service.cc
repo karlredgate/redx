@@ -48,9 +48,10 @@
 #include <glob.h>
 
 #include <tcl.h>
-#include "TCL_Fixup.h"
 
 #include "util.h"
+#include "string_util.h"
+#include "traps.h"
 #include "Service.h"
 
 /**
