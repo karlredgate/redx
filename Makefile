@@ -25,6 +25,7 @@ OBJS += Neighbor.o
 OBJS += ICMPv6.o
 OBJS += Channel.o
 OBJS += NetworkMonitor.o
+OBJS += Service.o
 OBJS += xuid.o
 OBJS += string_util.o
 OBJS += tcl_util.o
