@@ -21,6 +21,7 @@ build
 
 ## TODO
 
+ * Migrate all platform files to platform dir
  * Add S3 commands
  * Add Windows commands
  * Build under mingw
@@ -100,6 +101,8 @@ What is the real system call that is made?
 
 ### OSX Bridges
 
+Need to get source code for ifconfig
+
 ```
 $ ifconfig bridge0 create
 $ ifconfig bridge0 up addm en0 addm en1
@@ -150,6 +153,8 @@ networksetup -showBondStatus <bonddevicename>
 ```
 
 ## Windows notes
+
+Need to set up MINGW on Windows to test makefile
 
 ### Bridge notes
 
