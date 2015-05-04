@@ -218,99 +218,6 @@ void determine_cluster_name() {
 int advertise_interval = 3;
 
 /**
- * Spine Interface command (for debugging purposes)
- *
- * house
- * % netmgr { ask | tell } ping
- *
- */
-static int
-ping_cmd( ClientData data, Tcl_Interp *interp,
-             int objc, Tcl_Obj * CONST *objv )
-{
-    log_notice( "ping_cmd" );
-
-    Network::Manager *manager = (Network::Manager *)data;
-    if ( objc != 1 ) {
-        Tcl_ResetResult( interp );
-        Tcl_WrongNumArgs( interp, 1, objv, "command" );
-        return TCL_ERROR;
-    }
-    if ( manager == NULL ) {
-        Tcl_SetResult( interp, "Hmm.  ClientData is NULL", TCL_STATIC );
-        return TCL_ERROR;
-    }
-
-    char *result = manager->ping();
-
-    if ( result == NULL ) {
-        Tcl_ResetResult( interp );
-    } else {
-        Tcl_SetResult( interp, result, TCL_STATIC );
-    }
-    return TCL_OK;
-}
-
-/**
- * Spine Interface command (for debugging purposes)
- *
- * house
- * % netmgr { ask | tell } error
- *
- */
-static int
-error_cmd( ClientData data, Tcl_Interp *interp,
-             int objc, Tcl_Obj * CONST *objv )
-{
-    log_notice( "error_cmd" );
-
-    Network::Manager *manager = (Network::Manager *)data;
-    if ( objc != 1 ) {
-        Tcl_ResetResult( interp );
-        Tcl_WrongNumArgs( interp, 1, objv, "command" );
-        return TCL_ERROR;
-    }
-    if ( manager == NULL ) {
-        Tcl_SetResult( interp, "Hmm.  ClientData is NULL", TCL_STATIC );
-        return TCL_ERROR;
-    }
-
-    Tcl_SetResult( interp, "Error", TCL_STATIC );
-    return TCL_ERROR;
-}
-
-/**
- * Spine Interface command (for debugging purposes)
- *
- * house
- * % netmgr { ask | tell } dump
- *
- * (output will appear in /var/log/netmgr.log)
- */
-static int
-dump_cmd( ClientData data, Tcl_Interp *interp,
-             int objc, Tcl_Obj * CONST *objv )
-{
-    log_notice( "dump_cmd" );
-
-    Network::Manager *manager = (Network::Manager *)data;
-    if ( objc != 1 ) {
-        Tcl_ResetResult( interp );
-        Tcl_WrongNumArgs( interp, 1, objv, "command" );
-        return TCL_ERROR;
-    }
-    if ( manager == NULL ) {
-        Tcl_SetResult( interp, "Hmm.  ClientData is NULL", TCL_STATIC );
-        return TCL_ERROR;
-    }
-
-    manager->dump();
-
-    Tcl_ResetResult( interp );
-    return TCL_OK;
-}
-
-/**
  */
 static void
 construct_remote_interface_name( Network::Peer *neighbor, char *name, int size ) {
@@ -442,39 +349,6 @@ neighbors_cmd( ClientData data, Tcl_Interp *interp,
     DumpInterfaceNeighbors callback;
     int dumped_neighbors = monitor->each_interface( callback );
     log_notice( "dumped %d neighbors", dumped_neighbors );
-
-    Tcl_ResetResult( interp );
-    return TCL_OK;
-}
-
-/**
- * Spine Interface command (for debugging purposes)
- *
- * house
- * % netmgr { ask | tell } nodes
- *
- * (output will appear in /var/log/netmgr.log)
- */
-static int
-nodes_cmd( ClientData data, Tcl_Interp *interp,
-           int objc, Tcl_Obj * CONST *objv )
-{
-    log_notice( "nodes_cmd" );
-
-    Network::Monitor *monitor = (Network::Monitor *)data;
-    if ( objc != 1 ) {
-        Tcl_ResetResult( interp );
-        Tcl_WrongNumArgs( interp, 1, objv, "command" );
-        return TCL_ERROR;
-    }
-    if ( monitor == NULL ) {
-        Tcl_SetResult( interp, "Hmm.  ClientData is NULL", TCL_STATIC );
-        return TCL_ERROR;
-    }
-
-    DumpNode callback;
-    int dumped_nodes = monitor->each_node( callback );
-    log_notice( "dumped %d nodes", dumped_nodes );
 
     Tcl_ResetResult( interp );
     return TCL_OK;
@@ -958,7 +832,9 @@ int main( int argc, char **argv ) {
 
     int node_ordinal;
     char buffer[16];
+
     gethostname( buffer, sizeof buffer );
+
     if ( sscanf(buffer, "node%d", &node_ordinal) == 1 ) {
         sethostid( node_ordinal );
         log_notice( "hostid set to node ordinal %d", node_ordinal );
@@ -998,17 +874,12 @@ int main( int argc, char **argv ) {
     }
 
     service.add_command( "neighbors", neighbors_cmd, (ClientData)&monitor );
-    service.add_command( "nodes", nodes_cmd, (ClientData)&monitor );
     service.add_command( "interfaces", interfaces_cmd, (ClientData)&monitor );
-
     service.add_command( "insert_node", insert_node_cmd, (ClientData)&monitor );
 
     /*
      * Register Network Manager commands.
      */
-    service.add_command( "ping", ping_cmd, (ClientData)&manager );
-    service.add_command( "error", error_cmd, (ClientData)&manager );
-    service.add_command( "dump", dump_cmd, (ClientData)&manager );
     service.add_command( "create", create_cmd, (ClientData)&manager );
     service.add_command( "modify", modify_cmd, (ClientData)&manager );
     service.add_command( "destroy", destroy_cmd, (ClientData)&manager );
