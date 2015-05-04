@@ -211,6 +211,45 @@ static Tcl_Interp* create_tcl_interp( int argc, char **argv, Tcl_AppInitProc *ap
     return interp;
 }
 
+/** Enable core dumps for this service.
+ *
+ * The kernel configuration will need to be updated so the core dumps are
+ * created in the current directory, or the filenames are not time based,
+ * or we need to cause log/core file cleanup in one of the cron jobs.
+ */
+static void
+enable_core_dumps( const char *service_name ) {
+    struct rlimit core_dump;
+    core_dump.rlim_cur = RLIM_INFINITY;
+    core_dump.rlim_max = RLIM_INFINITY;
+    if ( setrlimit(RLIMIT_CORE, &core_dump) < 0 ) {
+        log_warn( "could not enable core dumps" );
+    }
+}
+
+/**
+ */
+static void
+clean_up_core_dumps( const char *service_name ) {
+    char buffer[1024];
+    sprintf( buffer, "/var/core/%s*", service_name );
+
+    glob_t core_dumps;
+    memset( &core_dumps, 0, sizeof(core_dumps) );
+    glob( buffer, GLOB_NOSORT, NULL, &core_dumps );
+
+    for ( size_t i = 0 ; i < core_dumps.gl_pathc ; i++ ) {
+        struct stat s;
+        stat( core_dumps.gl_pathv[i], &s );
+        log_warn( "WARNING: %s core dumped at %s", service_name,
+                ctime_r(&s.st_mtime, buffer) );
+        sprintf( buffer, "/var/core/saved-core-%s", service_name );
+        rename( core_dumps.gl_pathv[i], buffer );
+    }
+
+    globfree( &core_dumps );
+}
+
 /**
  * create the rundir 
  * create the channel
@@ -258,36 +297,8 @@ Service::initialize( int argc, char **argv, Tcl_AppInitProc *appInit ) {
     chdir( buffer );
     channel = new Channel( this );
 
-    /** * Enable core dumps for this service.
-     *
-     * The kernel configuration will need to be updated so the core dumps are
-     * created in the current directory, or the filenames are not time based,
-     * or we need to cause log/core file cleanup in one of the cron jobs.
-     */
-    struct rlimit core_dump;
-    core_dump.rlim_cur = RLIM_INFINITY;
-    core_dump.rlim_max = RLIM_INFINITY;
-    if ( setrlimit(RLIMIT_CORE, &core_dump) < 0 ) {
-        log_warn( "could not enable core dumps" );
-    }
-
-    /** Check if last run core dumped.
-     */
-    sprintf( buffer, "/var/core/%s*", service_name );
-    glob_t core_dumps;
-    memset( &core_dumps, 0, sizeof(core_dumps) );
-    glob( buffer, GLOB_NOSORT, NULL, &core_dumps );
-
-    for ( size_t i = 0 ; i < core_dumps.gl_pathc ; i++ ) {
-        struct stat s;
-        stat( core_dumps.gl_pathv[i], &s );
-        log_warn( "WARNING: %s core dumped at %s", service_name,
-                ctime_r(&s.st_mtime, buffer) );
-        sprintf( buffer, "/var/core/saved-core-%s", service_name );
-        rename( core_dumps.gl_pathv[i], buffer );
-    }
-
-    globfree( &core_dumps );
+    enable_core_dumps( service_name );
+    clean_up_core_dumps( service_name );
 
     /**
      * Create the TCL interpreter that manages this service and read the
