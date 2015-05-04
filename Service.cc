@@ -49,6 +49,7 @@
 
 #include <tcl.h>
 
+#include "logger.h"
 #include "util.h"
 #include "string_util.h"
 #include "traps.h"
@@ -110,7 +111,7 @@ PutsSyslog_cmd( ClientData data, Tcl_Interp *interp,
 
     char *message = Tcl_GetStringFromObj( objv[1], NULL );
 
-    syslog( LOG_NOTICE, message );
+    log_notice( message );
     Tcl_ResetResult( interp );
     return TCL_OK;
 }
@@ -129,7 +130,7 @@ SyslogWarn_cmd( ClientData data, Tcl_Interp *interp,
 
     char *message = Tcl_GetStringFromObj( objv[1], NULL );
 
-    syslog( LOG_WARNING, message );
+    log_warn(  message );
     Tcl_ResetResult( interp );
     return TCL_OK;
 }
@@ -148,7 +149,7 @@ SyslogErr_cmd( ClientData data, Tcl_Interp *interp,
 
     char *message = Tcl_GetStringFromObj( objv[1], NULL );
 
-    syslog( LOG_ERR, message );
+    log_err( message );
     Tcl_ResetResult( interp );
     return TCL_OK;
 }
@@ -170,7 +171,7 @@ static Tcl_Interp* create_tcl_interp( int argc, char **argv, Tcl_AppInitProc *ap
     Tcl_FindExecutable( argv[0] );
     interp = Thread::global_interp();
     if ( interp == NULL ) {
-        syslog( LOG_ERR, "failed to create interpreter" );
+        log_err( "failed to create interpreter" );
         exit( 1 );
     }   
     char *args = Tcl_Merge(argc-1, argv+1);
@@ -202,7 +203,7 @@ static Tcl_Interp* create_tcl_interp( int argc, char **argv, Tcl_AppInitProc *ap
 #if 0
     // temp comment out
     if ( Channel_Initialize(interp) == false ) {
-        syslog( LOG_ERR, "Channel_Initialize failed" );
+        log_err( "Channel_Initialize failed" );
     }
 #endif
 
@@ -227,7 +228,7 @@ Service::initialize( int argc, char **argv, Tcl_AppInitProc *appInit ) {
      * First redirect stderr, so we do not send errors to the console.
      */
     openlog( service_name, LOG_NDELAY, facility );
-    syslog( LOG_NOTICE, " ======= Startup (%d) ======= ", my_pid );
+    log_notice( " ======= Startup (%d) ======= ", my_pid );
     // \todo do not trap when interactive
     trap_error_signals();
 
@@ -238,7 +239,7 @@ Service::initialize( int argc, char **argv, Tcl_AppInitProc *appInit ) {
 
         sprintf( buffer, "/var/log/%s-stderr.log", service_name );
         if ( freopen(buffer, "a", stderr) == NULL ) {
-            syslog( LOG_WARNING, " failed to redirect stderr " );
+            log_warn( " failed to redirect stderr " );
         } else {
             setvbuf( stderr, NULL, _IONBF, 0 );
         }
@@ -267,7 +268,7 @@ Service::initialize( int argc, char **argv, Tcl_AppInitProc *appInit ) {
     core_dump.rlim_cur = RLIM_INFINITY;
     core_dump.rlim_max = RLIM_INFINITY;
     if ( setrlimit(RLIMIT_CORE, &core_dump) < 0 ) {
-        syslog( LOG_WARNING, "could not enable core dumps" );
+        log_warn( "could not enable core dumps" );
     }
 
     /** Check if last run core dumped.
@@ -280,7 +281,7 @@ Service::initialize( int argc, char **argv, Tcl_AppInitProc *appInit ) {
     for ( size_t i = 0 ; i < core_dumps.gl_pathc ; i++ ) {
         struct stat s;
         stat( core_dumps.gl_pathv[i], &s );
-        syslog( LOG_WARNING, "WARNING: %s core dumped at %s", service_name,
+        log_warn( "WARNING: %s core dumped at %s", service_name,
                 ctime_r(&s.st_mtime, buffer) );
         sprintf( buffer, "/var/core/saved-core-%s", service_name );
         rename( core_dumps.gl_pathv[i], buffer );
@@ -296,7 +297,7 @@ Service::initialize( int argc, char **argv, Tcl_AppInitProc *appInit ) {
     sprintf( buffer, "/etc/%s/%s.conf", service_name, service_name );
     if ( access(buffer, R_OK) == 0 ) {
         if ( Tcl_EvalFile(interp, buffer) == TCL_ERROR ) {
-            syslog( LOG_ERR, "Failed to read %s initialization: %s", service_name, Tcl_GetStringResult(interp) );
+            log_err( "Failed to read %s initialization: %s", service_name, Tcl_GetStringResult(interp) );
         }
     }
 
@@ -352,10 +353,10 @@ Service::load_commands( const char *dir ) {
     for ( size_t i = 0 ; i < paths.gl_pathc ; i++ ) {
         char *filename = paths.gl_pathv[i];
 
-        syslog( LOG_NOTICE, "loading '%s'", filename );
+        log_notice( "loading '%s'", filename );
         if ( access(filename, R_OK) == 0 ) {
             if ( load_command(filename) == false ) {
-                syslog( LOG_WARNING, "error: %s", Tcl_GetStringResult(interp) );
+                log_warn( "error: %s", Tcl_GetStringResult(interp) );
             }
         }
     }
@@ -378,10 +379,10 @@ Service::load_directory( const char *dir ) {
     for ( size_t i = 0 ; i < paths.gl_pathc ; i++ ) {
         char *filename = paths.gl_pathv[i];
 
-        syslog( LOG_NOTICE, "loading '%s'", filename );
+        log_notice( "loading '%s'", filename );
         if ( access(filename, R_OK) == 0 ) {
             if ( Tcl_EvalFile(interp, filename) != TCL_OK ) {
-                syslog( LOG_WARNING, "error: %s", Tcl_GetStringResult(interp) );
+                log_notice( "error: %s", Tcl_GetStringResult(interp) );
             }
         }
     }
@@ -395,10 +396,10 @@ Service::load_directory( const char *dir ) {
 bool
 Service::load_file( const char *filename ) {
     if ( access(filename, R_OK) != 0 ) return false;
-    syslog( LOG_NOTICE, "evaluating file '%s'", filename );
+    log_notice( "evaluating file '%s'", filename );
     if ( Tcl_EvalFile(interp, filename) != TCL_OK ) {
         // add TCL interp error string
-        syslog( LOG_WARNING, "error evaluating file" );
+        log_warn( "error evaluating file" );
         return false;
     }
     return true;
@@ -410,13 +411,13 @@ Service::load_file( const char *filename ) {
  */
 void
 Service::run() {
-    syslog( LOG_NOTICE, "Channel listening" );
+    log_notice( "Channel listening" );
     char request[1024];
     char response[1024];
     for (;;) {
         long sender = channel->receive( request, sizeof(request) );
         if ( ::kill(sender, 0) < 0 ) {
-            syslog( LOG_ERR, "client is dead: %s. Ignoring message", strerror(errno) );
+            log_err( "client is dead: %s. Ignoring message", strerror(errno) );
             continue;
         }
         int result = Tcl_EvalEx( interp, request, -1, TCL_EVAL_GLOBAL );
