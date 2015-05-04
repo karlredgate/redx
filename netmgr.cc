@@ -240,20 +240,6 @@ construct_remote_interface_name( Network::Peer *neighbor, char *name, int size )
     }
 }
 
-class DumpNode : public Network::NodeIterator {
-public:
-    DumpNode() {}
-    virtual ~DumpNode() {}
-
-    // called for each node
-    virtual int operator () ( Network::Node& node ) {
-
-        log_notice( "Node %s ordinal %d %s", node.uuid().to_s(),
-                node.ordinal(), node.is_partner() ? "[partner]" : "" );
-        return 1;
-    }
-};
-
 class DumpInterface : public Network::InterfaceIterator {
 public:
     DumpInterface() {}
@@ -304,55 +290,6 @@ public:
         return 1;
     }
 };
-
-class DumpInterfaceNeighbors : public Network::InterfaceIterator {
-public:
-    DumpInterfaceNeighbors() {}
-    virtual ~DumpInterfaceNeighbors() {}
-
-    // called for each interface known to netmgr
-    virtual int operator () ( Network::Interface& interface ) {
-
-        log_notice( "Interface %s neighbors:", interface.name() );
-        DumpNeighbor callback( &interface );
-
-        int dumped_neighbors = interface.each_neighbor( callback );
-        return dumped_neighbors;
-    }
-};
-
-/**
- * Spine Interface command (for debugging purposes)
- *
- * house
- * % netmgr { ask | tell } neighbors
- *
- * (output will appear in /var/log/netmgr.log)
- */
-static int
-neighbors_cmd( ClientData data, Tcl_Interp *interp,
-             int objc, Tcl_Obj * CONST *objv )
-{
-    log_notice( "neighbors_cmd" );
-
-    Network::Monitor *monitor = (Network::Monitor *)data;
-    if ( objc != 1 ) {
-        Tcl_ResetResult( interp );
-        Tcl_WrongNumArgs( interp, 1, objv, "command" );
-        return TCL_ERROR;
-    }
-    if ( monitor == NULL ) {
-        Tcl_SetResult( interp, "Hmm.  ClientData is NULL", TCL_STATIC );
-        return TCL_ERROR;
-    }
-
-    DumpInterfaceNeighbors callback;
-    int dumped_neighbors = monitor->each_interface( callback );
-    log_notice( "dumped %d neighbors", dumped_neighbors );
-
-    Tcl_ResetResult( interp );
-    return TCL_OK;
-}
 
 /**
  * Spine Interface command (for debugging purposes)
@@ -649,83 +586,6 @@ fault_cmd( ClientData data, Tcl_Interp *interp,
 
 /**
  * Spine Interface command
- * Invoked from remote Spine Dendrite call to set up vtund service.
- *
- * house
- * % netmgr { ask | tell } attach_vtund_client <name>
- *
- */
-static int
-attach_vtund_client_cmd( ClientData data, Tcl_Interp *interp,
-             int objc, Tcl_Obj * CONST *objv )
-{
-    log_notice( "attach_vtund_client_cmd" );
-
-    Network::Manager *manager = (Network::Manager *)data;
-    if ( objc != 2 ) {
-        Tcl_ResetResult( interp );
-        Tcl_WrongNumArgs( interp, 1, objv, "command" );
-        return TCL_ERROR;
-    }
-    if ( manager == NULL ) {
-        Tcl_SetResult( interp, "Hmm.  ClientData is NULL", TCL_STATIC );
-        return TCL_ERROR;
-    }
-    char *name = Tcl_GetStringFromObj( objv[1], NULL );
-    if ( ( name == NULL ) or ( strlen( name ) == 0 ) ) {
-        Tcl_SetResult( interp, "Invalid interface name (attach_vtund_client)", TCL_STATIC );
-        return TCL_ERROR;
-    }
-
-    if (not manager->attach_vtund_client( name ) ) {
-        Tcl_SetResult( interp, "Unknown interface name (attach_vtund_client)", TCL_STATIC );
-        return TCL_ERROR;
-    }
-
-    Tcl_ResetResult( interp );
-    return TCL_OK;
-}
-
-/**
- * Spine Interface command
- * Invoked from remote Spine Dendrite call to tear down vtund service.
- *
- * house
- * % netmgr { ask | tell } detach_vtund_client <name>
- *
- */
-static int
-detach_vtund_client_cmd( ClientData data, Tcl_Interp *interp,
-             int objc, Tcl_Obj * CONST *objv )
-{
-    log_notice( "detach_vtund_client_cmd" );
-
-    Network::Manager *manager = (Network::Manager *)data;
-    if ( objc != 2 ) {
-        Tcl_ResetResult( interp );
-        Tcl_WrongNumArgs( interp, 1, objv, "command" );
-        return TCL_ERROR;
-    }
-    if ( manager == NULL ) {
-        Tcl_SetResult( interp, "Hmm.  ClientData is NULL", TCL_STATIC );
-        return TCL_ERROR;
-    }
-    char *name = Tcl_GetStringFromObj( objv[1], NULL );
-    if ( ( name == NULL ) or ( strlen( name ) == 0 ) ) {
-        Tcl_SetResult( interp, "Invalid interface name (attach_vtund_client)", TCL_STATIC );
-        return TCL_ERROR;
-    }
-
-// XXX detach_vtund_client should return a bool like attach_vtund_client does
-//     and we should return an error here if that is the case
-    manager->detach_vtund_client( name );
-
-    Tcl_ResetResult( interp );
-    return TCL_OK;
-}
-
-/**
- * Spine Interface command
  * Sets access type on a shared network to be "business" or "private".
  *
  * house
@@ -873,7 +733,6 @@ int main( int argc, char **argv ) {
         log_notice( "WARNING:  Manager was not ready after 30 seconds, starting service anyway" );
     }
 
-    service.add_command( "neighbors", neighbors_cmd, (ClientData)&monitor );
     service.add_command( "interfaces", interfaces_cmd, (ClientData)&monitor );
     service.add_command( "insert_node", insert_node_cmd, (ClientData)&monitor );
 
@@ -884,9 +743,6 @@ int main( int argc, char **argv ) {
     service.add_command( "modify", modify_cmd, (ClientData)&manager );
     service.add_command( "destroy", destroy_cmd, (ClientData)&manager );
     service.add_command( "fault", fault_cmd, (ClientData)&manager );
-    service.add_command( "attach_vtund_client", attach_vtund_client_cmd, (ClientData)&manager );
-    service.add_command( "detach_vtund_client", detach_vtund_client_cmd, (ClientData)&manager );
-
     service.add_command( "set_access", set_access_cmd, (ClientData)&manager );
 
     service.start();
