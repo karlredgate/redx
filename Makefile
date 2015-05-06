@@ -10,7 +10,7 @@ include $(shell uname)/Platform.mk
 # changed to -O1 from -O2, since -O2 screws up valgrind.  This
 # should be good enough for shipping anyway.
 INCLUDE_DIRS = -I../xen/vendor/dist/install/usr/include -I../libservice -I../network
-INCLUDE_DIRS = -Ixen -Ilibservice -Inetwork
+INCLUDE_DIRS = -Ixen -Ilibservice -Inetwork -I$(shell pwd)
 # CXXFLAGS += -g -O1 $(INCLUDE_DIRS) -Wall -rdynamic
 CXXFLAGS += -g -O1 $(INCLUDE_DIRS)
 CFLAGS += -g -O1 $(INCLUDE_DIRS) -Wall
