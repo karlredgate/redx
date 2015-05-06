@@ -5,7 +5,7 @@ build: all
 # all: redx system-uuid
 all: redx
 
-include $(shell uname).mk
+include $(shell uname)/Platform.mk
 
 # changed to -O1 from -O2, since -O2 screws up valgrind.  This
 # should be good enough for shipping anyway.
