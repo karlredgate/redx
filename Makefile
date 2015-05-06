@@ -30,6 +30,7 @@ OBJS += xuid.o
 OBJS += string_util.o
 OBJS += tcl_util.o
 OBJS += traps.o
+OBJS += TCL_UUID.o
 OBJS += TCL_Bridge.o
 OBJS += TCL_Interface.o
 OBJS += TCL_ICMPv6.o
@@ -43,7 +44,6 @@ OBJS += TCL_Syslog.o
 # TCL_XenStore.o
 OBJS += Interface.o
 OBJS += Bridge.o
-OBJS += UUID_Module.o
 OBJS += $(PLATFORM_OBJS)
 
 CLEANS += redx $(OBJS)
