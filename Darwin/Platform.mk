@@ -3,6 +3,7 @@ CFLAGS += -IDarwin
 CXXFLAGS += -IDarwin
 LDFLAGS += -rdynamic
 
+PLATFORM_OBJS  = Darwin/DarwinKernel.o
 PLATFORM_OBJS  = Darwin/DarwinThread.o
 PLATFORM_OBJS += Darwin/DarwinKernelEvent.o
 PLATFORM_OBJS += Darwin/DarwinInterface.o

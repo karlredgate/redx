@@ -21,6 +21,7 @@ OBJS += AppInit.o
 OBJS += Thread.o
 OBJS += SMBIOSStringList.o
 OBJS += UUID.o
+OBJS += Kernel.o
 OBJS += Neighbor.o
 OBJS += ICMPv6.o
 OBJS += Channel.o
@@ -38,6 +39,7 @@ OBJS += TCL_NetworkMonitor.o
 OBJS += TCL_Channel.o
 OBJS += TCL_Thread.o
 OBJS += TCL_Syslog.o
+OBJS += TCL_Kernel.o
 # OBJS += TCL_SMBIOS.o
 # OBJS += TCL_SharedNetwork.o
 # TCL_Hypercall.o
