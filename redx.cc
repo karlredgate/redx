@@ -22,7 +22,7 @@
  */
 
 /** \file redx.cc
- * \brief A unit test/diagnostic shell for these libraries
+ * \brief A diagnostic shell
  *
  * \todo add process status/grep/lookup/etc
  * \todo add dbus
@@ -42,14 +42,6 @@
 #include <string.h>
 #include <syslog.h>
 #include <tcl.h>
-
-#if 0
-#include "Kernel.h"
-#include "BIOS.h"
-#include "NetLink.h"
-#include "Network.h"
-#include "Hypercall.h"
-#endif
 
 #include "tcl_util.h"
 #include "AppInit.h"

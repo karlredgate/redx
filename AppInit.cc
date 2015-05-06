@@ -43,6 +43,7 @@ Tcl_CallAppInitChain( Tcl_Interp *interp ) {
     int interactive = 1;
     Tcl_Obj *interactive_obj;
     interactive_obj = Tcl_GetVar2Ex( interp, "tcl_interactive", NULL, TCL_GLOBAL_ONLY );
+
     if ( interactive_obj != NULL ) {
         Tcl_GetIntFromObj( interp, interactive_obj, &interactive );
     }

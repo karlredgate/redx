@@ -41,7 +41,7 @@ namespace Kernel {
 
     /**
      */
-    // bool Initialize( Tcl_Interp * );
+    int daemonize( const char *command, int argc, char **argv );
 
 }
 

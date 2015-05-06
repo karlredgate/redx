@@ -52,60 +52,27 @@ namespace {
         NULL
     };
 }
-
-/**
- */
-static int
-tracing_enabled( Tcl_Interp *interp ) {
-    int enabled = 1;
-
-    Tcl_Obj *obj = Tcl_GetVar2Ex( interp, "trace", NULL, 0 );
-    if ( obj == NULL ) return enabled;
-
-    if ( Tcl_GetBooleanFromObj(interp, obj, &enabled) != TCL_OK ) {
-        return 1;
-    }
-
-    return enabled;
-}
 
 /**
  * Kernel::daemonize /path/to/command arg1 arg2 ...
  */
-static int
-daemonize_cmd( ClientData data, Tcl_Interp *interp,
-             int objc, Tcl_Obj * CONST *objv )
+int
+Kernel::daemonize( const char *command, int argc, char **argv )
 {
-    if ( objc < 2 ) {
-        Tcl_ResetResult( interp );
-        Tcl_WrongNumArgs( interp, 1, objv, "command [args]" );
-        return TCL_ERROR; 
-    }
-
     char *command = Tcl_GetStringFromObj( objv[1], NULL );
 
     if ( access(command, X_OK) < 0 ) {
-        Svc_SetResult( interp, "cannot execute command", TCL_STATIC );
-        return TCL_ERROR;
+        return -1; // Svc_SetResult( interp, "cannot execute command", TCL_STATIC );
     }
-
-    char *argv[30];
-    int argc = 1;
-    argv[0] = command;
-
-    for ( int i = 2 ; i < objc ; i++ ) {
-        argv[argc++] = Tcl_GetStringFromObj( objv[i], NULL );
-    }
-    argv[argc] = NULL;
 
     int pid = fork();
-    if ( pid != 0 ) {
-        Tcl_SetObjResult( interp, Tcl_NewIntObj((pid)) );
-        return TCL_OK;
-    }
+    if ( pid > 0 )  return pid;
+    if ( pid < 0 )  return -1;
+
     close( 0 );
     close( 1 );
     close( 2 );
+
     if ( fork() != 0 ) { _exit(0); }
 
     if ( setsid() < 0 ) {
@@ -116,7 +83,7 @@ daemonize_cmd( ClientData data, Tcl_Interp *interp,
     freopen( "/dev/null", "w", stdout );
     freopen( "/dev/null", "w", stderr );
 
-    log_open_user( "(house:background)" );
+    log_open_user( "(redx:background)" );
     log_notice( "spawning '%s'", command );
 
     if ( execve(command, argv, static_envp) < 0 ) {
@@ -124,7 +91,7 @@ daemonize_cmd( ClientData data, Tcl_Interp *interp,
         _exit(0);
     }
 
-    return TCL_ERROR;
+    return 0;
 }
 
 /**
@@ -555,24 +522,6 @@ determine_timeout( Tcl_Interp *interp ) {
 }
 
 /**
- * set ipmi_timeout 30
- * ipmitool command arg1..argN
- */
-static int
-ipmitool_cmd( ClientData data, Tcl_Interp *interp,
-             int objc, Tcl_Obj * CONST *objv )
-{
-    if ( objc < 2 ) {
-        Tcl_ResetResult( interp );
-        Tcl_WrongNumArgs( interp, 1, objv, "command arg1..argN" );
-        return TCL_ERROR; 
-    }
-
-    return timeout( interp, determine_timeout(interp),
-                    "/usr/bin/ipmitool", objc-1, objv+1 );
-}
-
-/**
  */
 static int
 devno_cmd( ClientData data, Tcl_Interp *interp,
@@ -602,85 +551,5 @@ devno_cmd( ClientData data, Tcl_Interp *interp,
     Tcl_SetObjResult( interp, list );
     return TCL_OK;
 }
-
-/**
- */
-bool
-Kernel_Module( Tcl_Interp *interp ) {
-    Tcl_Command command;
-
-    Tcl_Namespace *ns = Tcl_CreateNamespace(interp, "Kernel", (ClientData)0, NULL);
-    if ( ns == NULL ) {
-        return false;
-    }
-
-    if ( Tcl_LinkVar(interp, "Kernel::debug", (char *)&debug, TCL_LINK_INT) != TCL_OK ) {
-        log_err( "failed to link Kernel::debug" );
-        return false;
-    }
-
-    command = Tcl_CreateObjCommand(interp, "Kernel::daemonize", daemonize_cmd, (ClientData)0, NULL);
-    if ( command == NULL ) {
-        // logger ?? want to report TCL Error
-        return false;
-    }
-
-    command = Tcl_CreateObjCommand(interp, "Kernel::mount", mount_cmd, (ClientData)0, NULL);
-    if ( command == NULL ) {
-        // logger ?? want to report TCL Error
-        return false;
-    }
-
-    command = Tcl_CreateObjCommand(interp, "Kernel::umount", umount_cmd, (ClientData)0, NULL);
-    if ( command == NULL ) {
-        // logger ?? want to report TCL Error
-        return false;
-    }
-
-    command = Tcl_CreateObjCommand(interp, "Kernel::reboot", reboot_cmd, (ClientData)0, NULL);
-    if ( command == NULL ) {
-        // logger ?? want to report TCL Error
-        return false;
-    }
-
-    command = Tcl_CreateObjCommand(interp, "Kernel::halt", halt_cmd, (ClientData)0, NULL);
-    if ( command == NULL ) {
-        // logger ?? want to report TCL Error
-        return false;
-    }
-
-    command = Tcl_CreateObjCommand(interp, "Kernel::poweroff", poweroff_cmd, (ClientData)0, NULL);
-    if ( command == NULL ) {
-        // logger ?? want to report TCL Error
-        return false;
-    }
-
-    command = Tcl_CreateObjCommand(interp, "Kernel::salute", salute_cmd, (ClientData)0, NULL);
-    if ( command == NULL ) {
-        // logger ?? want to report TCL Error
-        return false;
-    }
-
-    command = Tcl_CreateObjCommand(interp, "Kernel::timeout", timeout_cmd, (ClientData)0, NULL);
-    if ( command == NULL ) {
-        // logger ?? want to report TCL Error
-        return false;
-    }
-
-    command = Tcl_CreateObjCommand(interp, "Kernel::ipmitool", ipmitool_cmd, (ClientData)0, NULL);
-    if ( command == NULL ) {
-        // logger ?? want to report TCL Error
-        return false;
-    }
-
-    command = Tcl_CreateObjCommand(interp, "Kernel::devno", devno_cmd, (ClientData)0, NULL);
-    if ( command == NULL ) {
-        return false;
-    }
-
-    return true;
-}
-
-app_init( Kernel_Module );
 
 /* vim: set autoindent expandtab sw=4 : */
