@@ -34,6 +34,8 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
+#include <signal.h>
+
 #include <sys/reboot.h>
 
 #include <time.h>
@@ -59,7 +61,7 @@ namespace {
 int
 Kernel::daemonize( const char *command, int argc, char **argv )
 {
-    char *command = Tcl_GetStringFromObj( objv[1], NULL );
+    // char *command = Tcl_GetStringFromObj( objv[1], NULL );
 
     if ( access(command, X_OK) < 0 ) {
         return -1; // Svc_SetResult( interp, "cannot execute command", TCL_STATIC );
@@ -102,6 +104,7 @@ Kernel::daemonize( const char *command, int argc, char **argv )
  *
  * Kernel::mount /dev/drbd5 /shared ext3 {nodev dirsync}
  */
+#if 0
 static int
 mount_cmd( ClientData data, Tcl_Interp *interp,
              int objc, Tcl_Obj * CONST *objv )
@@ -165,6 +168,7 @@ umount_cmd( ClientData data, Tcl_Interp *interp,
     Svc_SetResult( interp, "Unknown command for EchoRequest object", TCL_STATIC );
     return TCL_OK;
 }
+#endif
 
 /**
  */
@@ -181,11 +185,14 @@ reboot_cmd( ClientData data, Tcl_Interp *interp,
     char *message = Tcl_GetStringFromObj( objv[1], NULL );
     log_notice( "reboot: %s", message );
     sync();
-    int result = ::reboot( RB_AUTOBOOT );
+    // int result = ::reboot( RB_AUTOBOOT );
+    int result = -1;
     if ( result < 0 ) {
         Tcl_ResetResult( interp );
         char buffer[128];
-        char *err = strerror_r(errno, buffer, sizeof(buffer));
+        // char *err = strerror_r(errno, buffer, sizeof(buffer));
+        strerror_r(errno, buffer, sizeof(buffer));
+        char *err = buffer;
         Svc_SetResult( interp, err, TCL_VOLATILE );
         return TCL_ERROR;
     }
@@ -209,11 +216,14 @@ halt_cmd( ClientData data, Tcl_Interp *interp,
     char *message = Tcl_GetStringFromObj( objv[1], NULL );
     log_notice( "reboot: %s", message );
     sync();
-    int result = ::reboot( RB_HALT_SYSTEM );
+    // int result = ::reboot( RB_HALT_SYSTEM );
+    int result = -1;
     if ( result < 0 ) {
         Tcl_ResetResult( interp );
         char buffer[128];
-        char *err = strerror_r(errno, buffer, sizeof(buffer));
+        // char *err = strerror_r(errno, buffer, sizeof(buffer));
+        strerror_r(errno, buffer, sizeof(buffer));
+        char *err = buffer;
         Svc_SetResult( interp, err, TCL_VOLATILE );
         return TCL_ERROR;
     }
@@ -237,11 +247,14 @@ poweroff_cmd( ClientData data, Tcl_Interp *interp,
     char *message = Tcl_GetStringFromObj( objv[1], NULL );
     log_notice( "reboot: %s", message );
     sync();
-    int result = ::reboot( RB_POWER_OFF );
+    // int result = ::reboot( RB_POWER_OFF );
+    int result = -1;
     if ( result < 0 ) {
         Tcl_ResetResult( interp );
         char buffer[128];
-        char *err = strerror_r(errno, buffer, sizeof(buffer));
+        // char *err = strerror_r(errno, buffer, sizeof(buffer));
+        strerror_r(errno, buffer, sizeof(buffer));
+        char *err = buffer;
         Svc_SetResult( interp, err, TCL_VOLATILE );
         return TCL_ERROR;
     }
@@ -269,15 +282,17 @@ salute_cmd( ClientData data, Tcl_Interp *interp,
     }
     int result;
     if ( cad ) {
-        result = ::reboot( RB_ENABLE_CAD );
+        // result = ::reboot( RB_ENABLE_CAD );
     } else {
-        result = ::reboot( RB_DISABLE_CAD );
+        // result = ::reboot( RB_DISABLE_CAD );
     }
 
     if ( result < 0 ) {
         Tcl_ResetResult( interp );
         char buffer[128];
-        char *err = strerror_r(errno, buffer, sizeof(buffer));
+        // char *err = strerror_r(errno, buffer, sizeof(buffer));
+        strerror_r(errno, buffer, sizeof(buffer));
+        char *err = buffer;
         Svc_SetResult( interp, err, TCL_VOLATILE );
         return TCL_ERROR;
     }
@@ -422,7 +437,8 @@ static int
 timeout( Tcl_Interp *interp, int time_limit,
               const char *command, int objc, Tcl_Obj * CONST *objv )
 {
-    int tracing = tracing_enabled(interp);
+    // int tracing = tracing_enabled(interp);
+    int tracing = 1;
 
     if ( access(command, X_OK) < 0 ) {
         Svc_SetResult( interp, "cannot execute command", TCL_STATIC );
@@ -439,7 +455,9 @@ timeout( Tcl_Interp *interp, int time_limit,
         log_notice( "fork failed for '%s %s'", command, arg_string );
         Tcl_ResetResult( interp );
         char buffer[128];
-        char *err = strerror_r(errno, buffer, sizeof(buffer));
+        // char *err = strerror_r(errno, buffer, sizeof(buffer));
+        strerror_r(errno, buffer, sizeof(buffer));
+        char *err = buffer;
         Svc_SetResult( interp, err, TCL_VOLATILE );
         return TCL_ERROR;
     }

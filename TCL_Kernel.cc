@@ -33,7 +33,10 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <stdio.h>
 #include <string.h>
+#include <signal.h>
+
 #include <sys/reboot.h>
 
 #include <time.h>
@@ -117,6 +120,7 @@ daemonize_cmd( ClientData data, Tcl_Interp *interp,
  *
  * Kernel::mount /dev/drbd5 /shared ext3 {nodev dirsync}
  */
+#if 0
 static int
 mount_cmd( ClientData data, Tcl_Interp *interp,
              int objc, Tcl_Obj * CONST *objv )
@@ -140,9 +144,9 @@ mount_cmd( ClientData data, Tcl_Interp *interp,
     if ( objc > 4 ) {
         for ( int i = 4 ; i < objc ; i++ ) {
             char *flag = Tcl_GetStringFromObj( objv[i], NULL );
-            if ( Tcl_StringMatch(flag, "nodev") ) { flags |= MS_NODEV; continue; }
-            if ( Tcl_StringMatch(flag, "dirsync") ) { flags |= MS_NODEV; continue; }
-            if ( Tcl_StringMatch(flag, "bind") ) { flags |= MS_BIND; continue; }
+            // if ( Tcl_StringMatch(flag, "nodev") ) { flags |= MS_NODEV; continue; }
+            // if ( Tcl_StringMatch(flag, "dirsync") ) { flags |= MS_NODEV; continue; }
+            // if ( Tcl_StringMatch(flag, "bind") ) { flags |= MS_BIND; continue; }
         }
     }
 
@@ -180,6 +184,7 @@ umount_cmd( ClientData data, Tcl_Interp *interp,
     Svc_SetResult( interp, "Unknown command for EchoRequest object", TCL_STATIC );
     return TCL_OK;
 }
+#endif
 
 /**
  */
@@ -196,6 +201,7 @@ reboot_cmd( ClientData data, Tcl_Interp *interp,
     char *message = Tcl_GetStringFromObj( objv[1], NULL );
     log_notice( "reboot: %s", message );
     sync();
+#if 0
     int result = ::reboot( RB_AUTOBOOT );
     if ( result < 0 ) {
         Tcl_ResetResult( interp );
@@ -204,6 +210,7 @@ reboot_cmd( ClientData data, Tcl_Interp *interp,
         Svc_SetResult( interp, err, TCL_VOLATILE );
         return TCL_ERROR;
     }
+#endif
 
     Tcl_ResetResult( interp );
     return TCL_OK;
@@ -224,6 +231,7 @@ halt_cmd( ClientData data, Tcl_Interp *interp,
     char *message = Tcl_GetStringFromObj( objv[1], NULL );
     log_notice( "reboot: %s", message );
     sync();
+#if 0
     int result = ::reboot( RB_HALT_SYSTEM );
     if ( result < 0 ) {
         Tcl_ResetResult( interp );
@@ -232,6 +240,7 @@ halt_cmd( ClientData data, Tcl_Interp *interp,
         Svc_SetResult( interp, err, TCL_VOLATILE );
         return TCL_ERROR;
     }
+#endif
 
     Tcl_ResetResult( interp );
     return TCL_OK;
@@ -252,6 +261,7 @@ poweroff_cmd( ClientData data, Tcl_Interp *interp,
     char *message = Tcl_GetStringFromObj( objv[1], NULL );
     log_notice( "reboot: %s", message );
     sync();
+#if 0
     int result = ::reboot( RB_POWER_OFF );
     if ( result < 0 ) {
         Tcl_ResetResult( interp );
@@ -260,6 +270,7 @@ poweroff_cmd( ClientData data, Tcl_Interp *interp,
         Svc_SetResult( interp, err, TCL_VOLATILE );
         return TCL_ERROR;
     }
+#endif
 
     Tcl_ResetResult( interp );
     return TCL_OK;
@@ -284,15 +295,17 @@ salute_cmd( ClientData data, Tcl_Interp *interp,
     }
     int result;
     if ( cad ) {
-        result = ::reboot( RB_ENABLE_CAD );
+        // result = ::reboot( RB_ENABLE_CAD );
     } else {
-        result = ::reboot( RB_DISABLE_CAD );
+        // result = ::reboot( RB_DISABLE_CAD );
     }
 
     if ( result < 0 ) {
         Tcl_ResetResult( interp );
         char buffer[128];
-        char *err = strerror_r(errno, buffer, sizeof(buffer));
+        // char *err = strerror_r(errno, buffer, sizeof(buffer));
+        strerror_r(errno, buffer, sizeof(buffer));
+        char *err = buffer;
         Svc_SetResult( interp, err, TCL_VOLATILE );
         return TCL_ERROR;
     }
@@ -424,7 +437,7 @@ wait_for_child( pid_t child, int timeout ) {
     }
 
     if ( debug ) log_notice( "timed out, killing pid %d", child );
-    kill( child, SIGKILL );
+    ::kill( child, SIGKILL );
 
     /* pid = waitpid( child, &status, WNOHANG ); */
     pid = waitpid( child, &status, 0 );
@@ -454,7 +467,9 @@ timeout( Tcl_Interp *interp, int time_limit,
         log_notice( "fork failed for '%s %s'", command, arg_string );
         Tcl_ResetResult( interp );
         char buffer[128];
-        char *err = strerror_r(errno, buffer, sizeof(buffer));
+        // char *err = strerror_r(errno, buffer, sizeof(buffer));
+        strerror_r(errno, buffer, sizeof(buffer));
+        char *err = buffer;
         Svc_SetResult( interp, err, TCL_VOLATILE );
         return TCL_ERROR;
     }
@@ -607,13 +622,13 @@ Kernel_Module( Tcl_Interp *interp ) {
         return false;
     }
 
-    command = Tcl_CreateObjCommand(interp, "Kernel::mount", mount_cmd, (ClientData)0, NULL);
+    // command = Tcl_CreateObjCommand(interp, "Kernel::mount", mount_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
         // logger ?? want to report TCL Error
         return false;
     }
 
-    command = Tcl_CreateObjCommand(interp, "Kernel::umount", umount_cmd, (ClientData)0, NULL);
+    // command = Tcl_CreateObjCommand(interp, "Kernel::umount", umount_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
         // logger ?? want to report TCL Error
         return false;
