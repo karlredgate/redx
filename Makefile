@@ -1,6 +1,24 @@
 
+PACKAGE = redx
+PWD := $(shell pwd)
+DEPENDENCIES = tcl
+
+MAJOR_VERSION=1
+MINOR_VERSION=0
+REVISION=0
+
+CFLAGS += -fpic -g
+CXXFLAGS += -fpic -g
+LDFLAGS += -g
+
+#
 # default: build install
 default: build
+
+OS := $(shell uname -s)
+include Makefiles/$(OS).mk
+CXXFLAGS += -I$(OS)
+
 build: all
 # all: redx system-uuid
 all: redx
@@ -9,8 +27,9 @@ include $(shell uname)/Platform.mk
 
 # changed to -O1 from -O2, since -O2 screws up valgrind.  This
 # should be good enough for shipping anyway.
-INCLUDE_DIRS = -I../xen/vendor/dist/install/usr/include -I../libservice -I../network
-INCLUDE_DIRS = -Ixen -Ilibservice -Inetwork -I$(shell pwd)
+# INCLUDE_DIRS = -I../xen/vendor/dist/install/usr/include -I../libservice -I../network
+# INCLUDE_DIRS = -Ixen -Ilibservice -Inetwork -I$(shell pwd)
+INCLUDE_DIRS += -I.
 # CXXFLAGS += -g -O1 $(INCLUDE_DIRS) -Wall -rdynamic
 CXXFLAGS += -g -O1 $(INCLUDE_DIRS)
 CFLAGS += -g -O1 $(INCLUDE_DIRS) -Wall
@@ -21,7 +40,7 @@ OBJS += AppInit.o
 OBJS += Thread.o
 OBJS += SMBIOSStringList.o
 OBJS += UUID.o
-OBJS += Kernel.o
+# OBJS += Kernel.o
 OBJS += Neighbor.o
 OBJS += ICMPv6.o
 OBJS += Channel.o
@@ -39,11 +58,11 @@ OBJS += TCL_NetworkMonitor.o
 OBJS += TCL_Channel.o
 OBJS += TCL_Thread.o
 OBJS += TCL_Syslog.o
-OBJS += TCL_Kernel.o
+# OBJS += TCL_Kernel.o
 # OBJS += TCL_SMBIOS.o
 # OBJS += TCL_SharedNetwork.o
-# TCL_Hypercall.o
-# TCL_XenStore.o
+# OBJS += TCL_Hypercall.o
+# OBJS += TCL_XenStore.o
 OBJS += Interface.o
 OBJS += Bridge.o
 OBJS += $(PLATFORM_OBJS)

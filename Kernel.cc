@@ -26,6 +26,9 @@
  *
  */
 
+// this is for OSX
+#include <sys/param.h>
+
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/mount.h>
@@ -59,7 +62,7 @@ namespace {
 int
 Kernel::daemonize( const char *command, int argc, char **argv )
 {
-    char *command = Tcl_GetStringFromObj( objv[1], NULL );
+    // const char *command = Tcl_GetStringFromObj( objv[1], NULL );
 
     if ( access(command, X_OK) < 0 ) {
         return -1; // Svc_SetResult( interp, "cannot execute command", TCL_STATIC );
@@ -125,9 +128,9 @@ mount_cmd( ClientData data, Tcl_Interp *interp,
     if ( objc > 4 ) {
         for ( int i = 4 ; i < objc ; i++ ) {
             char *flag = Tcl_GetStringFromObj( objv[i], NULL );
-            if ( Tcl_StringMatch(flag, "nodev") ) { flags |= MS_NODEV; continue; }
-            if ( Tcl_StringMatch(flag, "dirsync") ) { flags |= MS_NODEV; continue; }
-            if ( Tcl_StringMatch(flag, "bind") ) { flags |= MS_BIND; continue; }
+            // if ( Tcl_StringMatch(flag, "nodev") ) { flags |= MS_NODEV; continue; }
+            // if ( Tcl_StringMatch(flag, "dirsync") ) { flags |= MS_NODEV; continue; }
+            // if ( Tcl_StringMatch(flag, "bind") ) { flags |= MS_BIND; continue; }
         }
     }
 
@@ -416,111 +419,6 @@ wait_for_child( pid_t child, int timeout ) {
     return -1;
 }
 
-/**
- */
-static int
-timeout( Tcl_Interp *interp, int time_limit,
-              const char *command, int objc, Tcl_Obj * CONST *objv )
-{
-    int tracing = tracing_enabled(interp);
-
-    if ( access(command, X_OK) < 0 ) {
-        Svc_SetResult( interp, "cannot execute command", TCL_STATIC );
-        return TCL_ERROR;
-    }
-
-    Tcl_Obj *obj = Tcl_ConcatObj( objc, objv );
-    char *arg_string = Tcl_GetStringFromObj( obj, NULL );
-
-    int out;
-    pid_t child = spawn_child( interp, command, objc, objv, &out );
-
-    if ( child < 0 ) {
-        log_notice( "fork failed for '%s %s'", command, arg_string );
-        Tcl_ResetResult( interp );
-        char buffer[128];
-        char *err = strerror_r(errno, buffer, sizeof(buffer));
-        Svc_SetResult( interp, err, TCL_VOLATILE );
-        return TCL_ERROR;
-    }
-
-    if ( tracing ) {
-        log_notice( "spawned '%s %s' (%d)", command, arg_string, child );
-    }
-    int result = wait_for_child( child, time_limit );
-
-    if ( result < 0 ) {
-        close( out );
-        log_notice( "timed out waiting for '%s' (%d)", command, child );
-        Svc_SetResult( interp, "timed out waiting for child", TCL_STATIC );
-        return TCL_ERROR;
-    }
-
-    Tcl_ResetResult( interp );
-
-    char buffer[128];
-    ssize_t bytes;
-
-    for (;;) {
-        bytes = read( out, buffer, sizeof(buffer)-1 );
-        if ( bytes == 0 ) break;
-        if ( bytes < 0 ) {
-            log_notice( "error reading from child - skipping rest" );
-            break;
-        }
-        buffer[bytes] = '\0';
-        Tcl_AppendResult( interp, buffer, NULL );
-    }
-    close( out );
-
-    if ( bytes < 0 ) {
-        Svc_SetResult( interp, "error reading output from child", TCL_STATIC );
-        return TCL_ERROR;
-    }
-
-    return TCL_OK;
-}
-
-/**
- * timeout <seconds> command arg1..argN
- */
-static int
-timeout_cmd( ClientData data, Tcl_Interp *interp,
-             int objc, Tcl_Obj * CONST *objv )
-{
-    if ( objc < 3 ) {
-        Tcl_ResetResult( interp );
-        Tcl_WrongNumArgs( interp, 1, objv, "seconds command arg1..argN" );
-        return TCL_ERROR; 
-    }
-
-    int time_limit;
-    if ( Tcl_GetIntFromObj(interp,objv[1],&time_limit) != TCL_OK ) {
-        Svc_SetResult( interp, "invalid timeout", TCL_STATIC );
-        return TCL_ERROR;
-    }
-
-    char *command = Tcl_GetStringFromObj( objv[2], NULL );
-
-    return timeout( interp, time_limit, command, objc-3, objv+3 );
-}
-
-/**
- */
-static int
-determine_timeout( Tcl_Interp *interp ) {
-    int time_limit = 20;
-
-    Tcl_Obj *obj = Tcl_GetVar2Ex( interp, "timeout", NULL, 0 );
-    if ( obj == NULL ) return time_limit;
-
-    if ( Tcl_GetIntFromObj(interp,obj,&time_limit) != TCL_OK ) {
-        return 20;
-    }
-
-    return time_limit;
-}
-
 /**
  */
 static int

@@ -31,7 +31,8 @@
 #ifndef _TCL_UTIL_H_
 #define _TCL_UTIL_H_
 
-#include <tcl.h>
+// #include <tcl.h>
+#include "platform.h"
 
 EXTERN Tcl_Namespace *
 Tcl_CreateNamespace _ANSI_ARGS_((Tcl_Interp * interp, CONST char * name,
