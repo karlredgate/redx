@@ -36,6 +36,7 @@ CFLAGS += -g -O1 $(INCLUDE_DIRS) -Wall
 LDFLAGS += -g -O1
 
 OBJS = redx.o 
+OBJS += Allocator.o
 OBJS += AppInit.o
 OBJS += Thread.o
 OBJS += SMBIOSStringList.o
