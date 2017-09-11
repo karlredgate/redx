@@ -37,6 +37,7 @@ LDFLAGS += -g -O1
 
 OBJS = redx.o 
 OBJS += Allocator.o
+OBJS += List.o
 OBJS += AppInit.o
 OBJS += Thread.o
 OBJS += SMBIOSStringList.o
