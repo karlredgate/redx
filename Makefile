@@ -37,6 +37,9 @@ LDFLAGS += -g -O1
 
 OBJS = redx.o 
 OBJS += Allocator.o
+OBJS += IntKey.o
+OBJS += CStringKey.o
+OBJS += TCL_Keys.o
 OBJS += List.o
 OBJS += AppInit.o
 OBJS += Thread.o

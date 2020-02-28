@@ -34,6 +34,8 @@
 #include <tcl.h>
 #include "tcl_util.h"
 #include "Thread.h"
+#include "List.h"
+
 #include "PlatformThread.h"
 #include "AppInit.h"
 
@@ -66,6 +68,17 @@ public:
 };
 
 pthread_key_t CurrentThread;
+
+class ThreadList2 : public List {
+private:
+    Thread *thread;
+public:
+    ThreadList2() {
+    }
+    virtual ~ThreadList2() {
+        delete thread;
+    }
+};
 
 class ThreadList {
     Thread *thread;

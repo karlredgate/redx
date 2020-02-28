@@ -55,6 +55,7 @@ namespace { int debug = 0; }
  */
 const char *
 Network::Bridge::create() {
+    fprintf( stderr, "create new bridge '%s'", _name );
     log_notice( "create new bridge '%s'", _name );
 
     int sock = socket(AF_INET, SOCK_STREAM, 0);
