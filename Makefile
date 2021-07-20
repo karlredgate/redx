@@ -72,6 +72,9 @@ OBJS += Interface.o
 OBJS += Bridge.o
 OBJS += $(PLATFORM_OBJS)
 
+#
+# for static linking use "-static" and TCL then needs
+# -ldl -lz -pthread
 CLEANS += redx $(OBJS)
 redx: $(OBJS)
 	@: $(CXX) $(CXXFLAGS) -o $@ $^ -L../network -lnetmgr -L../network/netlib -lnetlib -L../network/netcfg -lnetcfg -L../libservice -lservice -lpthread -ltcl -lexpect5.44.1.15
