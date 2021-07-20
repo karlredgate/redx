@@ -1,4 +1,5 @@
-semantic_version := $(shell cat VERSION)
+# semantic_version := $(shell cat VERSION)
+semantic_version := 1
 git_rev := $(shell git rev-parse --short HEAD)
 version_suffix := $(shell echo $${BUILD_NUMBER:-git.$(git_rev)})
 #version_suffix := $(shell if [[ -n "$${BUILD_NUMBER}" ]]; then echo "r.$${BUILD_NUMBER}"; else echo "git.$(git_rev)"; fi)

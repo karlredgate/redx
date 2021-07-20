@@ -3,6 +3,7 @@ $(warning Loading Linux Rules)
 DISTRO := $(shell lsb_release -is)
 RELEASE := $(shell lsb_release -rs)
 CODENAME := $(shell lsb_release -cs)
+$(warning This is $(DISTRO) release $(RELEASE) codename $(CODENAME) )
 
 LINKNAME=$(LIBRARY_NAME).so
 SONAME=$(LINKNAME).$(MAJOR_VERSION)

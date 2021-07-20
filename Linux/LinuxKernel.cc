@@ -59,7 +59,7 @@ namespace {
 int
 Kernel::daemonize( const char *command, int argc, char **argv )
 {
-    char *command = Tcl_GetStringFromObj( objv[1], NULL );
+    // char *command = Tcl_GetStringFromObj( objv[1], NULL );
 
     if ( access(command, X_OK) < 0 ) {
         return -1; // Svc_SetResult( interp, "cannot execute command", TCL_STATIC );
@@ -422,7 +422,7 @@ static int
 timeout( Tcl_Interp *interp, int time_limit,
               const char *command, int objc, Tcl_Obj * CONST *objv )
 {
-    int tracing = tracing_enabled(interp);
+    int tracing = 0; /* tracing_enabled(interp); */
 
     if ( access(command, X_OK) < 0 ) {
         Svc_SetResult( interp, "cannot execute command", TCL_STATIC );

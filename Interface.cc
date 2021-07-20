@@ -667,7 +667,7 @@ Network::Interface::inbound_socket( char *address, uint16_t port ) {
     inbound = ::socket( AF_INET6, SOCK_DGRAM, 0 );
     if ( inbound < 0 ) {
         char *err, e[128];
-        strerror_r( errno, e, sizeof(e) );
+        char *result = strerror_r( errno, e, sizeof(e) );
         log_err( "could not create diastole socket: %s", e );
         _exit( 1 );
     }
@@ -757,9 +757,10 @@ Network::Interface::carrier() const {
         log_err( "%s(%d) could not determine carrier", name(), index() );
         return false;
     }
-    fscanf( f, "%d\n", &value  );
+    int count = fscanf( f, "%d\n", &value  );
     fclose( f );
 
+    if ( count != 1 ) return 0;
     return (value != 0);
 }
 
@@ -935,8 +936,9 @@ Network::Interface::accept_ra() {
         log_err( "%s(%d) could not determine accept_ra", name(), index() );
         return false;
     }
-    fscanf( f, "%d\n", &value  );
+    int count = fscanf( f, "%d\n", &value  );
     fclose( f );
+    if ( count != 1 ) return 0;
     return (value != 0);
 }
 

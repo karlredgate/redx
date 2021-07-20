@@ -27,6 +27,8 @@
  */
 
 #define _POSIX_C_SOURCE 199309L
+#define __USE_POSIX199309
+#define _XOPEN_SOURCE 700
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -39,7 +41,8 @@
 #include <signal.h>
 #include <string.h>
 #include <errno.h>
-#include <signal.h>
+// #include <linux/signal.h> /* siginfo */
+// #include <asm-generic/siginfo.h>
 #include <execinfo.h>
 #include <glob.h>
 
