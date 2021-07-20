@@ -1,6 +1,6 @@
 
 /*
- * Copyright (c) 2012-2021 Karl N. Redgate
+ * Copyright (c) 2021 Karl N. Redgate
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -21,46 +21,34 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-/** \file Container.cc
- * \brief 
- *
+/** \file Container.h
+ * \brief Network containers commands
  */
 
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
+#ifndef _DARWIN_CONTAINER_H_
+#define _DARWIN_CONTAINER_H_
 
-#include <sys/types.h>
-#include <sched.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include <stdint.h>
 
-#include "logger.h"
-#include "Container.h"
-#include "AppInit.h"
-
-namespace {
-    int debug = 0;
-    char *static_envp[] = {
-        const_cast<char*>("HOME=/root"),
-        NULL
-    };
-}
-
 /**
- * Kernel::daemonize /path/to/command arg1 arg2 ...
  */
-Container::Layer::Layer() {
+namespace Container {
+
+    /**
+     */
+    class Layer {
+    private:
+
+    public:
+        // Need to pass these to the which subclasses
+        Layer();
+        virtual ~Layer();
+    };
+
+    int unshare_pid();
+
 }
 
-Container::Layer::~Layer() {
-}
-
-int
-Container::unshare_pid() {
-    int flags = CLONE_NEWPID;
-    return unshare(flags);
-}
+#endif
 
 /* vim: set autoindent expandtab sw=4 : */

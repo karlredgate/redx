@@ -14,6 +14,7 @@ PLATFORM_OBJS += Linux/LinuxNetworkMonitor.o
 PLATFORM_OBJS += Linux/NetLink.o
 PLATFORM_OBJS += Linux/NetLinkMonitor.o
 PLATFORM_OBJS += Linux/TCL_NetLink.o
+PLATFORM_OBJS += Linux/Container.o
 
 NetLink.o :: NetLink.h
 LinuxThread.o :: PlatformThread.h

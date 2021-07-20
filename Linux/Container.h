@@ -29,7 +29,6 @@
 #define _LINUX_CONTAINER_H_
 
 #include <stdint.h>
-#include <tcl.h>
 
 /**
  */
@@ -42,9 +41,11 @@ namespace Container {
 
     public:
         // Need to pass these to the which subclasses
-        Layer( Tcl_Interp *, ListenerInterfaceFactory );
+        Layer();
         virtual ~Layer();
     };
+
+    int unshare_pid();
 
 }
 

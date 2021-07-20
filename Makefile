@@ -64,6 +64,7 @@ OBJS += TCL_Channel.o
 OBJS += TCL_Thread.o
 OBJS += TCL_Syslog.o
 OBJS += TCL_Kernel.o
+OBJS += TCL_Container.o
 # OBJS += TCL_SMBIOS.o
 # OBJS += TCL_SharedNetwork.o
 # OBJS += TCL_Hypercall.o

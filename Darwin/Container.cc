@@ -31,7 +31,6 @@
 #endif
 
 #include <sys/types.h>
-#include <sched.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -59,8 +58,7 @@ Container::Layer::~Layer() {
 
 int
 Container::unshare_pid() {
-    int flags = CLONE_NEWPID;
-    return unshare(flags);
+    return -1;
 }
 
 /* vim: set autoindent expandtab sw=4 : */
