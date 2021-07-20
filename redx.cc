@@ -60,7 +60,7 @@ int RedX_Init( Tcl_Interp *interp ) {
     Tcl_Command command;
 
     if ( interactive ) printf( " ** RedX debug tool v1.0\n" );
-    Tcl_SetVar(interp, "tcl_rcFileName", "~/.houserc", TCL_GLOBAL_ONLY);
+    Tcl_SetVar(interp, "tcl_rcFileName", "~/.redxrc", TCL_GLOBAL_ONLY);
 
     Tcl_EvalEx( interp, "proc clock {command} { namespace eval ::tcl::clock $command}", -1, TCL_EVAL_GLOBAL );
     Tcl_EvalEx( interp, "proc commands {} {namespace eval commands {info procs}}", -1, TCL_EVAL_GLOBAL );
