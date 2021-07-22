@@ -249,8 +249,11 @@ MemPool heap;
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 /**
+ * The exception was necessary at one point... now it appears
+ * the std committee has removed them !?!?
  */
-void* operator new (size_t size) throw(std::bad_alloc) {
+// void* operator new (size_t size) throw(std::bad_alloc) {
+void* operator new (size_t size) {
     pthread_mutex_lock( &mutex );
     void *address = heap.allocate( size );
     pthread_mutex_unlock( &mutex );

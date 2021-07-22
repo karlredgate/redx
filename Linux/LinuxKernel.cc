@@ -79,9 +79,15 @@ Kernel::daemonize( const char *command, int argc, char **argv )
         log_notice( "failed to setsid()" );
     }
 
-    freopen( "/dev/null", "r", stdin );
-    freopen( "/dev/null", "w", stdout );
-    freopen( "/dev/null", "w", stderr );
+    if ( freopen("/dev/null", "r", stdin) == NULL ) {
+        log_notice( "failed to redirect stdin" );
+    }
+    if ( freopen("/dev/null", "w", stdout) == NULL ) {
+        log_notice( "failed to redirect stdout" );
+    }
+    if ( freopen("/dev/null", "w", stderr) == NULL ) {
+        log_notice( "failed to redirect stderr" );
+    }
 
     log_open_user( "(redx:background)" );
     log_notice( "spawning '%s'", command );

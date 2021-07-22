@@ -274,7 +274,9 @@ Service::initialize( int argc, char **argv, Tcl_AppInitProc *appInit ) {
     bool interactive = getppid() != 1;
 
     if ( not interactive ) {
-        freopen("/dev/null", "w", stdout);
+        if ( freopen("/dev/null", "w", stdout) == NULL ) {
+            log_warn( " failed to redirect stdout " );
+        }
 
         sprintf( buffer, "/var/log/%s-stderr.log", service_name );
         if ( freopen(buffer, "a", stderr) == NULL ) {
@@ -294,7 +296,9 @@ Service::initialize( int argc, char **argv, Tcl_AppInitProc *appInit ) {
      */
     sprintf( buffer, "/var/run/%s", service_name );
     mkdir( buffer, 0755 );
-    chdir( buffer );
+    if ( chdir(buffer) != 0 ) {
+        log_warn( " failed to chdir " );
+    }
     channel = new Channel( this );
 
     enable_core_dumps( service_name );

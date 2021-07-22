@@ -26,7 +26,18 @@
  *
  */
 
-#define _BSD_SOURCE
+// THIS SHOULD BE BETTER!!
+// #if (__GLIBC__ >= 2)
+// #if (__GLIBC_MINOR__ > 19)
+#define _DEFAULT_SOURCE
+// #else
+// #warning glibc minor __GLIBC_MINOR__
+// #define _BSD_SOURCE
+// #endif
+// #else
+// #warning glibc __GLIBC__
+// #define _BSD_SOURCE
+// #endif
 
 #include <syslog.h>
 #include <stdarg.h>

@@ -87,6 +87,15 @@ namespace {
     int link_bounce_reattempt = 1200;	// 1 hour total
 }
 
+namespace {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-result"
+    void shell( const char *command ) {
+        system( command );
+    }
+#pragma GCC diagnostic pop
+}
+
 /**
  */
 static bool
@@ -456,7 +465,7 @@ Network::Interface::bring_link_down() {
     if ( debug > 0 )  log_notice( "bring link down for '%s'", name() );
     char buffer[128];
     sprintf( buffer, "/sbin/ip link set %s down", name() );
-    system( buffer );
+    shell( buffer );
 }
 
 /**
@@ -466,7 +475,7 @@ Network::Interface::bring_link_up() {
     if ( debug > 0 )  log_notice( "bring link up for '%s'", name() );
     char buffer[128];
     sprintf( buffer, "/sbin/ip link set %s up", name() );
-    system( buffer );
+    shell( buffer );
 }
 
 /**
@@ -733,11 +742,12 @@ Network::Interface::inbound_socket( char *address, uint16_t port ) {
 }
 
 /**
+ * PATH_MAX should be 4096 - from linux/limits.h
  */
 char *
 Network::Interface::bus_address() const {
-    char path[1024];
-    char link[1024];
+    char path[PATH_MAX];
+    char link[PATH_MAX];
 
     sprintf( link, "/sys/class/net/%s/device", _name );
     char *real = realpath( link, path );

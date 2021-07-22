@@ -58,6 +58,14 @@
 #include "LinuxNetworkMonitor.h"
 
 namespace { int debug = 0; }
+namespace {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-result"
+    void shell( const char *command ) {
+        system( command );
+    }
+#pragma GCC diagnostic pop
+}
 
 /**
  * The network monitor needs to probe the current system for network
@@ -147,7 +155,7 @@ Network::LinuxNetworkMonitor::receive( NetLink::NewLink *message ) {
         if ( interface->is_up() and interface->not_listening_to("udp6", 123) ) { // NTP
             log_notice( "%s is not listening to port 123 on its primary address, restart ntpd",
                                 interface->name() );
-            system( "/usr/bin/config_ntpd --restart" );
+            shell( "/usr/bin/config_ntpd --restart" );
         }
 
     } else { // if we do have it ... look for state changes
@@ -168,7 +176,7 @@ Network::LinuxNetworkMonitor::receive( NetLink::NewLink *message ) {
                 if ( interface->is_up() and interface->not_listening_to("udp6", 123) ) { // NTP
                     log_notice( "%s is not listening to port 123 on its primary address, restart ntpd",
                                         interface->name() );
-                    system( "/usr/bin/config_ntpd --restart" );
+                    shell( "/usr/bin/config_ntpd --restart" );
                 }
 
             } else {
@@ -335,7 +343,7 @@ Network::LinuxNetworkMonitor::receive( NetLink::NewAddress *message ) {
         if ( interface->not_listening_to("udp6", 123) ) { // NTP
             log_notice( "%s is not listening to port 123 on its primary address, restart ntpd",
                                 interface->name() );
-            system( "/usr/bin/config_ntpd --restart" );
+            shell( "/usr/bin/config_ntpd --restart" );
         }
     } else {
         if ( debug > 0 ) {

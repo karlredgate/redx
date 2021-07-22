@@ -165,6 +165,8 @@ Network::Bridge::set_mac_address( unsigned char *mac ) {
 }
 
 /**
+ * If the file does not exist, cannot be opened, or cannot
+ * be read - we return false.
  */
 bool
 Network::Bridge::lock_address() {
@@ -172,14 +174,15 @@ Network::Bridge::lock_address() {
     sprintf( buffer, "/sys/class/net/%s/bridge/address_locked", _name );
     FILE *f = fopen( buffer, "r+" );
     if ( f == NULL )  return false;
-    int locked;
-    fscanf( f, "%d", &locked );
+    int locked = 1;
+    int count = fscanf( f, "%d", &locked );
     if ( locked == 0 ) {
         rewind( f );
         fprintf( f, "%d", 1 );
         log_notice( "locking %s address", _name );
     }
     fclose( f );
+    if ( count != 1 ) return false;
     return true;
 }
 
@@ -191,14 +194,15 @@ Network::Bridge::unlock_address() {
     sprintf( buffer, "/sys/class/net/%s/bridge/address_locked", _name );
     FILE *f = fopen( buffer, "r+" );
     if ( f == NULL )  return false;
-    int locked;
-    fscanf( f, "%d", &locked );
+    int locked = 0;
+    int count = fscanf( f, "%d", &locked );
     if ( locked == 1 ) {
         rewind( f );
         fprintf( f, "%d", 0 );
         log_notice( "unlocking %s address", _name );
     }
     fclose( f );
+    if ( count != 1 ) return false;
     return true;
 }
 
@@ -274,9 +278,10 @@ Network::Bridge::forward_delay() {
     char path[256];
     snprintf( path, sizeof(path), "/sys/class/net/%s/bridge/forward_delay", name() );
     FILE *f = fopen(path, "r");
-    if ( f == NULL ) return 0xdeadbeef;
-    fscanf( f, "%ld\n", &value );
+    if ( f == NULL ) return 0xDEADBEEF;
+    int count = fscanf( f, "%ld\n", &value );
     fclose( f );
+    if ( count != 1 ) return 0xDEADBEEF;
     return value / HZ;
 }
 

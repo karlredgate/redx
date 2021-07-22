@@ -28,7 +28,14 @@
  * Interface class.  There are related files for other platforms.
  */
 
-#define _BSD_SOURCE
+/*
+ * The features.h file is not supposed to be included directly.
+ * And _BSD_SOURCE is deprecated as of glibc >2.19 - this should
+ * use _DEFAULT_SOURCE ... but the __GLIBC__ and __GLIBC_MINOR__
+ * macros are defined in features.h ...
+ */
+// #define _BSD_SOURCE
+#define _DEFAULT_SOURCE
 #include <features.h>
 
 #include <sys/types.h>
@@ -545,7 +552,7 @@ Network::Interface::is_listening_to( const char *protocol, u_int16_t port ) cons
         log_err( "could not open '%s'", path );
         return false;
     }
-    fgets( rest, sizeof rest, f );
+    if ( fgets(rest, sizeof rest, f) == NULL ) goto finish;
     while ( not feof(f) ) {
         int n = fscanf( f, "%d: %64[0-9A-Fa-f]:%X %64[0-9A-Fa-f]:%X %X %lX:%lX %X:%lX %lX %d %d %ld %512[^\n]\n",
                        &index, local_address, &local_port, remote_address, &remote_port,
@@ -568,6 +575,7 @@ Network::Interface::is_listening_to( const char *protocol, u_int16_t port ) cons
         result = true;
         break;
     }
+finish:
     fclose( f );
     return result;
 }

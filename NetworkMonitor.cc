@@ -333,10 +333,14 @@ Network::Monitor::load_cache() {
         return;
     }
 
-    fscanf( f, "%s\n", buffer );
+    int count = fscanf( f, "%s\n", buffer );
     fclose( f );
 
-    log_notice( "loaded partner as [%s]", buffer );
+    if ( count != 1 ) {
+        log_warn( "failed to load partner" );
+    } else {
+        log_notice( "loaded partner as [%s]", buffer );
+    }
 
     /*
      * This should not be necessary - when netmgr starts it should
@@ -498,7 +502,9 @@ Network::Monitor::update_hosts() {
     close( fd );
 
     unlink( "hosts.1" );
-    link( "hosts", "hosts.1" );
+    if ( link("hosts", "hosts.1") != 0 ) {
+        log_err( "could not create the link for the old hosts table" );
+    }
     rename( "hosts.tmp", "hosts" );
 }
 
