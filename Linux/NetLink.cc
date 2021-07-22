@@ -241,7 +241,7 @@ void NetLink::RouteSocket::receive( NetLink::RouteReceiveCallbackInterface *call
             if ( debug ) printf( "finished nlmsgs\n" );
             break;
         } else {
-            if ( debug ) printf( "status=%d\n", status );
+            if ( debug ) printf( "status=%zd\n", status );
         }
 
         h = (struct nlmsghdr *)buffer;
@@ -953,7 +953,7 @@ NetLink::NewRoute::NewRoute( struct nlmsghdr *hdr )
      * a pointer, that avoids the problem.
      */
     if ( debug > 1 ) {
-        printf( "NewRoute: => type=%d scope=%d family=%d : iif=%d oif=%d\n",
+        printf( "NewRoute: => type=%d scope=%d family=%d : iif=%ld oif=%ld\n",
                 rtm->rtm_type, rtm->rtm_scope, rtm->rtm_family,
                 (intptr_t)RTA_DATA( attr[RTA_IIF] ), (intptr_t)RTA_DATA( attr[RTA_OIF] )
         );
@@ -1042,7 +1042,7 @@ NetLink::DelRoute::DelRoute( struct nlmsghdr *hdr )
     }
 
     if ( debug > 1 ) {
-        printf( "DelRoute: => type=%d scope=%d family=%d : iif=%d oif=%d\n",
+        printf( "DelRoute: => type=%d scope=%d family=%d : iif=%ld oif=%ld\n",
                 rtm->rtm_type, rtm->rtm_scope, rtm->rtm_family,
                 (intptr_t)RTA_DATA( attr[RTA_IIF] ), (intptr_t)RTA_DATA( attr[RTA_OIF] )
         );
