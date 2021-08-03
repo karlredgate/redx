@@ -24,6 +24,8 @@
 /** \file traps.c
  * \brief 
  *
+ * Upon some of these errors, can we report them and then
+ * immediately "exec($0)" to restart?
  */
 
 #define _POSIX_C_SOURCE 199309L
@@ -161,6 +163,7 @@ trap_error_signals() {
     if ( sigaction(SIGSEGV, &action, 0) != 0 ) {
         // printf( "could not trap SIGSEGV\n" );
 	// return errno;
+        log_err( "failed to catch SEGV" );
     }
 
     action.sa_sigaction = bus;
@@ -169,6 +172,7 @@ trap_error_signals() {
     if ( sigaction(SIGBUS, &action, 0) != 0 ) {
         // printf( "could not trap SIGSEGV\n" );
 	// return errno;
+        log_err( "failed to catch BUS" );
     }
 
     action.sa_sigaction = fpe;
@@ -177,6 +181,7 @@ trap_error_signals() {
     if ( sigaction(SIGFPE, &action, 0) != 0 ) {
         // printf( "could not trap SIGSEGV\n" );
 	// return errno;
+        log_err( "failed to catch FPE" );
     }
 
     action.sa_sigaction = ill;
@@ -185,6 +190,7 @@ trap_error_signals() {
     if ( sigaction(SIGILL, &action, 0) != 0 ) {
         // printf( "could not trap SIGSEGV\n" );
 	// return errno;
+        log_err( "failed to catch ILL" );
     }
 
 }
