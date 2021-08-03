@@ -124,7 +124,9 @@ MemPool::initialize( size_t object_size ) {
     size = object_size;
     size_t zone = size * count;
 
-    fprintf( stderr, "Allocate %lu KB memory region for %lu byte objects\n", zone/1024, size );
+    if ( debug ) {
+        fprintf( stderr, "Allocate %lu KB memory region for %lu byte objects\n", zone/1024, size );
+    }
     start = (uint8_t *)mmap( 0, zone, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0 );
 
     if ( start == MAP_FAILED ) {
@@ -137,7 +139,9 @@ MemPool::initialize( size_t object_size ) {
         map[i] = 0xFFFFFFFF;
     }
 
-    fprintf( stderr, "Creating new mempool\n" );
+    if ( debug ) {
+        fprintf( stderr, "Creating new mempool\n" );
+    }
     next = new MemPool;
 }
 
@@ -199,14 +203,18 @@ MemPool::allocate( size_t object_size ) {
             }
 
             int entry = ((word * 32) + bit);
-            fprintf( stderr, "allocate entry %d from %lu size table\n", entry, size );
+            if ( debug ) {
+                fprintf( stderr, "allocate entry %d from %lu size table\n", entry, size );
+            }
             void *address = start + (entry * size);
 
             map[word] &= ~mask;
             return address;
         }
     }
-    fprintf( stderr, "this table is full, looking for another\n" );
+    if ( debug ) {
+        fprintf( stderr, "this table is full, looking for another\n" );
+    }
 
     return next->allocate( object_size );
 }
@@ -237,7 +245,9 @@ MemPool::free( void *object ) {
         throw double_free();
     }
 
-    fprintf( stderr, "free entry %d from %lu size table\n", entry, size );
+    if ( debug ) {
+        fprintf( stderr, "free entry %d from %lu size table\n", entry, size );
+    }
     map[word] |= mask;
 }
 
@@ -251,6 +261,7 @@ static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 /**
  * The exception was necessary at one point... now it appears
  * the std committee has removed them !?!?
+ * https://stackoverflow.com/questions/50254641/dynamic-exception-specifications-are-deprecated#50254930
  */
 // void* operator new (size_t size) throw(std::bad_alloc) {
 void* operator new (size_t size) {
