@@ -7,6 +7,8 @@
 #ifndef _ALLOCATOR_H_
 #define _ALLOCATOR_H_
 
+#include <stdint.h>
+
 namespace Allocator {
 
     /**
