@@ -52,6 +52,7 @@
 #include "logger.h"
 #include "Hypercall.h"
 #include "XenStore.h"
+#include "AppInit.h"
 
 /**
  */
@@ -477,6 +478,12 @@ bool XenHypercall_Module( Tcl_Interp *interp ) {
     Tcl_Namespace *ns = Tcl_CreateNamespace(interp, "Xen", (ClientData)0, NULL);
     if ( ns == NULL ) {
         return false;
+    }
+
+    if ( access("/proc/xen/privcmd", R_OK) != 0 ) {
+        if ( interactive ) printf( "Xen not initialized, no hypervisor present\n" );
+        // do not bother providing commands - cannot use Xen
+        return true;
     }
 
     command = Tcl_CreateObjCommand(interp, "Xen::physinfo", physinfo_cmd, (ClientData)0, NULL);
