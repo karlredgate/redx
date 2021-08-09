@@ -109,8 +109,16 @@ zombie_cmd( ClientData data, Tcl_Interp *interp,
         Tcl_WrongNumArgs( interp, 1, objv, "signal pid" );
         return TCL_ERROR; 
     }
-       // int kill(pid_t pid, int sig);
 
+    int count = 1;
+    if ( Tcl_GetIntFromObj(interp, objv[1], &count) != TCL_OK ) {
+        count = 1;
+    }
+
+    bool anyfailed = false;
+    for ( int i = 0 ; i < count ; ++i ) {
+        // create another zombie - add it to the list of pids
+    }
     int pid = ::fork();
     if ( pid < 0 ) { // fork failed - send error
         Tcl_StaticSetResult( interp, "fork failed" );
@@ -194,6 +202,34 @@ kill_cmd( ClientData data, Tcl_Interp *interp,
        // int kill(pid_t pid, int sig);
 
     Tcl_StaticSetResult( interp, "passfail" );
+    return TCL_ERROR;
+}
+
+/**
+ * Process::restart
+ */
+static int
+restart_cmd( ClientData data, Tcl_Interp *interp,
+             int objc, Tcl_Obj * CONST *objv )
+{
+    if ( objc < 1 ) {
+        Tcl_ResetResult( interp );
+        Tcl_WrongNumArgs( interp, 1, objv, "signal pid" );
+        return TCL_ERROR; 
+    }
+
+    Tcl_Obj *obj = Tcl_GetVar2Ex( interp, "argv0", NULL, 0 );
+    char *path = Tcl_GetStringFromObj( obj, NULL );
+
+    char * const argv[] = { "redx", (char *)0 };
+    extern char **environ;
+
+    if ( execve(path, argv, environ) == -1 ) {
+        Tcl_StaticSetResult( interp, "execve failed" );
+        return TCL_ERROR;
+    }
+
+    Tcl_SetObjResult( interp, obj );
     return TCL_ERROR;
 }
 
@@ -360,6 +396,12 @@ Process_Module( Tcl_Interp *interp ) {
     }
 
     command = Tcl_CreateObjCommand(interp, "Process::kill", kill_cmd, (ClientData)0, NULL);
+    if ( command == NULL ) {
+        // logger ?? want to report TCL Error
+        return false;
+    }
+
+    command = Tcl_CreateObjCommand(interp, "Process::restart", restart_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
         // logger ?? want to report TCL Error
         return false;
