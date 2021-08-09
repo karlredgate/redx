@@ -64,6 +64,17 @@ int RedX_Init( Tcl_Interp *interp ) {
 
     Tcl_EvalEx( interp, "proc clock {command} { namespace eval ::tcl::clock $command}", -1, TCL_EVAL_GLOBAL );
     Tcl_EvalEx( interp, "proc commands {} {namespace eval commands {info procs}}", -1, TCL_EVAL_GLOBAL );
+    const char *help_script = "proc help {args} {\n"
+        "  foreach name [namespace children] {\n"
+        "    puts \"## $name commands\"\n"
+        "    foreach command [info commands \"${name}::*\"] {\n"
+        "      puts -nonewline \"[namespace tail $command] \"\n"
+        "    }\n"
+        "    puts {}\n"
+        "  }\n"
+        "}\n";
+    int retcode = Tcl_EvalEx( interp, help_script, -1, TCL_EVAL_GLOBAL );
+    if ( retcode != TCL_OK )  return false;
 
 #if 0
     if ( getuid() != 0 ) {
