@@ -97,18 +97,6 @@ int RedX_Init( Tcl_Interp *interp ) {
         if ( interactive ) printf( "Xen initialized\n" );
     }
 
-    if ( Kernel::Initialize(interp) == false ) {
-        Tcl_StaticSetResult( interp, "Kernel::Initialize failed" );
-        return TCL_ERROR;
-    }
-    if ( interactive ) printf( "Kernel initialized\n" );
-
-    if ( NetLink::Initialize(interp) == false ) {
-        Tcl_StaticSetResult( interp, "NetLink::Initialize failed" );
-        return TCL_ERROR;
-    }
-    if ( interactive ) printf( "NetLink initialized\n" );
-
 #endif
 
     if ( Tcl_CallAppInitChain(interp) == false ) {
