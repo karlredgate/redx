@@ -52,9 +52,12 @@
 #include "AppInit.h"
 
 #include "traps.h"
+#include "PlatformThread.h"
 
 namespace {
     int debug = 0;
+    int pid = 0;
+    int ppid = 0;
     char *static_envp[] = {
         const_cast<char*>("HOME=/root"),
         NULL
@@ -95,6 +98,73 @@ traps_cmd( ClientData data, Tcl_Interp *interp,
 }
 
 /**
+ * Process::zombie - create a zombie child process.
+ */
+static int
+zombie_cmd( ClientData data, Tcl_Interp *interp,
+             int objc, Tcl_Obj * CONST *objv )
+{
+    if ( objc < 1 ) {
+        Tcl_ResetResult( interp );
+        Tcl_WrongNumArgs( interp, 1, objv, "signal pid" );
+        return TCL_ERROR; 
+    }
+       // int kill(pid_t pid, int sig);
+
+    int pid = ::fork();
+    if ( pid < 0 ) { // fork failed - send error
+        Tcl_StaticSetResult( interp, "fork failed" );
+        return TCL_ERROR;
+    }
+    if ( pid == 0 ) { // I am the child
+        set_thread_name( "FAKE-ZOMBIE" );
+        exit( 0 );
+    }
+    // pid is positive - I must be the parent
+    Tcl_SetObjResult( interp, Tcl_NewLongObj((long)(pid)) );
+    // DO NOT WAIT for the process
+    return TCL_OK;
+}
+
+/**
+ * Process::kill
+ */
+static int
+wait_cmd( ClientData data, Tcl_Interp *interp,
+             int objc, Tcl_Obj * CONST *objv )
+{
+    if ( objc < 2 ) {
+        Tcl_ResetResult( interp );
+        Tcl_WrongNumArgs( interp, 1, objv, "pid" );
+        return TCL_ERROR; 
+    }
+
+    pid_t pid;
+    if ( Tcl_GetIntFromObj(interp, objv[1], &pid) != TCL_OK ) {
+        Svc_SetResult( interp, "invalid pid value", TCL_STATIC );
+        return TCL_ERROR;
+    }
+
+    int status;
+    int result = waitpid( pid, &status, 0 );
+    if ( result == -1 ) {
+        Tcl_StaticSetResult( interp, "wait failed" );
+        return TCL_ERROR;
+    }
+    if ( result == 0 ) {
+        Tcl_StaticSetResult( interp, "no change" );
+        return TCL_OK;
+    }
+    if ( result == pid ) {
+        Tcl_StaticSetResult( interp, "dead" );
+        return TCL_OK;
+    }
+
+    Tcl_StaticSetResult( interp, "unexpected result" );
+    return TCL_ERROR;
+}
+
+/**
  * Process::kill
  */
 static int
@@ -106,6 +176,21 @@ kill_cmd( ClientData data, Tcl_Interp *interp,
         Tcl_WrongNumArgs( interp, 1, objv, "signal pid" );
         return TCL_ERROR; 
     }
+
+    int signal;
+    if ( Tcl_GetIntFromObj(interp, objv[1], &signal) != TCL_OK ) {
+        Svc_SetResult( interp, "invalid signal value", TCL_STATIC );
+        return TCL_ERROR;
+    }
+
+    // this should be string or int
+    pid_t pid;
+    if ( Tcl_GetIntFromObj(interp, objv[2], &pid) != TCL_OK ) {
+        Svc_SetResult( interp, "invalid pid value", TCL_STATIC );
+        return TCL_ERROR;
+    }
+
+    int result = kill( pid, signal );
        // int kill(pid_t pid, int sig);
 
     Tcl_StaticSetResult( interp, "passfail" );
@@ -241,6 +326,30 @@ Process_Module( Tcl_Interp *interp ) {
 
     if ( Tcl_LinkVar(interp, "Process::debug", (char *)&debug, TCL_LINK_INT) != TCL_OK ) {
         log_err( "failed to link Process::debug" );
+        return false;
+    }
+
+    pid = getpid();
+    if ( Tcl_LinkVar(interp, "Process::pid", (char *)&pid, TCL_LINK_INT) != TCL_OK ) {
+        log_err( "failed to link Process::pid" );
+        return false;
+    }
+
+    ppid = getppid();
+    if ( Tcl_LinkVar(interp, "Process::ppid", (char *)&ppid, TCL_LINK_INT) != TCL_OK ) {
+        log_err( "failed to link Process::ppid" );
+        return false;
+    }
+
+    command = Tcl_CreateObjCommand(interp, "Process::zombie", zombie_cmd, (ClientData)0, NULL);
+    if ( command == NULL ) {
+        // logger ?? want to report TCL Error
+        return false;
+    }
+
+    command = Tcl_CreateObjCommand(interp, "Process::wait", wait_cmd, (ClientData)0, NULL);
+    if ( command == NULL ) {
+        // logger ?? want to report TCL Error
         return false;
     }
 
