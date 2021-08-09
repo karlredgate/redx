@@ -303,8 +303,8 @@ salute_cmd( ClientData data, Tcl_Interp *interp,
     if ( result < 0 ) {
         Tcl_ResetResult( interp );
         char buffer[128];
-        // char *err = strerror_r(errno, buffer, sizeof(buffer));
-        strerror_r(errno, buffer, sizeof(buffer));
+        char * r __attribute__((unused)) =
+            strerror_r(errno, buffer, sizeof(buffer));
         char *err = buffer;
         Svc_SetResult( interp, err, TCL_VOLATILE );
         return TCL_ERROR;
@@ -468,7 +468,8 @@ timeout( Tcl_Interp *interp, int time_limit,
         Tcl_ResetResult( interp );
         char buffer[128];
         // char *err = strerror_r(errno, buffer, sizeof(buffer));
-        strerror_r(errno, buffer, sizeof(buffer));
+        char *r __attribute__((unused)) =
+            strerror_r(errno, buffer, sizeof(buffer));
         char *err = buffer;
         Svc_SetResult( interp, err, TCL_VOLATILE );
         return TCL_ERROR;

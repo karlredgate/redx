@@ -447,7 +447,8 @@ Network::Interface::rename( char *new_name ) {
         if ( fd < 0 ) {
             fd = ::socket(PF_INET6, SOCK_DGRAM, 0);
             if ( fd < 0 ) {
-                strerror_r( errno, e, sizeof(e) );
+                char * r __attribute__((unused)) =
+                    strerror_r( errno, e, sizeof(e) );
                 log_err( "interface rename failed to create socket for rename: %s", e );
                 return false;
             }
@@ -459,7 +460,8 @@ Network::Interface::rename( char *new_name ) {
     close( fd );
 
     if ( result < 0 ) {
-        strerror_r( error, e, sizeof(e) ); // this return 0 on success
+        char * r __attribute__((unused)) =
+            strerror_r( error, e, sizeof(e) ); // this return 0 on success
         log_err( "interface rename failed: %s", e );
         // handle error
         return false;
