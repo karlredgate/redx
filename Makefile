@@ -57,6 +57,7 @@ OBJS += tcl_util.o
 OBJS += traps.o
 OBJS += TCL_Allocator.o
 OBJS += TCL_UUID.o
+OBJS += TCL_BPF.o
 OBJS += TCL_Bridge.o
 OBJS += TCL_Interface.o
 OBJS += TCL_ICMPv6.o
