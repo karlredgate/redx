@@ -55,6 +55,7 @@ log_open_daemon( const char *name ) {
 void
 log_info( const char *format, ... ) {
     va_list ap;
+    va_start( ap, format );
     vsyslog( LOG_INFO, format, ap );
     va_end( ap );
 }
@@ -62,6 +63,7 @@ log_info( const char *format, ... ) {
 void
 log_notice( const char *format, ... ) {
     va_list ap;
+    va_start( ap, format );
     vsyslog( LOG_NOTICE, format, ap );
     va_end( ap );
 }
@@ -69,6 +71,7 @@ log_notice( const char *format, ... ) {
 void
 log_warn( const char *format, ... ) {
     va_list ap;
+    va_start( ap, format );
     vsyslog( LOG_WARNING, format, ap );
     va_end( ap );
 }
@@ -76,6 +79,7 @@ log_warn( const char *format, ... ) {
 void
 log_err( const char *format, ... ) {
     va_list ap;
+    va_start( ap, format );
     vsyslog( LOG_ERR, format, ap );
     va_end( ap );
 }
