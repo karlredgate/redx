@@ -68,6 +68,7 @@ segv( int sig, siginfo_t *info, void *data ) {
     char **frames = backtrace_symbols( pointers, frame_count );
     for ( i = 0 ; i < frame_count ; ++i ) {
         log_err( "frame(%03d): %s", i, frames[i] );
+        fprintf( stderr, "frame(%03d): %s", i, frames[i] );
     }
     abort();
 }
@@ -91,6 +92,7 @@ bus( int sig, siginfo_t *info, void *data ) {
     char **frames = backtrace_symbols( pointers, frame_count );
     for ( i = 0 ; i < frame_count ; ++i ) {
         log_err( "frame(%03d): %s", i, frames[i] );
+        fprintf( stderr, "frame(%03d): %s", i, frames[i] );
     }
     abort();
 }
@@ -119,6 +121,7 @@ fpe( int sig, siginfo_t *info, void *data ) {
     char **frames = backtrace_symbols( pointers, frame_count );
     for ( i = 0 ; i < frame_count ; ++i ) {
         log_err( "frame(%03d): %s", i, frames[i] );
+        fprintf( stderr, "frame(%03d): %s", i, frames[i] );
     }
     abort();
 }
@@ -147,6 +150,7 @@ ill( int sig, siginfo_t *info, void *data ) {
     char **frames = backtrace_symbols( pointers, frame_count );
     for ( i = 0 ; i < frame_count ; ++i ) {
         log_err( "frame(%03d): %s", i, frames[i] );
+        fprintf( stderr, "frame(%03d): %s", i, frames[i] );
     }
     abort();
 }
