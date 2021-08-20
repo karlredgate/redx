@@ -145,7 +145,7 @@ bool
 Syslog_Module( Tcl_Interp *interp ) {
     Tcl_Command command;
 
-    command = Tcl_CreateObjCommand(interp, "Syslog", Syslog_cmd, (ClientData)0, NULL);
+    command = Tcl_CreateObjCommand(interp, "syslog", Syslog_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
         return false;
     }

@@ -97,6 +97,18 @@ traps_cmd( ClientData data, Tcl_Interp *interp,
     return TCL_ERROR;
 }
 
+static int
+create_zombie() {
+    int pid = ::fork();
+    if ( pid < 0 ) { // fork failed - send error
+        return -1;
+    }
+    if ( pid == 0 ) { // I am the child
+        set_thread_name( "FAKE-ZOMBIE" );
+        exit( 0 );
+    }
+    return pid;
+}
 /**
  * Process::zombie - create a zombie child process.
  */
@@ -104,32 +116,30 @@ static int
 zombie_cmd( ClientData data, Tcl_Interp *interp,
              int objc, Tcl_Obj * CONST *objv )
 {
-    if ( objc < 1 ) {
+    if ( objc > 2 ) {
         Tcl_ResetResult( interp );
-        Tcl_WrongNumArgs( interp, 1, objv, "signal pid" );
+        Tcl_WrongNumArgs( interp, 1, objv, "[count]" );
         return TCL_ERROR; 
     }
 
     int count = 1;
-    if ( Tcl_GetIntFromObj(interp, objv[1], &count) != TCL_OK ) {
-        count = 1;
+    if ( objc == 2 ) {
+        if ( Tcl_GetIntFromObj(interp, objv[1], &count) != TCL_OK ) {
+            count = 1;
+        }
     }
 
-    bool anyfailed = false;
+    Tcl_Obj *list = Tcl_NewListObj( 0, 0 );
     for ( int i = 0 ; i < count ; ++i ) {
         // create another zombie - add it to the list of pids
+        int pid = create_zombie();
+        if ( pid == -1 ) {
+            Tcl_StaticSetResult( interp, "fork failed" );
+            return TCL_ERROR;
+        }
+        Tcl_ListObjAppendElement( interp, list, Tcl_NewLongObj(pid) );
     }
-    int pid = ::fork();
-    if ( pid < 0 ) { // fork failed - send error
-        Tcl_StaticSetResult( interp, "fork failed" );
-        return TCL_ERROR;
-    }
-    if ( pid == 0 ) { // I am the child
-        set_thread_name( "FAKE-ZOMBIE" );
-        exit( 0 );
-    }
-    // pid is positive - I must be the parent
-    Tcl_SetObjResult( interp, Tcl_NewLongObj((long)(pid)) );
+    Tcl_SetObjResult( interp, list );
     // DO NOT WAIT for the process
     return TCL_OK;
 }
@@ -395,7 +405,7 @@ Process_Module( Tcl_Interp *interp ) {
         return false;
     }
 
-    command = Tcl_CreateObjCommand(interp, "Process::kill", kill_cmd, (ClientData)0, NULL);
+    command = Tcl_CreateObjCommand(interp, "kill", kill_cmd, (ClientData)0, NULL);
     if ( command == NULL ) {
         // logger ?? want to report TCL Error
         return false;
