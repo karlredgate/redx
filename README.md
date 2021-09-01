@@ -31,6 +31,105 @@ build
  * filesystem events
  * process list
  * ptrace / strace / ltrace / dtrace ?
+ * protobuf tools
+   * generic read
+   * how to represent the structures in procs
+ * ebpf tools?  bpf(2)
+   * loader
+   * compiler
+   * peg parser?
+   * https://core.tcl-lang.org/tcllib/doc/tcllib-1-17/embedded/www/tcllib/files/apps/pt.html
+ * atop
+ * clear buf cache - turn on/off swap
+ * add capabilities() checks - to reduce root
+ * iptstate - track iptables
+ * pktstat - netwox - ngrep - ...
+ * curl/h2/h3 requests
+ * inotify fanotify
+ * add event sources
+   * Tcl_CreateEventSource(3tcl)
+   * https://wiki.tcl-lang.org/page/Tcl_CreateEventSource
+ * PCAP
+ * zeek?
+ * embed CLIPS?
+ * sqlite
+ * perf_event_open(2)
+ * subreaper?  prctl(2) - PR_SET_CHILD_SUBREAPER
+ * https://alexanderanokhin.com/tools/digger/
+ * dapptrace on osx??
+ * digger - https://alexanderanokhin.com/tools/digger/
+ * packetdrill
+   * https://github.com/google/packetdrill
+   * https://groups.google.com/g/packetdrill
+   * https://www.usenix.org/system/files/login/articles/10_cardwell-online.pdf
+   * https://www.usenix.org/system/files/conference/atc13/atc13-cardwell.pdf
+   * https://github.com/ligurio/packetdrill-testcases
+   * https://conferences.sigcomm.org/sigcomm/2020/files/slides/epiq/1%20Testing%20QUIC%20with%20packetdrill.pdf
+   * https://developpaper.com/packetdrill-a-powerful-tool-for-testing-tcp-stack-behavior/
+ * ethtool
+ * lshw https://github.com/lyonel/lshw
+ * https://upx.github.io/
+ * lspci - http://mj.ucw.cz/sw/pciutils/
+   * https://en.wikipedia.org/wiki/Lspci
+   * http://mj.ucw.cz/download/linux/pci/
+ * lsscsi
+ * lscpu
+ * dmesg
+ * uname
+ * packetforge-ng
+ * linux hwmon - https://www.kernel.org/doc/html/latest/hwmon/index.html
+ * devlink??
+ * https://www.kernel.org/doc/html/latest/networking/devlink/index.html
+ * devlink api
+ * https://lwn.net/Articles/674867/
+ * https://github.com/jpirko/prometheus-devlink-exporter
+ * https://github.com/jpirko
+ * ping and ping6
+ * ping sendmsg: "Operation not permitted"
+ * https://forums.cpanel.net/threads/problem-with-iptables-sendmsg-operation-not-permitted.423261/
+ * ipv6 ping: socket: Permission denied
+ * https://github.com/MichaIng/DietPi/issues/3573
+ * https://github.com/Microsoft/WSL/issues/69
+ * socket(AF_INET6, SOCK_DGRAM, IPPROTO_ICMPV6) = -1 EACCES (Permission denied)
+ * https://events19.linuxfoundation.org/wp-content/uploads/2017/12/Debugging-Network-Applications-Using-Container-Technology-Pavel-%C5%A0imerda-prgcont.cz_.pdf
+ * https://github.com/iputils/iputils/issues/293
+ * Darwin - hypervisor framework
+ * LLDP
+ * OUI lookup
+ * packet construction
+ * probe for addresses not configured on an intf
+ * systemd journal ... uses siphash
+ * send API calls easily
+ * curl library - or related
+ * fstrim - util-linux
+ * dpkg -S /sbin/fstrim
+ * dpkg -L util-linux
+ * 
+
+## uring
+
+ * https://unixism.net/loti/what_is_io_uring.html
+ * https://unixism.net/loti/tutorial/cat_liburing.html
+ * https://blogs.oracle.com/linux/post/an-introduction-to-the-io_uring-asynchronous-io-framework
+
+## systemd - journal
+
+ * https://systemd.io/JOURNAL_FILE_FORMAT/
+ * https://www.freedesktop.org/wiki/Software/systemd/journal-files/
+ * https://github.com/systemd/systemd/blob/main/src/libsystemd/sd-journal/journal-def.h
+ * https://www.freedesktop.org/wiki/Software/systemd/json/
+ * https://www.freedesktop.org/wiki/Software/systemd/export/
+ * https://manpages.debian.org/stretch/systemd-journal-remote/systemd-journal-remote.8.en.html
+ * https://www.freedesktop.org/software/systemd/man/systemd-journal-remote.html
+
+## Protobuf
+
+Can I compile protobuf description to a TCL script describing the format.
+ * https://journal.stuffwithstuff.com/2011/03/19/pratt-parsers-expression-parsing-made-easy/
+ * http://crockford.com/javascript/
+ * http://crockford.com/javascript/tdop/tdop.html
+ * http://crockford.com/javascript/tdop/index.html
+ * https://github.com/munificent/bantam
 
 ## Process List
 
@@ -52,6 +151,7 @@ build
  * `/usr/bin/*.d`
  * `/Users/karred/ws/depot/node/src/node_dtrace.cc`
  * imptrace.1 - report importance donation events ??
+ * virtualization library...
 
 imptrace is a bash script that uses Dtrace scripts and ruby.
 Need to look for PDF of dtrace on OSX C interface.
@@ -159,5 +259,13 @@ Need to set up MINGW on Windows to test makefile
 ### Bridge notes
 
 ( http://stackoverflow.com/questions/17588957/programmatically-create-destroy-network-bridges-with-net-on-windows-7 )
+
+## References
+
+ * <https://nelkinda.com/blog/suppress-warnings-in-gcc-and-clang/>
+
+## NetLink
+
+Need an event receiver for NetLink events.
 
 <!-- vim: set autoindent expandtab sw=4 syntax=markdown: -->
