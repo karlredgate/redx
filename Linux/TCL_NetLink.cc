@@ -158,6 +158,7 @@ GetLink_obj( ClientData data, Tcl_Interp *interp,
         return TCL_OK;
     }
 
+    // This needs a socket to send to
     if ( Tcl_StringMatch(command, "send") ) {
         Tcl_StaticSetResult( interp, "send not implemented" );
         return TCL_ERROR;

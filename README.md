@@ -19,6 +19,15 @@ build
 -----
 * how to have build depend on xen headers present
 
+CLI
+---
+
+Event loop ...
+ * http://jefftrull.github.io/eda/qt/tcl/eventloop/2012/05/25/integrating-qt-tcl-event-loops.html
+ * https://www.tcl.tk/community/tcl2019/assets/talk160/Paper.pdf
+ * http://free-online-ebooks.appspot.com/tcl/practical-programming-in-tcl-and-tk-ed4/0130385603_ch50lev1sec1.html
+ * seach: Tcl_SetMainLoop usage example
+
 ## TODO
 
  * Migrate all platform files to platform dir
@@ -74,6 +83,7 @@ build
    * http://mj.ucw.cz/download/linux/pci/
  * lsscsi
  * lscpu
+ * lv, vg, pv commands
  * dmesg
  * uname
  * packetforge-ng
@@ -104,7 +114,20 @@ build
  * fstrim - util-linux
  * dpkg -S /sbin/fstrim
  * dpkg -L util-linux
- * 
+ * atop stuff ...
+   * https://atoptool.nl/perftrain.php
+   * https://atoptool.nl/extras.php
+   * https://atoptool.nl/netatop.php
+   * https://atoptool.nl/downloadnetatop.php
+   * https://atoptool.nl/
+   * https://lwn.net/Articles/387202/
+ * whiptail for dialogs...
+   * https://askubuntu.com/questions/776831/whiptail-change-background-color-dynamically-from-magenta
+   * libnewt
+ * taskstats in procfs - and netlink (dom wants to monitor fs per thread)
+ * https://www.kernel.org/doc/html/latest/accounting/taskstats-struct.html
+ * https://www.kernel.org/doc/html/v5.14/accounting/taskstats.html
+ * https://mjmwired.net/kernel/Documentation/accounting/taskstats.txt
 
 ## uring
 
@@ -166,6 +189,8 @@ Other DTrace tools
  * iopattern
  * iosnoop
  * iotop
+   * https://github.com/Tomas-M/iotop
+   * https://haydenjames.io/linux-server-performance-disk-io-slowing-application/
  * lastwords
  * opensnoop
  * procsystime
