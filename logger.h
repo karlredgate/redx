@@ -36,10 +36,12 @@ extern "C" {
 void log_open_user( const char *name );
 void log_open_daemon( const char *name );
 
+void log_debug( const char *format, ... );
 void log_info( const char *format, ... );
 void log_notice( const char *format, ... );
 void log_warn( const char *format, ... );
 void log_err( const char *format, ... );
+void log_crit( const char *format, ... );
 
 #ifdef __cplusplus
 }

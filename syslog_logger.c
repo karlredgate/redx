@@ -53,6 +53,14 @@ log_open_daemon( const char *name ) {
 }
 
 void
+log_debug( const char *format, ... ) {
+    va_list ap;
+    va_start( ap, format );
+    vsyslog( LOG_DEBUG, format, ap );
+    va_end( ap );
+}
+
+void
 log_info( const char *format, ... ) {
     va_list ap;
     va_start( ap, format );
@@ -81,6 +89,14 @@ log_err( const char *format, ... ) {
     va_list ap;
     va_start( ap, format );
     vsyslog( LOG_ERR, format, ap );
+    va_end( ap );
+}
+
+void
+log_crit( const char *format, ... ) {
+    va_list ap;
+    va_start( ap, format );
+    vsyslog( LOG_CRIT, format, ap );
     va_end( ap );
 }
 
