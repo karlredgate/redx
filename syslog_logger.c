@@ -39,8 +39,17 @@
 // #define _BSD_SOURCE
 // #endif
 
+#include <stdio.h>
 #include <syslog.h>
 #include <stdarg.h>
+
+static int interactive = 0;
+static int level = LOG_WARNING;
+
+void
+log_interactive( int value ) {
+    interactive = value;
+}
 
 void
 log_open_user( const char *name ) {
@@ -72,7 +81,15 @@ void
 log_notice( const char *format, ... ) {
     va_list ap;
     va_start( ap, format );
-    vsyslog( LOG_NOTICE, format, ap );
+    if ( interactive ) {
+        if ( level >= LOG_NOTICE ) {
+            char buffer[1024];
+            sprintf( buffer, "NOTICE: %s\n", format );
+            vfprintf( stderr, buffer, ap );
+        }
+    } else {
+        vsyslog( LOG_NOTICE, format, ap );
+    }
     va_end( ap );
 }
 
@@ -80,7 +97,15 @@ void
 log_warn( const char *format, ... ) {
     va_list ap;
     va_start( ap, format );
-    vsyslog( LOG_WARNING, format, ap );
+    if ( interactive ) {
+        if ( level >= LOG_WARNING ) {
+            char buffer[1024];
+            sprintf( buffer, "WARN: %s\n", format );
+            vfprintf( stderr, buffer, ap );
+        }
+    } else {
+        vsyslog( LOG_WARNING, format, ap );
+    }
     va_end( ap );
 }
 
@@ -88,7 +113,15 @@ void
 log_err( const char *format, ... ) {
     va_list ap;
     va_start( ap, format );
-    vsyslog( LOG_ERR, format, ap );
+    if ( interactive ) {
+        if ( level >= LOG_ERR ) {
+            char buffer[1024];
+            sprintf( buffer, "ERROR: %s\n", format );
+            vfprintf( stderr, buffer, ap );
+        }
+    } else {
+        vsyslog( LOG_ERR, format, ap );
+    }
     va_end( ap );
 }
 
