@@ -43,6 +43,7 @@
 #include <syslog.h>
 
 #include "platform.h"
+#include "logger.h"
 
 #include "tcl_util.h"
 #include "AppInit.h"
@@ -56,6 +57,7 @@ int RedX_Init( Tcl_Interp *interp ) {
     if ( interactive_obj != NULL ) {
         Tcl_GetIntFromObj( interp, interactive_obj, &interactive );
     }
+    log_interactive( interactive );
 
     Tcl_Command command;
 
