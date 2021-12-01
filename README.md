@@ -129,6 +129,17 @@ Event loop ...
  * https://www.kernel.org/doc/html/v5.14/accounting/taskstats.html
  * https://mjmwired.net/kernel/Documentation/accounting/taskstats.txt
 
+2021-10-20
+ * userfaultfd(2)
+ * ioctl_userfaultfd(2)
+ * rtld-audit(7)
+ * download pci.ids - and construct data in memory
+   * tie to the sysfs entries to show hardware
+ * 
+
+2021-11-09
+ * iperf3 - add client code ?
+
 ## uring
 
  * https://unixism.net/loti/what_is_io_uring.html
