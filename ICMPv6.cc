@@ -35,14 +35,10 @@
 #include <errno.h>
 #include <string.h>
 
-#include <tcl.h>
-#include "tcl_util.h"
-
 #include "logger.h"
 #include "string_util.h"
 
 #include "ICMPv6.h"
-#include "AppInit.h"
 
 namespace {
     typedef ICMPv6::PDU *(*PDUFactory)( struct icmp6_hdr * );
@@ -457,10 +453,12 @@ ICMPv6::NeighborAdvertisement::Factory( struct icmp6_hdr *hdr ) {
 }
 
 /**
+ * The constructor attribute causes this function to execute
+ * when the program loads.
  */
 static void
 __attribute__ ((constructor))
-init_factories( Tcl_Interp *interp ) {
+init_factories() {
     for ( int i = 0 ; i < MAX_FACTORY ; i++ ) {
         // This should be a generic route factory, not a simple netlink message
         factories[i] = ICMPv6::PDU::Factory;
