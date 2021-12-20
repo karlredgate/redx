@@ -140,6 +140,10 @@ Event loop ...
 2021-11-09
  * iperf3 - add client code ?
 
+2021-12-08
+ * https://nasm.us/docs.php
+ * https://github.com/ex0ns/ASM-Lib
+
 ## uring
 
  * https://unixism.net/loti/what_is_io_uring.html
